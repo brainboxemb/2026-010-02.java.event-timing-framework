@@ -11,8 +11,50 @@ permissions:
   contents: read
 
 jobs:
+  bootstrap-linux:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - name: Checkout without submodules
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - name: Require clean checkout
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -z "$(git status --porcelain)" || { git status --short; exit 1; }
+      - name: Bootstrap local tooling
+        shell: bash
+        run: |
+          set -euo pipefail
+          ./bootstrap.sh
+          test "$(git -C tools/tool.git-project rev-parse HEAD)" = "5db2b23b95ad0a230ab5d5d2bed725927328fcfe"
+          test "$(git -C tools/tool.java-project rev-parse HEAD)" = "35d26ba14e3f3d5c5e65b97b9e01881496295edb"
+          ./update-repo.sh
+
+  bootstrap-windows:
+    runs-on: windows-2025
+    timeout-minutes: 10
+    steps:
+      - name: Checkout without submodules
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - name: Require clean checkout
+        shell: pwsh
+        run: |
+          $status = git status --porcelain
+          if ($status) { git status --short; throw "Checkout is not clean before bootstrap." }
+      - name: Bootstrap local tooling
+        shell: pwsh
+        run: |
+          .\bootstrap.ps1
+          $gitTool = (git -C tools/tool.git-project rev-parse HEAD).Trim()
+          if ($gitTool -ne "5db2b23b95ad0a230ab5d5d2bed725927328fcfe") { throw "Unexpected tool.git-project SHA: $gitTool" }
+          $javaTool = (git -C tools/tool.java-project rev-parse HEAD).Trim()
+          if ($javaTool -ne "35d26ba14e3f3d5c5e65b97b9e01881496295edb") { throw "Unexpected tool.java-project SHA: $javaTool" }
+          .\update-repo.ps1
+
   java:
-    uses: brainboxemb/tool.java-project/.github/workflows/reusable-java-verify.yml@5a7135194b94644129d05a5f4a8ceffc5de499bf
+    needs: [bootstrap-linux, bootstrap-windows]
+    uses: brainboxemb/tool.java-project/.github/workflows/reusable-java-verify.yml@35d26ba14e3f3d5c5e65b97b9e01881496295edb
     with:
       working-directory: .
       java-version: '8.0.504+1'
