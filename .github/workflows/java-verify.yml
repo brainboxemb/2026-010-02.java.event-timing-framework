@@ -28,6 +28,13 @@ jobs:
           ./bootstrap.sh
           test "$(git -C tools/tool.git-project rev-parse HEAD)" = "5db2b23b95ad0a230ab5d5d2bed725927328fcfe"
           test "$(git -C tools/tool.java-project rev-parse HEAD)" = "35d26ba14e3f3d5c5e65b97b9e01881496295edb"
+      - name: Verify logging dependency boundary
+        shell: bash
+        run: |
+          set -euo pipefail
+          grep -F '<artifactId>slf4j-api</artifactId>' framework/pom.xml
+          ! grep -F '<artifactId>slf4j-jdk14</artifactId>' framework/pom.xml
+          grep -F '<artifactId>slf4j-jdk14</artifactId>' app/pom.xml
 
   bootstrap-windows:
     runs-on: windows-2025
