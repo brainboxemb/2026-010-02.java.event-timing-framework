@@ -2,7 +2,7 @@ package io.github.brainboxemb.eventtiming.app;
 
 import io.github.brainboxemb.eventtiming.core.CoreLayer;
 
-/** Minimal composition root used only to prove the framework-library consumer path. */
+/** Step-2 executable composition root. */
 public final class TimingApplication {
     private TimingApplication() {
     }
@@ -15,6 +15,19 @@ public final class TimingApplication {
         if (!"core".equals(frameworkComponent())) {
             throw new IllegalStateException("Framework library is not composed as expected.");
         }
-        System.out.println("event-timing-framework bootstrap OK");
+
+        BuildIdentity buildIdentity = BuildIdentity.load();
+        TimingApplicationLifecycle lifecycle = new TimingApplicationLifecycle(buildIdentity);
+        try {
+            lifecycle.start();
+        } finally {
+            lifecycle.close();
+        }
+
+        System.out.println(smokeOutput(buildIdentity, lifecycle.state()));
+    }
+
+    static String smokeOutput(BuildIdentity buildIdentity, TimingApplicationLifecycle.State state) {
+        return "event-timing-app lifecycle OK version=" + buildIdentity.version() + " state=" + state;
     }
 }
