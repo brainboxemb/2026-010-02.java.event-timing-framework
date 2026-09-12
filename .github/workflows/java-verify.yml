@@ -1,0 +1,63 @@
+name: Java verification
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  bootstrap-linux:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout without submodules
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+      - name: Require clean checkout
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -z "$(git status --porcelain)" || { git status --short; exit 1; }
+      - name: Bootstrap local tooling
+        shell: bash
+        run: |
+          set -euo pipefail
+          ./bootstrap.sh
+          test "$(git -C tools/tool.git-project rev-parse HEAD)" = "5db2b23b95ad0a230ab5d5d2bed725927328fcfe"
+          test "$(git -C tools/tool.java-project rev-parse HEAD)" = "35d26ba14e3f3d5c5e65b97b9e01881496295edb"
+
+  bootstrap-windows:
+    runs-on: windows-2025
+    steps:
+      - name: Checkout without submodules
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+      - name: Require clean checkout
+        shell: pwsh
+        run: |
+          $status = git status --porcelain
+          if ($status) { git status --short; throw "Checkout is not clean." }
+      - name: Bootstrap local tooling
+        shell: pwsh
+        run: |
+          .\bootstrap.ps1
+          if ((git -C tools/tool.git-project rev-parse HEAD).Trim() -ne "5db2b23b95ad0a230ab5d5d2bed725927328fcfe") { throw "Unexpected tool.git-project SHA" }
+          if ((git -C tools/tool.java-project rev-parse HEAD).Trim() -ne "35d26ba14e3f3d5c5e65b97b9e01881496295edb") { throw "Unexpected tool.java-project SHA" }
+
+  java:
+    needs:
+      - bootstrap-linux
+      - bootstrap-windows
+    uses: brainboxemb/tool.java-project/.github/workflows/reusable-java-verify.yml@35d26ba14e3f3d5c5e65b97b9e01881496295edb
+    with:
+      working-directory: .
+      java-version: '8.0.504+1'
+      maven-version: '3.9.16'
+      maven-wrapper-version: '3.3.4'
+      artifact-name: event-timing-framework-canonical
+      artifact-path: app/target/event-timing-app-0.1.0-SNAPSHOT.jar
+      runnable-jar-name: event-timing-app-0.1.0-SNAPSHOT.jar
+      smoke-expected-output: 'event-timing-framework bootstrap OK'
+      test-report-path: '**/target/surefire-reports/**'

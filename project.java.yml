@@ -1,0 +1,19 @@
+schema_version: 1
+
+java:
+  distribution: temurin
+  version: "8.0.504+1"
+  source_release: 8
+
+maven:
+  version: "3.9.16"
+  wrapper_version: "3.3.4"
+
+verification:
+  canonical_runner: ubuntu-24.04
+  compatibility_runner: windows-2025
+  artifact_name: event-timing-framework-canonical
+  artifact_path: app/target/event-timing-app-0.1.0-SNAPSHOT.jar
+  runnable_jar_name: event-timing-app-0.1.0-SNAPSHOT.jar
+  smoke_expected_output: event-timing-framework bootstrap OK
+  test_report_path: "**/target/surefire-reports/**"

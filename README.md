@@ -1,2 +1,142 @@
 # 2026-010-02.java.event-timing-framework
+
 Public Java framework for reusable event timing and time-registration applications.
+
+Project-wide planning, requirements, architecture, interface design and verification coordination live in the companion meta repository: [**2026-010-01.meta.event-timing-software**](https://github.com/brainboxemb/2026-010-01.meta.event-timing-software).
+
+## Current scope
+
+This repository is the public implementation repository for **SI-01 — Headless Timing Application**. The current bootstrap increment establishes a reusable framework-library boundary, a first executable consumer, and the shared repository/build/test tooling. It intentionally does not implement RFID, CAN, display, backoffice or timing-domain behaviour yet.
+
+## Artifact and package model
+
+Architectural responsibilities are not automatically Maven artifacts.
+
+The initial reactor deliberately contains only two product deliverables:
+
+```text
+framework/   event-timing-framework   reusable library
+app/         event-timing-app         runnable/default application
+```
+
+The root `event-timing-parent` POM is build/aggregation metadata rather than a deployed product component.
+
+The reusable `event-timing-framework` JAR contains the initial responsibility-oriented Java package structure:
+
+```text
+io.github.brainboxemb.eventtiming.domain     application/domain model, rules and services
+io.github.brainboxemb.eventtiming.core       reusable runtime engine and orchestration
+io.github.brainboxemb.eventtiming.platform   execution-platform/environment abstractions
+io.github.brainboxemb.eventtiming.comm       communication contracts and reusable communication concerns
+```
+
+The executable lives separately under:
+
+```text
+io.github.brainboxemb.eventtiming.app
+```
+
+The bootstrap currently uses only temporary marker classes to prove this structure. They do not define the eventual domain/service interfaces.
+
+### Artifact rule
+
+A package or architecture layer is **not** a publication boundary by itself. Introduce another Maven library artifact only when a real reason exists, such as:
+
+- another application needs to consume it independently;
+- an optional integration brings a significant independent dependency/lifecycle boundary;
+- deployment, ownership or release/versioning requires separation;
+- public/private implementation boundaries require independent composition.
+
+This keeps `domain`, `core`, `platform` and `comm` together while the structure is being proven. A later capability such as RabbitMQ, a platform-specific implementation, or reusable test support can be split only when its consumer and boundary are concrete.
+
+### Derived applications
+
+The framework is intended to support more than one executable composition. Examples that may later become separate applications include:
+
+```text
+single-system application   compose exactly one TimingSystemInstance
+multi-system application    compose and route 1..X TimingSystemInstance objects
+```
+
+Those applications should reuse the same framework library and inject/select their own concrete components. They are not created during this bootstrap merely to predict future structure.
+
+The working design is coordinated in the meta repository, especially `docs/31-01-SDD-03-java-component-design.md`.
+
+## Local checkout and bootstrap
+
+The repository uses two reusable tooling layers:
+
+```text
+tools/tool.git-project   generic Git externals/bootstrap/update handling
+tools/tool.java-project  Java/Maven build/test/CI tooling
+```
+
+`tool.git-project` is pinned directly by its committed gitlink. `project.yml` then declares `tool.java-project` as a managed tooling dependency and points to `project.java.yml` for Java-specific configuration.
+
+A normal clone does not require `--recurse-submodules`.
+
+Windows:
+
+```powershell
+git clone https://github.com/brainboxemb/2026-010-02.java.event-timing-framework.git
+cd 2026-010-02.java.event-timing-framework
+.\bootstrap.ps1
+.\mvnw.cmd verify
+```
+
+Linux/POSIX shell:
+
+```bash
+git clone https://github.com/brainboxemb/2026-010-02.java.event-timing-framework.git
+cd 2026-010-02.java.event-timing-framework
+./bootstrap.sh
+./mvnw verify
+```
+
+Use `update-repo.ps1` / `update-repo.sh` for a controlled dependency-alignment pass after changing refs in `project.yml`. The generic tool refuses to overwrite local changes inside a managed dependency.
+
+## Toolchain baseline
+
+```text
+Java              Eclipse Temurin 8u504-b01 (`8.0.504+1` in CI)
+Java source/API    Java SE 8
+Maven              3.9.16
+Maven Wrapper      3.3.4
+```
+
+The Java-specific baseline is recorded in `project.java.yml`. The current reusable workflow still receives these values explicitly; the profile provides the local/project source for the Java-specific settings and can later become a validated workflow input source.
+
+Run the bootstrap application after a reactor build:
+
+```bash
+java -jar app/target/event-timing-app-0.1.0-SNAPSHOT.jar
+```
+
+Expected bootstrap output:
+
+```text
+event-timing-framework bootstrap OK
+```
+
+## Reusable CI
+
+This repository is the first real product consumer of both `brainboxemb/tool.git-project` and `brainboxemb/tool.java-project`.
+
+CI first proves a clean checkout and root bootstrap on Linux and Windows, including exact tooling SHAs. It then calls the reusable Java workflow pinned to the same immutable `tool.java-project` commit declared in `project.yml`.
+
+The CI proof includes:
+
+- clean checkout before local bootstrap on Linux and Windows;
+- deterministic restoration of both tooling layers;
+- Linux canonical full-reactor build/test and application artifact production;
+- Windows full-reactor compatibility build/test;
+- download and execution on Windows of the exact `event-timing-app` JAR produced by Linux;
+- build/test provenance generated by the reusable Java toolchain.
+
+Docker is not required for the normal Java build/unit-test path. It may be introduced later for integration tests that need real external services.
+
+## Development workflow
+
+Changes use issue → feature branch → draft PR → implementation/test/evidence → review → merge.
+
+Keep real deployment identities, proprietary protocols, credentials, encryption keys and production mappings out of this public repository.
