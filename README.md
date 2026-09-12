@@ -2,6 +2,8 @@
 
 Public Java framework for reusable event timing and time-registration applications.
 
+Project-wide planning, requirements, architecture, interface design and verification coordination live in the companion meta repository: [**2026-010-01.meta.event-timing-software**](https://github.com/brainboxemb/2026-010-01.meta.event-timing-software).
+
 ## Current scope
 
 This repository is the public implementation repository for **SI-01 — Headless Timing Application**. The current bootstrap increment establishes the Java/Maven component boundaries and proves the shared repository/build/test tooling. It intentionally does not implement RFID, CAN, display, backoffice or timing-domain behaviour yet.
