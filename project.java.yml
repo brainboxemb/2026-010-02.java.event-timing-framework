@@ -15,5 +15,5 @@ verification:
   artifact_name: event-timing-framework-canonical
   artifact_path: app/target/event-timing-app-0.1.0-SNAPSHOT.jar
   runnable_jar_name: event-timing-app-0.1.0-SNAPSHOT.jar
-  smoke_expected_output: event-timing-framework bootstrap OK
+  smoke_expected_output: "event-timing-app lifecycle OK version=0.1.0-SNAPSHOT state=STOPPED"
   test_report_path: "**/target/surefire-reports/**"
