@@ -11,3 +11,7 @@
 - Embed application name/version identity in the built executable through a filtered build resource instead of hard-coding it in Java source.
 - Adopt SLF4J as the logging facade while keeping the framework provider-neutral; the executable application selects `slf4j-jdk14` / `java.util.logging` for the initial runtime composition.
 - Keep Step-2 execution deliberately short-lived and deterministic; HTTP/WebSocket, long-running service behaviour and timing-domain capability remain later work.
+- Adopt generated build-output publication from the pinned `tool.java-project` revision:
+  - PR builds publish both product JARs and evidence to `dev/pr-N/bld`;
+  - `main` publishes the same canonical output to `prod/bld`;
+  - the publication reuses the canonical Linux build rather than rebuilding solely for publication.
