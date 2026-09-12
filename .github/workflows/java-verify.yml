@@ -1,0 +1,25 @@
+name: Java verification
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  java:
+    uses: brainboxemb/tool.java-project/.github/workflows/reusable-java-verify.yml@5a7135194b94644129d05a5f4a8ceffc5de499bf
+    with:
+      working-directory: .
+      java-version: '8.0.504+1'
+      maven-version: '3.9.16'
+      maven-wrapper-version: '3.3.4'
+      artifact-name: event-timing-framework-canonical
+      artifact-path: timing-app/target/timing-app-0.1.0-SNAPSHOT.jar
+      runnable-jar-name: timing-app-0.1.0-SNAPSHOT.jar
+      smoke-expected-output: 'event-timing-framework bootstrap OK'
+      test-report-path: '**/target/surefire-reports/**'
