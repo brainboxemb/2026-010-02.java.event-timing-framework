@@ -27,7 +27,7 @@ jobs:
           set -euo pipefail
           ./bootstrap.sh
           test "$(git -C tools/tool.git-project rev-parse HEAD)" = "5db2b23b95ad0a230ab5d5d2bed725927328fcfe"
-          test "$(git -C tools/tool.java-project rev-parse HEAD)" = "35d26ba14e3f3d5c5e65b97b9e01881496295edb"
+          test "$(git -C tools/tool.java-project rev-parse HEAD)" = "3cfde795a7575321ea2a8a95e0b7822daaee994f"
       - name: Verify logging dependency boundary
         shell: bash
         run: |
@@ -51,13 +51,15 @@ jobs:
         run: |
           .\bootstrap.ps1
           if ((git -C tools/tool.git-project rev-parse HEAD).Trim() -ne "5db2b23b95ad0a230ab5d5d2bed725927328fcfe") { throw "Unexpected tool.git-project SHA" }
-          if ((git -C tools/tool.java-project rev-parse HEAD).Trim() -ne "35d26ba14e3f3d5c5e65b97b9e01881496295edb") { throw "Unexpected tool.java-project SHA" }
+          if ((git -C tools/tool.java-project rev-parse HEAD).Trim() -ne "3cfde795a7575321ea2a8a95e0b7822daaee994f") { throw "Unexpected tool.java-project SHA" }
 
   java:
     needs:
       - bootstrap-linux
       - bootstrap-windows
-    uses: brainboxemb/tool.java-project/.github/workflows/reusable-java-verify.yml@35d26ba14e3f3d5c5e65b97b9e01881496295edb
+    permissions:
+      contents: read
+    uses: brainboxemb/tool.java-project/.github/workflows/reusable-java-verify.yml@3cfde795a7575321ea2a8a95e0b7822daaee994f
     with:
       working-directory: .
       java-version: '8.0.504+1'
@@ -68,3 +70,14 @@ jobs:
       runnable-jar-name: event-timing-app-0.1.0-SNAPSHOT.jar
       smoke-expected-output: 'event-timing-app lifecycle OK version=0.1.0-SNAPSHOT state=STOPPED'
       test-report-path: '**/target/surefire-reports/**'
+      publication-artifact-paths: |
+        framework/target/event-timing-framework-0.1.0-SNAPSHOT.jar
+        app/target/event-timing-app-0.1.0-SNAPSHOT.jar
+
+  publish-build:
+    needs: java
+    permissions:
+      contents: write
+    uses: brainboxemb/tool.java-project/.github/workflows/reusable-java-publish.yml@3cfde795a7575321ea2a8a95e0b7822daaee994f
+    with:
+      publication-artifact-name: event-timing-framework-canonical-publication
