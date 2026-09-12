@@ -9,10 +9,12 @@ This repository implements the public Java framework for SI-01. Keep product imp
 - Use issue → feature branch → draft PR → evidence/review → merge.
 - Keep Java 8 compatibility until the meta-project explicitly changes the baseline.
 - Use the repository Maven Wrapper; do not require a globally installed Maven.
-- Keep the Maven reactor aligned with the documented module responsibilities.
-- Dependencies point inward. Domain/core code must not depend on concrete adapters.
-- Prefer composition and public ports/contracts over subclass-based extension.
-- Keep the public API surface deliberately small.
+- Keep the Maven reactor aligned with the documented working responsibilities: `domain`, `core`, `platform`, `comm`, and `app`.
+- Do not introduce a new top-level module merely because an architectural term might be useful later; add a module when a real dependency/publication/platform/ownership boundary justifies it.
+- Keep event-timing rules and services in `domain`, running-engine/orchestration concerns in `core`, execution-environment abstractions in `platform`, communication endpoints/protocols in `comm`, and composition/startup in `app`.
+- Place contracts with their semantic owner instead of collecting them automatically in a generic `api` module.
+- Prefer composition and explicit ports/contracts over subclass-based extension.
+- Keep public surfaces deliberately small.
 - Do not introduce substantial future capability merely to make the skeleton look complete.
 - Add tests with implementation changes and keep CI green on Linux and Windows.
 
@@ -33,6 +35,6 @@ Do not name a specific real-world event in public repository documentation.
 
 ## Toolchain
 
-The reusable Java verification workflow is owned by `brainboxemb/tool.java-project`. Consumers must pin a reviewed immutable commit SHA while that toolchain is pre-v1.
+Generic repository bootstrap/dependency handling is owned by `brainboxemb/tool.git-project`. Java build/test/CI tooling is owned by `brainboxemb/tool.java-project`. Consumers pin reviewed immutable commit SHAs while these tools are pre-v1.
 
 Docker is not a prerequisite for normal Java compile/unit-test work. Add Docker/Compose only where an external service makes it useful for integration testing.

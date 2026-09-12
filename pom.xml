@@ -13,12 +13,11 @@
   <description>Public reusable Java framework for event timing applications.</description>
 
   <modules>
-    <module>timing-api</module>
-    <module>timing-core</module>
-    <module>timing-runtime</module>
-    <module>timing-adapters</module>
-    <module>timing-testkit</module>
-    <module>timing-app</module>
+    <module>domain</module>
+    <module>core</module>
+    <module>platform</module>
+    <module>comm</module>
+    <module>app</module>
   </modules>
 
   <properties>

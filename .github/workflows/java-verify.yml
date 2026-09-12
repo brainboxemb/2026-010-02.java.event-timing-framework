@@ -13,10 +13,9 @@ permissions:
 jobs:
   bootstrap-linux:
     runs-on: ubuntu-24.04
-    timeout-minutes: 10
     steps:
       - name: Checkout without submodules
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
       - name: Require clean checkout
         shell: bash
         run: |
@@ -29,31 +28,28 @@ jobs:
           ./bootstrap.sh
           test "$(git -C tools/tool.git-project rev-parse HEAD)" = "5db2b23b95ad0a230ab5d5d2bed725927328fcfe"
           test "$(git -C tools/tool.java-project rev-parse HEAD)" = "35d26ba14e3f3d5c5e65b97b9e01881496295edb"
-          ./update-repo.sh
 
   bootstrap-windows:
     runs-on: windows-2025
-    timeout-minutes: 10
     steps:
       - name: Checkout without submodules
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
       - name: Require clean checkout
         shell: pwsh
         run: |
           $status = git status --porcelain
-          if ($status) { git status --short; throw "Checkout is not clean before bootstrap." }
+          if ($status) { git status --short; throw "Checkout is not clean." }
       - name: Bootstrap local tooling
         shell: pwsh
         run: |
           .\bootstrap.ps1
-          $gitTool = (git -C tools/tool.git-project rev-parse HEAD).Trim()
-          if ($gitTool -ne "5db2b23b95ad0a230ab5d5d2bed725927328fcfe") { throw "Unexpected tool.git-project SHA: $gitTool" }
-          $javaTool = (git -C tools/tool.java-project rev-parse HEAD).Trim()
-          if ($javaTool -ne "35d26ba14e3f3d5c5e65b97b9e01881496295edb") { throw "Unexpected tool.java-project SHA: $javaTool" }
-          .\update-repo.ps1
+          if ((git -C tools/tool.git-project rev-parse HEAD).Trim() -ne "5db2b23b95ad0a230ab5d5d2bed725927328fcfe") { throw "Unexpected tool.git-project SHA" }
+          if ((git -C tools/tool.java-project rev-parse HEAD).Trim() -ne "35d26ba14e3f3d5c5e65b97b9e01881496295edb") { throw "Unexpected tool.java-project SHA" }
 
   java:
-    needs: [bootstrap-linux, bootstrap-windows]
+    needs:
+      - bootstrap-linux
+      - bootstrap-windows
     uses: brainboxemb/tool.java-project/.github/workflows/reusable-java-verify.yml@35d26ba14e3f3d5c5e65b97b9e01881496295edb
     with:
       working-directory: .
@@ -61,7 +57,7 @@ jobs:
       maven-version: '3.9.16'
       maven-wrapper-version: '3.3.4'
       artifact-name: event-timing-framework-canonical
-      artifact-path: timing-app/target/timing-app-0.1.0-SNAPSHOT.jar
-      runnable-jar-name: timing-app-0.1.0-SNAPSHOT.jar
+      artifact-path: app/target/event-timing-app-0.1.0-SNAPSHOT.jar
+      runnable-jar-name: event-timing-app-0.1.0-SNAPSHOT.jar
       smoke-expected-output: 'event-timing-framework bootstrap OK'
       test-report-path: '**/target/surefire-reports/**'
