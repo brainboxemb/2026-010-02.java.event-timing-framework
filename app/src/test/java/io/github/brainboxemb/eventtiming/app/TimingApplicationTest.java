@@ -6,7 +6,7 @@ import static org.junit.Assert.assertEquals;
 
 public class TimingApplicationTest {
     @Test
-    public void composesFourFrameworkResponsibilities() {
-        assertEquals(4, TimingApplication.componentCount());
+    public void consumesFrameworkLibrary() {
+        assertEquals("core", TimingApplication.frameworkComponent());
     }
 }

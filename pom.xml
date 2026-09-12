@@ -5,18 +5,15 @@
   <modelVersion>4.0.0</modelVersion>
 
   <groupId>io.github.brainboxemb.eventtiming</groupId>
-  <artifactId>event-timing-framework</artifactId>
+  <artifactId>event-timing-parent</artifactId>
   <version>0.1.0-SNAPSHOT</version>
   <packaging>pom</packaging>
 
-  <name>Event Timing Framework</name>
-  <description>Public reusable Java framework for event timing applications.</description>
+  <name>Event Timing Parent</name>
+  <description>Build parent and reactor for the reusable event-timing framework and applications.</description>
 
   <modules>
-    <module>domain</module>
-    <module>core</module>
-    <module>platform</module>
-    <module>comm</module>
+    <module>framework</module>
     <module>app</module>
   </modules>
 
