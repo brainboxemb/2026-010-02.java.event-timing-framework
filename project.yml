@@ -13,4 +13,4 @@ dependencies:
     type: git-submodule
     url: https://github.com/brainboxemb/tool.java-project.git
     path: tools/tool.java-project
-    ref: 35d26ba14e3f3d5c5e65b97b9e01881496295edb
+    ref: 3cfde795a7575321ea2a8a95e0b7822daaee994f
