@@ -6,39 +6,59 @@ Project-wide planning, requirements, architecture, interface design and verifica
 
 ## Current scope
 
-This repository is the public implementation repository for **SI-01 — Headless Timing Application**. The current bootstrap increment establishes the Java/Maven component boundaries and proves the shared repository/build/test tooling. It intentionally does not implement RFID, CAN, display, backoffice or timing-domain behaviour yet.
+This repository is the public implementation repository for **SI-01 — Headless Timing Application**. The current bootstrap increment establishes a reusable framework-library boundary, a first executable consumer, and the shared repository/build/test tooling. It intentionally does not implement RFID, CAN, display, backoffice or timing-domain behaviour yet.
 
-## Working component model
+## Artifact and package model
 
-The initial reactor uses short repository-local directory names with independently recognisable Maven artifact IDs:
+Architectural responsibilities are not automatically Maven artifacts.
+
+The initial reactor deliberately contains only two product deliverables:
 
 ```text
-directory   Maven artifactId       responsibility
----------   ---------------------  ---------------------------------------------
-domain      event-timing-domain    application/domain model, rules and services
-core        event-timing-core      runtime engine, lifecycle and orchestration
-platform    event-timing-platform  execution-platform/environment abstractions
-comm        event-timing-comm      communication endpoints/protocols/transports
-app         event-timing-app       executable composition/startup/shutdown root
+framework/   event-timing-framework   reusable library
+app/         event-timing-app         runnable/default application
 ```
 
-The Java package root is:
+The root `event-timing-parent` POM is build/aggregation metadata rather than a deployed product component.
+
+The reusable `event-timing-framework` JAR contains the initial responsibility-oriented Java package structure:
 
 ```text
-io.github.brainboxemb.eventtiming
+io.github.brainboxemb.eventtiming.domain     application/domain model, rules and services
+io.github.brainboxemb.eventtiming.core       reusable runtime engine and orchestration
+io.github.brainboxemb.eventtiming.platform   execution-platform/environment abstractions
+io.github.brainboxemb.eventtiming.comm       communication contracts and reusable communication concerns
 ```
 
-with responsibility packages such as:
+The executable lives separately under:
 
 ```text
-io.github.brainboxemb.eventtiming.domain
-io.github.brainboxemb.eventtiming.core
-io.github.brainboxemb.eventtiming.platform
-io.github.brainboxemb.eventtiming.comm
 io.github.brainboxemb.eventtiming.app
 ```
 
-This is a working architecture baseline, not a promise to create every possible future module. In particular there is no generic top-level `api`, `runtime`, `adapters` or `testkit` module merely as a placeholder. Contracts live with their semantic owner; a dedicated public API/testkit artifact should appear only when a real consumer justifies it.
+The bootstrap currently uses only temporary marker classes to prove this structure. They do not define the eventual domain/service interfaces.
+
+### Artifact rule
+
+A package or architecture layer is **not** a publication boundary by itself. Introduce another Maven library artifact only when a real reason exists, such as:
+
+- another application needs to consume it independently;
+- an optional integration brings a significant independent dependency/lifecycle boundary;
+- deployment, ownership or release/versioning requires separation;
+- public/private implementation boundaries require independent composition.
+
+This keeps `domain`, `core`, `platform` and `comm` together while the structure is being proven. A later capability such as RabbitMQ, a platform-specific implementation, or reusable test support can be split only when its consumer and boundary are concrete.
+
+### Derived applications
+
+The framework is intended to support more than one executable composition. Examples that may later become separate applications include:
+
+```text
+single-system application   compose exactly one TimingSystemInstance
+multi-system application    compose and route 1..X TimingSystemInstance objects
+```
+
+Those applications should reuse the same framework library and inject/select their own concrete components. They are not created during this bootstrap merely to predict future structure.
 
 The working design is coordinated in the meta repository, especially `docs/31-01-SDD-03-java-component-design.md`.
 
@@ -108,8 +128,8 @@ The CI proof includes:
 
 - clean checkout before local bootstrap on Linux and Windows;
 - deterministic restoration of both tooling layers;
-- Linux canonical reactor build/test and artifact production;
-- Windows reactor build/test;
+- Linux canonical full-reactor build/test and application artifact production;
+- Windows full-reactor compatibility build/test;
 - download and execution on Windows of the exact `event-timing-app` JAR produced by Linux;
 - build/test provenance generated by the reusable Java toolchain.
 
