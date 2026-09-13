@@ -14,6 +14,8 @@ permissions:
   contents: read
 
 jobs:
+  # Product-owned metadata stays outside the generic Java/Moon tooling. It is the
+  # authoritative source for the current Maven version and versioned JAR names.
   release-metadata:
     runs-on: ubuntu-24.04
     outputs:
@@ -23,9 +25,10 @@ jobs:
       app_jar: ${{ steps.metadata.outputs.app_jar }}
       framework_jar: ${{ steps.metadata.outputs.framework_jar }}
     steps:
-      - name: Checkout source
+      - name: Checkout exact source revision
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
           fetch-depth: 1
       - name: Validate Maven version, CHANGELOG and tag semantics
         id: metadata
@@ -41,23 +44,54 @@ jobs:
           set -euo pipefail
           python3 tools/test_archive_failed_release_tag.py
 
-  bootstrap-linux:
-    runs-on: ubuntu-24.04
+  # Native Windows bootstrap is kept as a small repository-contract check. The
+  # actual compatibility Maven build is owned by tool.java-project below.
+  bootstrap-windows:
+    runs-on: windows-2025
+    timeout-minutes: 10
     steps:
       - name: Checkout without submodules
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
       - name: Require clean checkout
-        shell: bash
+        shell: pwsh
         run: |
-          set -euo pipefail
-          test -z "$(git status --porcelain)" || { git status --short; exit 1; }
-      - name: Bootstrap local tooling
+          $status = git status --porcelain
+          if ($status) { git status --short; throw "Checkout is not clean." }
+      - name: Bootstrap released tooling
+        shell: pwsh
+        run: |
+          .\bootstrap.ps1
+          if ((git -C tools/tool.git-project rev-parse HEAD).Trim() -ne "d6d760845967f70bd266b3ac2b36c9d5b0edc862") { throw "Unexpected tool.git-project SHA" }
+          if ((git -C tools/tool.java-project rev-parse HEAD).Trim() -ne "97efff27531ab7f83a7094f45f1830a819cad238") { throw "Unexpected tool.java-project SHA" }
+          if (-not (Select-String -Path project.yml -SimpleMatch 'ref: v0.1.3')) { throw "Semantic Java tooling release ref is missing." }
+          .\tools\tool.git-project\git-project.ps1 validate -RepoRoot .
+
+  # Moon owns high-level execution/cache decisions. tool.java-project still owns
+  # the one canonical Maven lifecycle and all Java producer evidence.
+  linux-canonical:
+    needs: release-metadata
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - name: Checkout exact source revision with Moon VCS history
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          fetch-depth: 0
+          filter: blob:none
+
+      - name: Bootstrap released tooling
         shell: bash
         run: |
           set -euo pipefail
           ./bootstrap.sh
-          test "$(git -C tools/tool.git-project rev-parse HEAD)" = "5db2b23b95ad0a230ab5d5d2bed725927328fcfe"
-          test "$(git -C tools/tool.java-project rev-parse HEAD)" = "3dd4b176956513948c601ec9cf95f09f6f21712a"
+          test "$(git -C tools/tool.git-project rev-parse HEAD)" = "d6d760845967f70bd266b3ac2b36c9d5b0edc862"
+          test "$(git -C tools/tool.java-project rev-parse HEAD)" = "97efff27531ab7f83a7094f45f1830a819cad238"
+          grep -F 'ref: v0.1.3' project.yml
+          tools/tool.git-project/git-project.sh validate --repo .
+
       - name: Verify logging dependency boundary
         shell: bash
         run: |
@@ -66,54 +100,152 @@ jobs:
           ! grep -F '<artifactId>slf4j-jdk14</artifactId>' framework/pom.xml
           grep -F '<artifactId>slf4j-jdk14</artifactId>' app/pom.xml
 
-  bootstrap-windows:
-    runs-on: windows-2025
-    steps:
-      - name: Checkout without submodules
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
-      - name: Require clean checkout
-        shell: pwsh
-        run: |
-          $status = git status --porcelain
-          if ($status) { git status --short; throw "Checkout is not clean." }
-      - name: Bootstrap local tooling
-        shell: pwsh
-        run: |
-          .\bootstrap.ps1
-          if ((git -C tools/tool.git-project rev-parse HEAD).Trim() -ne "5db2b23b95ad0a230ab5d5d2bed725927328fcfe") { throw "Unexpected tool.git-project SHA" }
-          if ((git -C tools/tool.java-project rev-parse HEAD).Trim() -ne "3dd4b176956513948c601ec9cf95f09f6f21712a") { throw "Unexpected tool.java-project SHA" }
+      - name: Set up exact Java 8 baseline
+        uses: actions/setup-java@de7274f081f381c8f8158605e0321c36c376e2e6 # v6
+        with:
+          distribution: temurin
+          java-version: '8.0.504+1'
+          check-latest: false
+          verify-signature: true
+          cache: maven
+          cache-dependency-path: '**/pom.xml'
 
-  java:
+      - name: Run or hydrate canonical Java task
+        if: ${{ !startsWith(github.ref, 'refs/tags/v') }}
+        uses: brainboxemb/tool.git-project/moon@v0.2.2
+        with:
+          task: framework:java.canonical
+          cache-namespace: event-timing-framework-java-canonical
+
+      - name: Build exact release tag producer
+        if: ${{ startsWith(github.ref, 'refs/tags/v') }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          # Release assets must be produced by the exact tagged commit. Do not
+          # accept an equivalent earlier producer from the portable Moon cache.
+          bash tools/run-java-canonical.sh
+
+      - name: Verify canonical output and evidence
+        shell: bash
+        env:
+          SOURCE_REVISION: ${{ github.event.pull_request.head.sha || github.sha }}
+          APP_JAR: ${{ needs.release-metadata.outputs.app_jar }}
+          FRAMEWORK_JAR: ${{ needs.release-metadata.outputs.framework_jar }}
+        run: |
+          set -euo pipefail
+          test -f "bld/artifacts/${APP_JAR}"
+          test -f "bld/artifacts/${FRAMEWORK_JAR}"
+          test -f bld/evidence/tests/README.md
+          test -f bld/evidence/toolchain-build-provenance.txt
+          test -f bld/evidence/execution.log
+
+          if [[ "${GITHUB_REF}" == refs/tags/v* ]]; then
+            test "$(cat bld/source-sha.txt)" = "${SOURCE_REVISION}"
+          else
+            test -f .moon/invocations/framework_java.canonical/materialization.json
+            test -f .moon/invocations/framework_java.canonical/moon.log
+            grep -F '"source_revision": "'"${SOURCE_REVISION}"'"' .moon/invocations/framework_java.canonical/materialization.json
+            grep -F '"status": "success"' .moon/invocations/framework_java.canonical/materialization.json
+          fi
+
+      - name: Upload exact canonical Linux app artifact
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: event-timing-framework-canonical
+          path: bld/artifacts/${{ needs.release-metadata.outputs.app_jar }}
+          if-no-files-found: error
+          retention-days: 14
+
+      - name: Stage producer output with current materialization evidence
+        shell: bash
+        run: |
+          set -euo pipefail
+          staging="$RUNNER_TEMP/event-timing-framework-publication"
+          rm -rf "$staging"
+          cp -a bld "$staging"
+
+          if [[ -f .moon/invocations/framework_java.canonical/materialization.json ]]; then
+            mkdir -p "$staging/orchestration"
+            cp .moon/invocations/framework_java.canonical/moon.log "$staging/orchestration/moon.log"
+            cp .moon/invocations/framework_java.canonical/materialization.json "$staging/orchestration/materialization.json"
+          fi
+
+      - name: Upload prepared build publication
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: event-timing-framework-canonical-publication
+          path: ${{ runner.temp }}/event-timing-framework-publication
+          if-no-files-found: error
+          retention-days: 14
+
+  # This reusable capability performs only the independent Windows Maven build
+  # and smoke of the exact Linux-produced application JAR; it never rebuilds Linux.
+  windows:
     needs:
       - release-metadata
-      - bootstrap-linux
+      - linux-canonical
       - bootstrap-windows
-    permissions:
-      contents: read
-    uses: brainboxemb/tool.java-project/.github/workflows/reusable-java-verify.yml@3dd4b176956513948c601ec9cf95f09f6f21712a
+    uses: brainboxemb/tool.java-project/.github/workflows/reusable-java-windows-compatibility.yml@97efff27531ab7f83a7094f45f1830a819cad238
     with:
       working-directory: .
       java-version: '8.0.504+1'
       maven-version: '3.9.16'
       maven-wrapper-version: '3.3.4'
       artifact-name: event-timing-framework-canonical
-      artifact-path: app/target/${{ needs.release-metadata.outputs.app_jar }}
       runnable-jar-name: ${{ needs.release-metadata.outputs.app_jar }}
       smoke-expected-output: 'event-timing-app lifecycle OK version=${{ needs.release-metadata.outputs.version }} state=STOPPED'
       test-report-path: '**/target/surefire-reports/**'
-      publication-artifact-paths: |
-        framework/target/${{ needs.release-metadata.outputs.framework_jar }}
-        app/target/${{ needs.release-metadata.outputs.app_jar }}
 
+  verify-evidence:
+    needs:
+      - release-metadata
+      - linux-canonical
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - name: Download prepared publication
+        uses: actions/download-artifact@634f93cb2916e3fdff6788551b99b062d0335ce0 # v5
+        with:
+          name: event-timing-framework-canonical-publication
+          path: publication
+      - name: Verify producer and materialization evidence
+        shell: bash
+        env:
+          SOURCE_REVISION: ${{ github.event.pull_request.head.sha || github.sha }}
+          APP_JAR: ${{ needs.release-metadata.outputs.app_jar }}
+          FRAMEWORK_JAR: ${{ needs.release-metadata.outputs.framework_jar }}
+        run: |
+          set -euo pipefail
+          test -f "publication/artifacts/${APP_JAR}"
+          test -f "publication/artifacts/${FRAMEWORK_JAR}"
+          test -f publication/evidence/tests/README.md
+          grep -F '# Unit test report' publication/evidence/tests/README.md
+          grep -F '**Status: PASS**' publication/evidence/tests/README.md
+
+          if [[ "${GITHUB_REF}" == refs/tags/v* ]]; then
+            test "$(cat publication/source-sha.txt)" = "${SOURCE_REVISION}"
+          else
+            test -f publication/orchestration/materialization.json
+            grep -F '"source_revision": "'"${SOURCE_REVISION}"'"' publication/orchestration/materialization.json
+            grep -F '"status": "success"' publication/orchestration/materialization.json
+          fi
+
+  # Generated branch publication is a repository side effect and deliberately
+  # remains outside Moon's cacheable task graph.
   publish-build:
     if: github.event_name == 'pull_request' || github.ref == 'refs/heads/main'
-    needs: java
+    needs:
+      - windows
+      - verify-evidence
     permissions:
       contents: write
-    uses: brainboxemb/tool.java-project/.github/workflows/reusable-java-publish.yml@3dd4b176956513948c601ec9cf95f09f6f21712a
+    uses: brainboxemb/tool.java-project/.github/workflows/reusable-java-publish.yml@97efff27531ab7f83a7094f45f1830a819cad238
     with:
       publication-artifact-name: event-timing-framework-canonical-publication
 
+  # Product release semantics remain repository-owned. Main creates the tag only
+  # after normal verification/publication; the tag is then verified independently.
   create-release-tag:
     if: >-
       github.event_name == 'push' &&
@@ -121,7 +253,8 @@ jobs:
       needs.release-metadata.outputs.is_release == 'true'
     needs:
       - release-metadata
-      - java
+      - windows
+      - verify-evidence
       - publish-build
     runs-on: ubuntu-24.04
     permissions:
@@ -134,7 +267,6 @@ jobs:
           fetch-depth: 0
           fetch-tags: true
       - name: Create immutable release tag
-        id: tag
         shell: bash
         env:
           RELEASE_TAG: ${{ needs.release-metadata.outputs.release_tag }}
@@ -155,6 +287,7 @@ jobs:
             git tag -a "${RELEASE_TAG}" -m "Release ${RELEASE_TAG}"
             git push origin "refs/tags/${RELEASE_TAG}"
           fi
+
       - name: Verify the exact tag in a fresh workflow run
         shell: bash
         env:
@@ -174,7 +307,8 @@ jobs:
       needs.release-metadata.outputs.is_release == 'true'
     needs:
       - release-metadata
-      - java
+      - windows
+      - verify-evidence
     runs-on: ubuntu-24.04
     permissions:
       contents: write
@@ -213,6 +347,7 @@ jobs:
             > "SHA256SUMS-${RELEASE_VERSION}.txt"
           tar -czf "event-timing-release-evidence-${RELEASE_VERSION}.tar.gz" \
             -C publication README.md source-sha.txt evidence
+
       - name: Create or update GitHub Release
         shell: bash
         env:
@@ -249,16 +384,18 @@ jobs:
       !endsWith(github.ref_name, '-failed') &&
       (
         needs.release-metadata.result != 'success' ||
-        needs.bootstrap-linux.result != 'success' ||
         needs.bootstrap-windows.result != 'success' ||
-        needs.java.result != 'success' ||
+        needs.linux-canonical.result != 'success' ||
+        needs.windows.result != 'success' ||
+        needs.verify-evidence.result != 'success' ||
         needs.publish-release.result != 'success'
       )
     needs:
       - release-metadata
-      - bootstrap-linux
       - bootstrap-windows
-      - java
+      - linux-canonical
+      - windows
+      - verify-evidence
       - publish-release
     runs-on: ubuntu-24.04
     permissions:
