@@ -67,11 +67,11 @@ The working design is coordinated in the meta repository, especially `docs/31-01
 The repository uses two reusable tooling layers:
 
 ```text
-tools/tool.git-project   generic Git externals/bootstrap/update handling
-tools/tool.java-project  Java/Maven build/test/CI tooling
+tools/tool.git-project   generic Git lifecycle/bootstrap plus optional Moon orchestration
+tools/tool.java-project  Java/Maven canonical build/test/evidence tooling
 ```
 
-`tool.git-project` is pinned directly by its committed gitlink. `project.yml` then declares `tool.java-project` as a managed tooling dependency and points to `project.java.yml` for Java-specific configuration.
+`tool.git-project` is pinned directly by its committed gitlink. `project.yml` declares `tool.java-project` as a managed tooling dependency and points to `project.java.yml` for Java-specific configuration.
 
 A normal clone does not require `--recurse-submodules`.
 
@@ -102,9 +102,10 @@ Java              Eclipse Temurin 8u504-b01 (`8.0.504+1` in CI)
 Java source/API    Java SE 8
 Maven              3.9.16
 Maven Wrapper      3.3.4
+Moon               2.5.4 through `tool.git-project`
 ```
 
-The Java-specific baseline is recorded in `project.java.yml`. The current reusable workflow still receives these values explicitly; the profile provides the local/project source for the Java-specific settings and can later become a validated workflow input source.
+The Java-specific baseline is recorded in `project.java.yml`. Maven remains the authoritative project-version source; normal project version changes do not require editing Moon configuration.
 
 ## Minimal Step-2 application lifecycle
 
@@ -117,14 +118,14 @@ java -jar app/target/event-timing-app-<version>.jar
 The executable loads its application/build identity from a Maven-filtered resource, starts its minimal lifecycle, reaches `RUNNING`, and then shuts down to `STOPPED`. The embedded identity deliberately separates the software version from the concrete build provenance:
 
 ```text
-application version   Maven ${project.version}, for example 0.1.0-SNAPSHOT during development or 0.0.1 for a release
+application version   Maven ${project.version}, for example 0.2.0-SNAPSHOT during development or 0.1.0 for a release
 source revision       full Git commit captured at build time
 build timestamp       UTC/ISO-8601 wall-clock build time
 ```
 
 `pl.project13.maven:git-commit-id-plugin:4.9.10` supplies the Git revision and build time during the Maven `initialize` phase; normal resource filtering then packages only the values the runtime needs. The plugin version is intentionally pinned because it remains compatible with the Java 8 build baseline. `BuildIdentity` reads those packaged values and never consults a working Git checkout at runtime.
 
-A Git tag does **not** silently determine or override the application version. If the POM still contains `0.1.0-SNAPSHOT`, building a commit tagged `v0.1.0` still reports `0.1.0-SNAPSHOT`. A valid release deliberately aligns Maven version, CHANGELOG release section and Git tag.
+A Git tag does **not** silently determine or override the application version. If the POM still contains a `-SNAPSHOT` version, building a commit tagged as a release still reports that snapshot version. A valid release deliberately aligns Maven version, CHANGELOG release section and Git tag.
 
 The wall-clock build timestamp is intentionally useful for distinguishing different snapshot binaries built from the same version line. If bit-for-bit reproducible release artifacts later become a requirement, the release process can instead adopt a fixed/commit-derived Maven `project.build.outputTimestamp` policy.
 
@@ -143,44 +144,48 @@ event-timing-app lifecycle OK version=<version> state=STOPPED
 
 This short-lived process is intentional for Step 2. Long-running service behaviour and public version/status transports belong to later SIP steps.
 
-## Reusable CI and test evidence
+## Production CI and test evidence
 
-This repository is the first real product consumer of both `brainboxemb/tool.git-project` and `brainboxemb/tool.java-project`.
+This repository consumes released `brainboxemb/tool.git-project` and `brainboxemb/tool.java-project` production interfaces.
 
-CI first proves a clean checkout and root project-tool bootstrap on Linux and Windows, including exact tooling SHAs. It then calls the reusable Java workflow pinned to the same immutable `tool.java-project` commit declared in `project.yml`.
+The Linux path has one authoritative canonical Java task:
 
-The CI proof includes:
+```text
+Moon high-level input/output/cache decision
+        ↓
+tools/run-java-canonical.sh
+        ↓
+tool.java-project java-project.sh canonical
+        ↓
+one Maven Wrapper `verify` reactor lifecycle
+```
 
-- clean checkout before local tooling restoration on Linux and Windows;
-- deterministic restoration of both tooling layers;
-- Linux canonical full-reactor build/test and application artifact production;
-- Windows full-reactor compatibility build/test;
-- download and execution on Windows of the exact `event-timing-app` JAR produced by Linux;
-- exact lifecycle/build-identity stdout verification for that canonical artifact;
-- build/test provenance generated by the reusable Java toolchain.
+Moon may execute that task or hydrate its declared `bld/**` output from the portable cache. The Java domain tool still owns Maven execution, both product JARs, retained execution logging, readable/raw Surefire evidence and toolchain/build provenance. The repository-local adapter only derives versioned JAR filenames from the root Maven version; it does not duplicate Java build semantics.
 
-The canonical Linux Surefire XML is also rendered into a readable aggregate report without running the tests a second time. The report contains overall, per-module and per-suite totals and links back to the retained raw Surefire XML/TXT evidence.
+Native Windows verification remains independent: Windows performs its own compatibility `mvn verify` and separately runs the exact application JAR produced by the Linux canonical task. This does not introduce a second Linux Maven build.
 
-The same canonical Linux build prepares a browsable build-output tree containing both product JARs plus provenance/test evidence. Publication is handled by the separate reusable publisher from the same pinned `tool.java-project` revision:
+Producer evidence and current materialization evidence remain separate. A hydrated `bld/source-sha.txt` may identify an earlier input-equivalent producer, while `orchestration/materialization.json` identifies the current repository revision that received the cached output.
+
+The prepared build-output tree contains both product JARs plus provenance/test evidence. Publication is deliberately outside Moon's cacheable task graph and uses the released generic lifecycle through `tool.java-project` / `tool.git-project`:
 
 ```text
 pull request #N -> dev/pr-N/bld
 main            -> prod/bld
 ```
 
-The generated branch contains build output/evidence only, not a source checkout or tooling repositories. Temporary Actions artifacts remain available for CI transfer and short-lived downloads.
+Closing a pull request removes only its `dev/pr-N/bld` preview through the released generic cleanup workflow. `prod/bld` and release output are not affected.
 
 ## Release workflow
 
-Development normally uses a Maven `-SNAPSHOT` version. A software release is prepared through a normal reviewed PR that:
+Development normally uses a Maven `-SNAPSHOT` version. A software release is currently prepared through a normal reviewed PR that:
 
-- changes the reactor to the intended non-SNAPSHOT Maven version;
+- changes the complete Maven reactor to the intended non-SNAPSHOT Maven version;
 - moves the relevant `CHANGELOG.md` content into a matching release section;
 - passes the same Java 8 Linux/Windows build, test and canonical-artifact smoke checks as normal development.
 
 After that release-preparation commit is merged to `main`, the green main workflow creates the immutable `v<version>` tag on that exact commit. GitHub does not recursively start a workflow for a tag pushed with `GITHUB_TOKEN`, so the release job explicitly dispatches this same verification workflow at the new tag. The tagged revision is therefore checked independently rather than treating the pre-tag main build as sufficient release evidence.
 
-A tagged release build must satisfy all of the following:
+Tag verification deliberately performs a fresh canonical build of the exact tagged commit rather than accepting an equivalent earlier producer from Moon cache. A tagged release build must satisfy all of the following:
 
 ```text
 Maven version       X.Y.Z
@@ -199,7 +204,7 @@ Only after the tag build has passed Linux/Windows verification and canonical-art
 
 `prod/bld` remains the browsable output of `main`; tag verification does not overwrite it. After a successful release, a separate normal PR advances `main` to the next planned `-SNAPSHOT` version. Release CI never rewrites the development version behind the review workflow.
 
-The first exercise of this process is intentionally a `0.0.1` trial release. The Step-2 maturity baseline will only become `0.1.0` after that trial has demonstrated the complete release path.
+A follow-up design is tracked outside this adoption to make the release request itself explicit and let domain tooling prepare all version-bearing Maven coordinates before exact-commit verification/tagging. PR #28 intentionally does not change those release semantics.
 
 ## Development workflow
 
