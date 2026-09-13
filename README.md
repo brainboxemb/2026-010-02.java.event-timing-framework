@@ -114,14 +114,28 @@ After a reactor build, run the executable application with:
 java -jar app/target/event-timing-app-0.1.0-SNAPSHOT.jar
 ```
 
-The executable loads its application name/version from a Maven-filtered build resource, starts its minimal lifecycle, reaches `RUNNING`, and then shuts down to `STOPPED`. Lifecycle diagnostics use the selected logging composition:
+The executable loads its application/build identity from a Maven-filtered resource, starts its minimal lifecycle, reaches `RUNNING`, and then shuts down to `STOPPED`. The embedded identity deliberately separates the software version from the concrete build provenance:
+
+```text
+application version   Maven ${project.version}, for example 0.1.0-SNAPSHOT
+source revision       full Git commit captured at build time
+build timestamp       UTC/ISO-8601 wall-clock build time
+```
+
+`pl.project13.maven:git-commit-id-plugin:4.9.10` supplies the Git revision and build time during the Maven `initialize` phase; normal resource filtering then packages only the values the runtime needs. `BuildIdentity` reads those packaged values and never consults a working Git checkout at runtime.
+
+A Git tag does **not** silently determine or override the application version. If the POM still contains `0.1.0-SNAPSHOT`, building a commit tagged `v0.1.0` still reports `0.1.0-SNAPSHOT`. A future release workflow should deliberately set the Maven release version and verify that the release tag matches it.
+
+The wall-clock build timestamp is intentionally useful for distinguishing different snapshot binaries built from the same version line. If bit-for-bit reproducible release artifacts later become a requirement, the release process can instead adopt a fixed/commit-derived Maven `project.build.outputTimestamp` policy.
+
+Lifecycle diagnostics use the selected logging composition:
 
 ```text
 event-timing-framework  -> SLF4J API only; no logging provider selected
 event-timing-app        -> SLF4J API + slf4j-jdk14 -> java.util.logging
 ```
 
-`java.util.logging` writes the lifecycle INFO records through the runtime logging backend. The stable stdout smoke line used by CI is:
+`java.util.logging` writes the lifecycle INFO records through the runtime logging backend. Startup logging includes the concrete Git revision and build timestamp. The stable stdout smoke line used by CI intentionally remains independent of build-specific provenance:
 
 ```text
 event-timing-app lifecycle OK version=0.1.0-SNAPSHOT state=STOPPED
