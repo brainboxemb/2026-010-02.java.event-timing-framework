@@ -6,16 +6,19 @@ import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 public class BuildIdentityTest {
     @Test
     public void loadsFilteredBuildIdentity() {
         BuildIdentity identity = BuildIdentity.load();
+        String expectedProjectVersion = System.getProperty("eventTiming.expectedProjectVersion");
 
+        assertNotNull("Maven must expose the project version to the test JVM", expectedProjectVersion);
         assertEquals("event-timing-app", identity.applicationName());
-        assertEquals("0.1.0-SNAPSHOT", identity.version());
-        assertEquals("event-timing-app 0.1.0-SNAPSHOT", identity.displayName());
+        assertEquals(expectedProjectVersion, identity.version());
+        assertEquals("event-timing-app " + expectedProjectVersion, identity.displayName());
 
         // These checks deliberately fail if Maven resource filtering leaves ${...} placeholders
         // behind or if the Git metadata plugin stops supplying the expected build properties.
