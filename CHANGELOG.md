@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+- Introduce the shared `application` responsibility as the authoritative semantic home for application build identity and current status.
+- Move executable build-metadata loading behind composition and map it into the reusable framework `BuildIdentity`, including IF-03 API major version `1`.
+- Add immutable first-executable status snapshots with application state, minimal timing-system status and observable problem values, plus one application-owned current-status authority for later presentation adapters.
+- Keep process hosting/shutdown, external settings and concrete console/remote/HTTP/WebSocket adapters deferred to their later SIP Step-3 activities.
+
 ## 0.1.0 — 2026-09-13
 
 - Establish `0.1.0` as the SIP Step-2 software baseline for the reusable framework and minimal runnable application.

@@ -1,5 +1,7 @@
 package io.github.brainboxemb.eventtiming.app;
 
+import io.github.brainboxemb.eventtiming.application.BuildIdentity;
+
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
@@ -12,7 +14,7 @@ public class TimingApplicationTest {
 
     @Test
     public void formatsStableSmokeOutput() {
-        BuildIdentity identity = new BuildIdentity(
+        BuildIdentity identity = BuildIdentity.firstApiVersion(
                 "event-timing-app",
                 "test-version",
                 "abc123def456",
