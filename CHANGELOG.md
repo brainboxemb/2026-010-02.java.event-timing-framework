@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+## 0.1.0 — 2026-09-13
+
+- Establish `0.1.0` as the SIP Step-2 software baseline for the reusable framework and minimal runnable application.
+- Consume the released `tool.java-project v0.1.0` toolchain baseline through `project.yml`, while keeping the committed gitlink and reusable workflow callers pinned to the exact immutable release commit.
+- Record the released Java-tooling baseline and its external `template.java-project` conformance role in the framework documentation.
 - Archive failed release candidates as `vX.Y.Z-failed`, remove the corresponding normal release tag, and never reuse a consumed release version; the next attempt advances the patch version and records the failed attempt in this changelog.
 
 ## 0.0.1 — 2026-09-13
