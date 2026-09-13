@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Archive failed release candidates as `vX.Y.Z-failed`, remove the corresponding normal release tag, and never reuse a consumed release version; the next attempt advances the patch version and records the failed attempt in this changelog.
+
 ## 0.0.1 — 2026-09-13
 
 - Bootstrap the SI-01 Maven reactor with one reusable `event-timing-framework` library and one runnable `event-timing-app` consumer.
