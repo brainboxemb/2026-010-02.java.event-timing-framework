@@ -7,6 +7,7 @@ on:
       - main
     tags:
       - 'v*'
+      - '!v*-failed'
   workflow_dispatch:
 
 permissions:
@@ -34,6 +35,11 @@ jobs:
           python3 tools/release_metadata.py inspect \
             --git-ref "${GITHUB_REF}" \
             --github-output "${GITHUB_OUTPUT}"
+      - name: Verify failed-tag archival semantics
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 tools/test_archive_failed_release_tag.py
 
   bootstrap-linux:
     runs-on: ubuntu-24.04
@@ -162,7 +168,10 @@ jobs:
           echo "Dispatched Java verification for ${RELEASE_TAG}."
 
   publish-release:
-    if: startsWith(github.ref, 'refs/tags/v') && needs.release-metadata.outputs.is_release == 'true'
+    if: >-
+      startsWith(github.ref, 'refs/tags/v') &&
+      !endsWith(github.ref_name, '-failed') &&
+      needs.release-metadata.outputs.is_release == 'true'
     needs:
       - release-metadata
       - java
@@ -232,3 +241,53 @@ jobs:
               --title "${RELEASE_TAG}" \
               --notes-file release-notes.md
           fi
+
+  archive-failed-release:
+    if: >-
+      always() &&
+      startsWith(github.ref, 'refs/tags/v') &&
+      !endsWith(github.ref_name, '-failed') &&
+      (
+        needs.release-metadata.result != 'success' ||
+        needs.bootstrap-linux.result != 'success' ||
+        needs.bootstrap-windows.result != 'success' ||
+        needs.java.result != 'success' ||
+        needs.publish-release.result != 'success'
+      )
+    needs:
+      - release-metadata
+      - bootstrap-linux
+      - bootstrap-windows
+      - java
+      - publish-release
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout failed release candidate
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          fetch-depth: 0
+          fetch-tags: true
+      - name: Remove any incomplete GitHub Release
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_TAG: ${{ github.ref_name }}
+        run: |
+          set -euo pipefail
+          if gh release view "${RELEASE_TAG}" >/dev/null 2>&1; then
+            gh release delete "${RELEASE_TAG}" --yes
+          fi
+      - name: Preserve candidate as failed tag and remove normal release tag
+        shell: bash
+        env:
+          RELEASE_TAG: ${{ github.ref_name }}
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          python3 tools/archive_failed_release_tag.py \
+            --remote origin \
+            --tag "${RELEASE_TAG}" \
+            --expected-revision "${GITHUB_SHA}"
