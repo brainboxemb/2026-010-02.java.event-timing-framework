@@ -7,7 +7,6 @@ tasks:
       - 'pom.xml'
       - 'framework/pom.xml'
       - 'app/pom.xml'
-      - 'CHANGELOG.md'
       - 'mvnw'
       - 'mvnw.cmd'
       - '.mvn/**'
