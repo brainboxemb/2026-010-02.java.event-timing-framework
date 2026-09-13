@@ -1,4 +1,7 @@
 target/
+bld/
+.moon/cache/
+.moon/invocations/
 *.log
 .idea/
 .vscode/
