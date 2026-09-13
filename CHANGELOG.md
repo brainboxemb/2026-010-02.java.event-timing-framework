@@ -19,3 +19,5 @@
   - PR builds publish both product JARs and evidence to `dev/pr-N/bld`;
   - `main` publishes the same canonical output to `prod/bld`;
   - the publication reuses the canonical Linux build rather than rebuilding solely for publication.
+- Publish a readable aggregate unit-test report from the canonical Surefire results while retaining the raw XML/TXT evidence.
+- Add version-aware release verification so release versions, CHANGELOG sections, Git tags, embedded build identity and retained GitHub Release artifacts are checked as one release baseline.
