@@ -1,5 +1,7 @@
 package io.github.brainboxemb.eventtiming.app;
 
+import java.time.OffsetDateTime;
+
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
@@ -14,8 +16,13 @@ public class BuildIdentityTest {
         assertEquals("event-timing-app", identity.applicationName());
         assertEquals("0.1.0-SNAPSHOT", identity.version());
         assertEquals("event-timing-app 0.1.0-SNAPSHOT", identity.displayName());
-        assertFalse(identity.revision().trim().isEmpty());
-        assertFalse(identity.buildTimestamp().trim().isEmpty());
+
+        // These checks deliberately fail if Maven resource filtering leaves ${...} placeholders
+        // behind or if the Git metadata plugin stops supplying the expected build properties.
+        assertTrue(identity.revision().matches("[0-9a-f]{40}"));
+        assertFalse(identity.buildTimestamp().contains("${"));
+        OffsetDateTime.parse(identity.buildTimestamp());
+
         assertTrue(identity.provenance().contains("revision=" + identity.revision()));
         assertTrue(identity.provenance().contains("built=" + identity.buildTimestamp()));
     }
