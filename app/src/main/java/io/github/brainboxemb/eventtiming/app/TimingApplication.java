@@ -1,5 +1,6 @@
 package io.github.brainboxemb.eventtiming.app;
 
+import io.github.brainboxemb.eventtiming.application.BuildIdentity;
 import io.github.brainboxemb.eventtiming.core.CoreLayer;
 
 /**
@@ -29,7 +30,7 @@ public final class TimingApplication {
             throw new IllegalStateException("Framework library is not composed as expected.");
         }
 
-        BuildIdentity buildIdentity = BuildIdentity.load();
+        BuildIdentity buildIdentity = BuildIdentityLoader.load();
         TimingApplicationLifecycle lifecycle = new TimingApplicationLifecycle(buildIdentity);
         try {
             lifecycle.start();
