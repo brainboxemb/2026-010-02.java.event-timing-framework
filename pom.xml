@@ -26,6 +26,10 @@
     <maven.compiler.plugin.version>3.13.0</maven.compiler.plugin.version>
     <maven.surefire.plugin.version>3.2.5</maven.surefire.plugin.version>
     <maven.shade.plugin.version>3.6.0</maven.shade.plugin.version>
+    <!--
+      Intentionally pinned to the Java-8-compatible plugin line. It supplies Git/build
+      provenance for BuildIdentity; it is not upgraded independently of the Java baseline.
+    -->
     <git.commit.id.plugin.version>4.9.10</git.commit.id.plugin.version>
   </properties>
 
