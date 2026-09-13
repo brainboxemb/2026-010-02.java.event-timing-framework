@@ -51,7 +51,7 @@ jobs:
           set -euo pipefail
           ./bootstrap.sh
           test "$(git -C tools/tool.git-project rev-parse HEAD)" = "5db2b23b95ad0a230ab5d5d2bed725927328fcfe"
-          test "$(git -C tools/tool.java-project rev-parse HEAD)" = "9a9ec7d7b2edd9c501d182806a2f55b8dce110d3"
+          test "$(git -C tools/tool.java-project rev-parse HEAD)" = "3dd4b176956513948c601ec9cf95f09f6f21712a"
       - name: Verify logging dependency boundary
         shell: bash
         run: |
@@ -75,7 +75,7 @@ jobs:
         run: |
           .\bootstrap.ps1
           if ((git -C tools/tool.git-project rev-parse HEAD).Trim() -ne "5db2b23b95ad0a230ab5d5d2bed725927328fcfe") { throw "Unexpected tool.git-project SHA" }
-          if ((git -C tools/tool.java-project rev-parse HEAD).Trim() -ne "9a9ec7d7b2edd9c501d182806a2f55b8dce110d3") { throw "Unexpected tool.java-project SHA" }
+          if ((git -C tools/tool.java-project rev-parse HEAD).Trim() -ne "3dd4b176956513948c601ec9cf95f09f6f21712a") { throw "Unexpected tool.java-project SHA" }
 
   java:
     needs:
@@ -84,7 +84,7 @@ jobs:
       - bootstrap-windows
     permissions:
       contents: read
-    uses: brainboxemb/tool.java-project/.github/workflows/reusable-java-verify.yml@9a9ec7d7b2edd9c501d182806a2f55b8dce110d3
+    uses: brainboxemb/tool.java-project/.github/workflows/reusable-java-verify.yml@3dd4b176956513948c601ec9cf95f09f6f21712a
     with:
       working-directory: .
       java-version: '8.0.504+1'
@@ -104,7 +104,7 @@ jobs:
     needs: java
     permissions:
       contents: write
-    uses: brainboxemb/tool.java-project/.github/workflows/reusable-java-publish.yml@9a9ec7d7b2edd9c501d182806a2f55b8dce110d3
+    uses: brainboxemb/tool.java-project/.github/workflows/reusable-java-publish.yml@3dd4b176956513948c601ec9cf95f09f6f21712a
     with:
       publication-artifact-name: event-timing-framework-canonical-publication
 
