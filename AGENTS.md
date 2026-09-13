@@ -6,7 +6,8 @@ This repository implements the public Java framework for SI-01 plus executable a
 
 ## Working rules
 
-- Use issue → feature branch → draft PR → evidence/review → merge.
+- Use one work-item number end to end: create issue `#N`, create `feature/pr-N-<short-slug>`, make the smallest initial commit, then convert that exact issue directly into draft PR `#N`; do not create a separate PR number for the same work item when issue conversion is available.
+- Continue implementation, evidence/review and merge in that same PR.
 - Keep Java 8 compatibility until the meta-project explicitly changes the baseline.
 - Use the repository Maven Wrapper; do not require a globally installed Maven.
 - Keep the initial product artifact boundary deliberately small: one reusable `event-timing-framework` library and one runnable `event-timing-app` consumer.
