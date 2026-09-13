@@ -108,16 +108,16 @@ The Java-specific baseline is recorded in `project.java.yml`. The current reusab
 
 ## Minimal Step-2 application lifecycle
 
-After a reactor build, run the executable application with:
+After a reactor build, run the executable application using the version from the root `pom.xml`:
 
 ```bash
-java -jar app/target/event-timing-app-0.1.0-SNAPSHOT.jar
+java -jar app/target/event-timing-app-<version>.jar
 ```
 
 The executable loads its application/build identity from a Maven-filtered resource, starts its minimal lifecycle, reaches `RUNNING`, and then shuts down to `STOPPED`. The embedded identity deliberately separates the software version from the concrete build provenance:
 
 ```text
-application version   Maven ${project.version}, for example 0.1.0-SNAPSHOT
+application version   Maven ${project.version}, for example 0.1.0-SNAPSHOT during development or 0.0.1 for a release
 source revision       full Git commit captured at build time
 build timestamp       UTC/ISO-8601 wall-clock build time
 ```
@@ -138,7 +138,7 @@ event-timing-app        -> SLF4J API + slf4j-jdk14 -> java.util.logging
 `java.util.logging` writes the lifecycle INFO records through the runtime logging backend. Startup logging includes the concrete Git revision and build timestamp. The stable stdout smoke line used by CI intentionally remains independent of build-specific provenance:
 
 ```text
-event-timing-app lifecycle OK version=0.1.0-SNAPSHOT state=STOPPED
+event-timing-app lifecycle OK version=<version> state=STOPPED
 ```
 
 This short-lived process is intentional for Step 2. Long-running service behaviour and public version/status transports belong to later SIP steps.
