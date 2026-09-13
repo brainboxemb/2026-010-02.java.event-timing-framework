@@ -11,6 +11,7 @@ package io.github.brainboxemb.eventtiming.application;
  * {@code docs/40-01-IDD-application-control-status.md}.</p>
  */
 public final class BuildIdentity {
+    /** API major version shared by every first-executable representation of this build. */
     public static final String FIRST_API_VERSION = "1";
 
     private final String application;
