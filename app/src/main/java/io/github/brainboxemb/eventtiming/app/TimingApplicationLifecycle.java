@@ -3,7 +3,14 @@ package io.github.brainboxemb.eventtiming.app;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/** Minimal Step-2 lifecycle owned by the executable application composition. */
+/**
+ * Minimal executable-application lifecycle for the Step-2 baseline.
+ *
+ * <p>This lifecycle deliberately belongs to the application composition rather than the reusable
+ * framework. Later runtime services can be started/stopped from here without making the framework
+ * itself one fixed executable product. See the SI-01 application architecture and
+ * {@code docs/31-01-SDD-02-java-component-design.md} in the meta repository.</p>
+ */
 public final class TimingApplicationLifecycle implements AutoCloseable {
     public enum State {
         NEW,
@@ -23,15 +30,17 @@ public final class TimingApplicationLifecycle implements AutoCloseable {
         this.buildIdentity = buildIdentity;
     }
 
+    /** Starts the application exactly once from the {@link State#NEW} state. */
     public synchronized void start() {
         if (state != State.NEW) {
             throw new IllegalStateException("Application can only start from NEW; current state=" + state);
         }
-        LOG.info("Starting {}", buildIdentity.displayName());
+        LOG.info("Starting {} ({})", buildIdentity.displayName(), buildIdentity.provenance());
         state = State.RUNNING;
         LOG.info("Application lifecycle state={}", state);
     }
 
+    /** Stops a running application and records the terminal {@link State#STOPPED} state. */
     public synchronized void stop() {
         if (state != State.RUNNING) {
             throw new IllegalStateException("Application can only stop from RUNNING; current state=" + state);
@@ -44,6 +53,11 @@ public final class TimingApplicationLifecycle implements AutoCloseable {
         return state;
     }
 
+    /**
+     * Ensures application-owned runtime resources are stopped when the composition is closed.
+     * Closing before {@link #start()} is allowed so startup failure paths can use the same cleanup
+     * structure as normal shutdown.
+     */
     @Override
     public synchronized void close() {
         if (state == State.RUNNING) {
