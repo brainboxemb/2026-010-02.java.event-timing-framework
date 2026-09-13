@@ -1,0 +1,23 @@
+tasks:
+  java.canonical:
+    command: "bash tools/run-java-canonical.sh"
+    inputs:
+      - 'project.yml'
+      - 'project.java.yml'
+      - 'pom.xml'
+      - 'framework/pom.xml'
+      - 'app/pom.xml'
+      - 'CHANGELOG.md'
+      - 'mvnw'
+      - 'mvnw.cmd'
+      - '.mvn/**'
+      - 'framework/src/**'
+      - 'app/src/**'
+      - 'tools/run-java-canonical.sh'
+      - 'tools/tool.java-project/**'
+      - 'moon.yml'
+      - '.moon/workspace.yml'
+    outputs:
+      - 'bld/**'
+    options:
+      cache: true
