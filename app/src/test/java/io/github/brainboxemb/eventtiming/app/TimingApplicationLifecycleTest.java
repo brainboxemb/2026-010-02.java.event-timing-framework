@@ -6,7 +6,11 @@ import static org.junit.Assert.assertEquals;
 
 public class TimingApplicationLifecycleTest {
     private static BuildIdentity testIdentity() {
-        return new BuildIdentity("event-timing-app", "test-version");
+        return new BuildIdentity(
+                "event-timing-app",
+                "test-version",
+                "abc123def456",
+                "2026-09-13T06:00:00Z");
     }
 
     @Test
