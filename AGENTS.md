@@ -21,6 +21,15 @@ This repository implements the public Java framework for SI-01 plus executable a
 - Do not introduce substantial future capability merely to make the skeleton look complete.
 - Add tests with implementation changes and keep CI green on Linux and Windows.
 
+## Code documentation
+
+- Add intent-focused Javadoc to public or non-trivial classes and methods when ownership, lifecycle, invariants, build provenance or architectural purpose are not obvious from the Java syntax alone.
+- Explain **why** a boundary or mechanism exists rather than restating what a line of Java already says.
+- Reference the owning meta-repository SAD/SDD/requirement by stable document path when that materially helps a future maintainer understand the decision.
+- Keep implementation detail in this repository; do not duplicate large design sections from the meta repository into source comments.
+- Document non-obvious pinned build plugins/dependencies in the POM/README, including compatibility constraints that explain why a specific version is intentional.
+- Keep comments current when behaviour changes; stale design references are worse than no reference.
+
 ## Public/private boundary
 
 Never commit real/proprietary deployment information, including:
@@ -40,4 +49,4 @@ Do not name a specific real-world event in public repository documentation.
 
 Generic repository bootstrap/dependency handling is owned by `brainboxemb/tool.git-project`. Java build/test/CI tooling is owned by `brainboxemb/tool.java-project`. Consumers pin reviewed immutable commit SHAs while these tools are pre-v1.
 
-Docker is not a prerequisite for normal Java compile/unit-test work. Add Docker/Compose only where an external service makes it useful for integration testing.
+Docker is not a prerequisite for normal Java compile/unit-test work. Add Docker/Compose where it solves a concrete integration, reproducibility or long-term/offline build requirement rather than by default.
