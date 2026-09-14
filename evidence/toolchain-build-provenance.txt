@@ -1,0 +1,16 @@
+toolchain_contract=2
+repository=brainboxemb/2026-010-02.java.event-timing-framework
+source_revision=b9b19db5bdbcc419e1e600646e13612d0e82b000
+checked_out_sha=b9b19db5bdbcc419e1e600646e13612d0e82b000
+tool_java_project_version=0.2.0
+tool_java_project_revision=9c147850adb9c0c270d852166feae5f08f56c2d6
+java_baseline=8.0.504+1
+maven_baseline=3.9.16
+maven_wrapper_baseline=3.3.4
+java_runtime=openjdk version "1.8.0_504"
+maven_runtime=Apache Maven 3.9.16 (2bdd9fddda4b155ebf8000e807eb73fd829a51d5)
+event_name=push
+source_ref=refs/heads/main
+workflow_ref=brainboxemb/2026-010-02.java.event-timing-framework/.github/workflows/java-verify.yml@refs/heads/main
+runner_os=Linux
+runner_arch=X64
