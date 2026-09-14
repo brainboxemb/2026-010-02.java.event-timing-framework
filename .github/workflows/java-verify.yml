@@ -64,8 +64,8 @@ jobs:
         run: |
           .\bootstrap.ps1
           if ((git -C tools/tool.git-project rev-parse HEAD).Trim() -ne "d6d760845967f70bd266b3ac2b36c9d5b0edc862") { throw "Unexpected tool.git-project SHA" }
-          if ((git -C tools/tool.java-project rev-parse HEAD).Trim() -ne "d0905548502577ff0a6726eadd73cd214c2bc2c9") { throw "Unexpected tool.java-project SHA" }
-          if (-not (Select-String -Path project.yml -SimpleMatch 'ref: v0.1.4')) { throw "Semantic Java tooling release ref is missing." }
+          if ((git -C tools/tool.java-project rev-parse HEAD).Trim() -ne "9c147850adb9c0c270d852166feae5f08f56c2d6") { throw "Unexpected tool.java-project SHA" }
+          if (-not (Select-String -Path project.yml -SimpleMatch 'ref: v0.2.0')) { throw "Semantic Java tooling release ref is missing." }
           .\tools\tool.git-project\git-project.ps1 validate -RepoRoot .
 
   # Moon owns high-level execution/cache decisions. tool.java-project still owns
@@ -88,8 +88,8 @@ jobs:
           set -euo pipefail
           ./bootstrap.sh
           test "$(git -C tools/tool.git-project rev-parse HEAD)" = "d6d760845967f70bd266b3ac2b36c9d5b0edc862"
-          test "$(git -C tools/tool.java-project rev-parse HEAD)" = "d0905548502577ff0a6726eadd73cd214c2bc2c9"
-          grep -F 'ref: v0.1.4' project.yml
+          test "$(git -C tools/tool.java-project rev-parse HEAD)" = "9c147850adb9c0c270d852166feae5f08f56c2d6"
+          grep -F 'ref: v0.2.0' project.yml
           tools/tool.git-project/git-project.sh validate --repo .
 
       - name: Verify logging dependency boundary
@@ -137,9 +137,10 @@ jobs:
           execution='bld/evidence/executions/java-canonical/execution.json'
           test -f "bld/artifacts/${APP_JAR}"
           test -f "bld/artifacts/${FRAMEWORK_JAR}"
+          test -f bld/README.md
           test -f bld/evidence/tests/README.md
           test -f bld/evidence/toolchain-build-provenance.txt
-          test -f bld/evidence/execution.log
+          test ! -e bld/evidence/execution.log
           test -s bld/evidence/executions/java-canonical/execution.log
           test -s "${execution}"
           grep -F '"schema": "brainboxemb.execution-evidence"' "${execution}"
@@ -147,9 +148,13 @@ jobs:
           grep -F '"capability": "java.canonical"' "${execution}"
           grep -F '"owner": "brainboxemb/tool.java-project"' "${execution}"
           grep -F '"action": "canonical"' "${execution}"
-          grep -F '"owner_revision": "d0905548502577ff0a6726eadd73cd214c2bc2c9"' "${execution}"
-          grep -F '"tool_java_project_version": "0.1.4"' "${execution}"
+          grep -F '"owner_revision": "9c147850adb9c0c270d852166feae5f08f56c2d6"' "${execution}"
+          grep -F '"tool_java_project_version": "0.2.0"' "${execution}"
           grep -F '"status": "success"' "${execution}"
+          grep -F '## Producer execution evidence' bld/README.md
+          grep -F '## Domain evidence' bld/README.md
+          grep -F '## Orchestration/materialization evidence' bld/README.md
+          grep -F '## Publication context' bld/README.md
 
           if [[ "${GITHUB_REF}" == refs/tags/v* ]]; then
             test "$(cat bld/source-sha.txt)" = "${SOURCE_REVISION}"
@@ -198,7 +203,7 @@ jobs:
       - release-metadata
       - linux-canonical
       - bootstrap-windows
-    uses: brainboxemb/tool.java-project/.github/workflows/reusable-java-windows-compatibility.yml@d0905548502577ff0a6726eadd73cd214c2bc2c9
+    uses: brainboxemb/tool.java-project/.github/workflows/reusable-java-windows-compatibility.yml@9c147850adb9c0c270d852166feae5f08f56c2d6
     with:
       working-directory: .
       java-version: '8.0.504+1'
@@ -232,14 +237,20 @@ jobs:
           execution='publication/evidence/executions/java-canonical/execution.json'
           test -f "publication/artifacts/${APP_JAR}"
           test -f "publication/artifacts/${FRAMEWORK_JAR}"
+          test -f publication/README.md
           test -f publication/evidence/tests/README.md
           grep -F '# Unit test report' publication/evidence/tests/README.md
           grep -F '**Status: PASS**' publication/evidence/tests/README.md
+          test ! -e publication/evidence/execution.log
           test -s publication/evidence/executions/java-canonical/execution.log
           test -s "${execution}"
           grep -F '"schema": "brainboxemb.execution-evidence"' "${execution}"
-          grep -F '"owner_revision": "d0905548502577ff0a6726eadd73cd214c2bc2c9"' "${execution}"
-          grep -F '"tool_java_project_version": "0.1.4"' "${execution}"
+          grep -F '"owner_revision": "9c147850adb9c0c270d852166feae5f08f56c2d6"' "${execution}"
+          grep -F '"tool_java_project_version": "0.2.0"' "${execution}"
+          grep -F '## Producer execution evidence' publication/README.md
+          grep -F '## Domain evidence' publication/README.md
+          grep -F '## Orchestration/materialization evidence' publication/README.md
+          grep -F '## Publication context' publication/README.md
 
           if [[ "${GITHUB_REF}" == refs/tags/v* ]]; then
             test "$(cat publication/source-sha.txt)" = "${SOURCE_REVISION}"
@@ -259,7 +270,7 @@ jobs:
       - verify-evidence
     permissions:
       contents: write
-    uses: brainboxemb/tool.java-project/.github/workflows/reusable-java-publish.yml@d0905548502577ff0a6726eadd73cd214c2bc2c9
+    uses: brainboxemb/tool.java-project/.github/workflows/reusable-java-publish.yml@9c147850adb9c0c270d852166feae5f08f56c2d6
     with:
       publication-artifact-name: event-timing-framework-canonical-publication
 

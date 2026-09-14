@@ -146,7 +146,7 @@ This short-lived process is intentional for Step 2. Long-running service behavio
 
 ## Production CI and test evidence
 
-This repository consumes released `brainboxemb/tool.git-project` and `brainboxemb/tool.java-project` production interfaces.
+This repository consumes released `brainboxemb/tool.git-project` and `brainboxemb/tool.java-project` production interfaces. The current Java tooling baseline is `tool.java-project v0.2.0`, pinned to exact owner commit `9c147850adb9c0c270d852166feae5f08f56c2d6`.
 
 The Linux path has one authoritative canonical Java task:
 
@@ -164,7 +164,17 @@ Moon may execute that task or hydrate its declared `bld/**` output from the port
 
 Native Windows verification remains independent: Windows performs its own compatibility `mvn verify` and separately runs the exact application JAR produced by the Linux canonical task. This does not introduce a second Linux Maven build.
 
-Producer evidence and current materialization evidence remain separate. A hydrated `bld/source-sha.txt` may identify an earlier input-equivalent producer, while `orchestration/materialization.json` identifies the current repository revision that received the cached output.
+Producer evidence and current materialization evidence remain separate. The Java producer has one canonical retained pair:
+
+```text
+evidence/executions/java-canonical/
+  execution.json
+  execution.log
+```
+
+The generated `bld/README.md` is the evidence map: it distinguishes artifacts, producer execution evidence, richer Java/domain evidence, current Moon orchestration/materialization evidence and publication context. The removed legacy alias `evidence/execution.log` is intentionally not retained.
+
+A hydrated `bld/source-sha.txt` and producer `execution.json` may identify an earlier input-equivalent producer, while `orchestration/materialization.json` identifies the current repository revision that received the cached output. That difference is expected provenance: hydration must not rewrite producer evidence to pretend Maven ran again.
 
 The prepared build-output tree contains both product JARs plus provenance/test evidence. Publication is deliberately outside Moon's cacheable task graph and uses the released generic lifecycle through `tool.java-project` / `tool.git-project`:
 
