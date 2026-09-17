@@ -270,11 +270,13 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Download canonical release publication
-        uses: actions/download-artifact@634f93cb2916e3fdff6788551b99b062d0335ce0 # v5
+      - name: Checkout finalized release publication
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
-          name: event-timing-framework-canonical-publication
+          ref: rel/${{ needs.release-metadata.outputs.release_tag }}/bld
           path: publication
+          fetch-depth: 1
+          persist-credentials: false
 
       - name: Verify release artifact identity and prepare assets
         shell: bash
