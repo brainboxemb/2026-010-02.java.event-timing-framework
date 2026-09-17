@@ -1,0 +1,352 @@
+{
+  "schema_version": 1,
+  "workflow_run_id": 35211641563,
+  "captured_at": "2026-09-17T10:41:09Z",
+  "capture_point": "before-generated-output-push",
+  "selected_windows_mode": null,
+  "preflight_decision_duration_seconds": null,
+  "maven_reported_total_time": "9.303 s",
+  "summary": {
+    "started_runner_count": 5,
+    "completed_hosted_runner_seconds": 102,
+    "hosted_runner_seconds_to_capture": 107,
+    "wall_clock_seconds_to_capture": 81
+  },
+  "jobs": [
+    {
+      "name": "release-metadata",
+      "runner": "ubuntu-24.04",
+      "conclusion": "success",
+      "started_at": "2026-09-17T10:39:48Z",
+      "completed_at": "2026-09-17T10:39:51Z",
+      "duration_seconds": 3,
+      "complete": true,
+      "steps": [
+        {
+          "name": "Set up job",
+          "conclusion": "success",
+          "started_at": "2026-09-17T10:39:49Z",
+          "completed_at": "2026-09-17T10:39:49Z",
+          "duration_seconds": 0
+        },
+        {
+          "name": "Checkout exact source revision",
+          "conclusion": "success",
+          "started_at": "2026-09-17T10:39:49Z",
+          "completed_at": "2026-09-17T10:39:50Z",
+          "duration_seconds": 1
+        },
+        {
+          "name": "Validate Maven version, CHANGELOG and tag semantics",
+          "conclusion": "success",
+          "started_at": "2026-09-17T10:39:50Z",
+          "completed_at": "2026-09-17T10:39:50Z",
+          "duration_seconds": 0
+        },
+        {
+          "name": "Verify failed-tag archival semantics",
+          "conclusion": "success",
+          "started_at": "2026-09-17T10:39:50Z",
+          "completed_at": "2026-09-17T10:39:50Z",
+          "duration_seconds": 0
+        },
+        {
+          "name": "Verify logging dependency boundary",
+          "conclusion": "success",
+          "started_at": "2026-09-17T10:39:50Z",
+          "completed_at": "2026-09-17T10:39:50Z",
+          "duration_seconds": 0
+        },
+        {
+          "name": "Post Checkout exact source revision",
+          "conclusion": "success",
+          "started_at": "2026-09-17T10:39:50Z",
+          "completed_at": "2026-09-17T10:39:50Z",
+          "duration_seconds": 0
+        },
+        {
+          "name": "Complete job",
+          "conclusion": "success",
+          "started_at": "2026-09-17T10:39:50Z",
+          "completed_at": "2026-09-17T10:39:50Z",
+          "duration_seconds": 0
+        }
+      ]
+    },
+    {
+      "name": "release-linux / Linux canonical build",
+      "runner": "ubuntu-24.04",
+      "conclusion": "success",
+      "started_at": "2026-09-17T10:39:53Z",
+      "completed_at": "2026-09-17T10:40:16Z",
+      "duration_seconds": 23,
+      "complete": true,
+      "steps": [
+        {
+          "name": "Set up job",
+          "conclusion": "success",
+          "started_at": "2026-09-17T10:39:54Z",
+          "completed_at": "2026-09-17T10:39:55Z",
+          "duration_seconds": 1
+        },
+        {
+          "name": "Validate execution inputs",
+          "conclusion": "success",
+          "started_at": "2026-09-17T10:39:55Z",
+          "completed_at": "2026-09-17T10:39:55Z",
+          "duration_seconds": 0
+        },
+        {
+          "name": "Checkout exact consumer source",
+          "conclusion": "success",
+          "started_at": "2026-09-17T10:39:55Z",
+          "completed_at": "2026-09-17T10:39:56Z",
+          "duration_seconds": 1
+        },
+        {
+          "name": "Set up exact Java 8 baseline",
+          "conclusion": "success",
+          "started_at": "2026-09-17T10:39:56Z",
+          "completed_at": "2026-09-17T10:39:57Z",
+          "duration_seconds": 1
+        },
+        {
+          "name": "Checkout exact tool.java-project implementation",
+          "conclusion": "success",
+          "started_at": "2026-09-17T10:39:57Z",
+          "completed_at": "2026-09-17T10:39:57Z",
+          "duration_seconds": 0
+        },
+        {
+          "name": "Run canonical Java action",
+          "conclusion": "success",
+          "started_at": "2026-09-17T10:39:57Z",
+          "completed_at": "2026-09-17T10:40:13Z",
+          "duration_seconds": 16
+        },
+        {
+          "name": "Upload canonical Java artifact",
+          "conclusion": "success",
+          "started_at": "2026-09-17T10:40:13Z",
+          "completed_at": "2026-09-17T10:40:13Z",
+          "duration_seconds": 0
+        },
+        {
+          "name": "Upload prepared build publication",
+          "conclusion": "success",
+          "started_at": "2026-09-17T10:40:13Z",
+          "completed_at": "2026-09-17T10:40:14Z",
+          "duration_seconds": 1
+        },
+        {
+          "name": "Upload Linux evidence",
+          "conclusion": "success",
+          "started_at": "2026-09-17T10:40:14Z",
+          "completed_at": "2026-09-17T10:40:15Z",
+          "duration_seconds": 1
+        },
+        {
+          "name": "Post Checkout exact tool.java-project implementation",
+          "conclusion": "success",
+          "started_at": "2026-09-17T10:40:15Z",
+          "completed_at": "2026-09-17T10:40:15Z",
+          "duration_seconds": 0
+        },
+        {
+          "name": "Post Set up exact Java 8 baseline",
+          "conclusion": "success",
+          "started_at": "2026-09-17T10:40:15Z",
+          "completed_at": "2026-09-17T10:40:15Z",
+          "duration_seconds": 0
+        },
+        {
+          "name": "Post Checkout exact consumer source",
+          "conclusion": "success",
+          "started_at": "2026-09-17T10:40:15Z",
+          "completed_at": "2026-09-17T10:40:15Z",
+          "duration_seconds": 0
+        },
+        {
+          "name": "Complete job",
+          "conclusion": "success",
+          "started_at": "2026-09-17T10:40:15Z",
+          "completed_at": "2026-09-17T10:40:15Z",
+          "duration_seconds": 0
+        }
+      ]
+    },
+    {
+      "name": "release-windows-full / Windows compatibility build",
+      "runner": "windows-2025",
+      "conclusion": "success",
+      "started_at": "2026-09-17T10:39:55Z",
+      "completed_at": "2026-09-17T10:41:01Z",
+      "duration_seconds": 66,
+      "complete": true,
+      "steps": [
+        {
+          "name": "Set up job",
+          "conclusion": "success",
+          "started_at": "2026-09-17T10:39:56Z",
+          "completed_at": "2026-09-17T10:39:59Z",
+          "duration_seconds": 3
+        },
+        {
+          "name": "Validate exact source when supplied",
+          "conclusion": "success",
+          "started_at": "2026-09-17T10:39:59Z",
+          "completed_at": "2026-09-17T10:40:00Z",
+          "duration_seconds": 1
+        },
+        {
+          "name": "Checkout exact consumer source",
+          "conclusion": "success",
+          "started_at": "2026-09-17T10:40:00Z",
+          "completed_at": "2026-09-17T10:40:13Z",
+          "duration_seconds": 13
+        },
+        {
+          "name": "Set up exact Java 8 baseline",
+          "conclusion": "success",
+          "started_at": "2026-09-17T10:40:13Z",
+          "completed_at": "2026-09-17T10:40:15Z",
+          "duration_seconds": 2
+        },
+        {
+          "name": "Validate Maven Wrapper baseline",
+          "conclusion": "success",
+          "started_at": "2026-09-17T10:40:15Z",
+          "completed_at": "2026-09-17T10:40:21Z",
+          "duration_seconds": 6
+        },
+        {
+          "name": "Verify",
+          "conclusion": "success",
+          "started_at": "2026-09-17T10:40:21Z",
+          "completed_at": "2026-09-17T10:40:52Z",
+          "duration_seconds": 31
+        },
+        {
+          "name": "Upload Windows test evidence",
+          "conclusion": "success",
+          "started_at": "2026-09-17T10:40:52Z",
+          "completed_at": "2026-09-17T10:40:53Z",
+          "duration_seconds": 1
+        },
+        {
+          "name": "Post Set up exact Java 8 baseline",
+          "conclusion": "success",
+          "started_at": "2026-09-17T10:40:53Z",
+          "completed_at": "2026-09-17T10:40:56Z",
+          "duration_seconds": 3
+        },
+        {
+          "name": "Post Checkout exact consumer source",
+          "conclusion": "success",
+          "started_at": "2026-09-17T10:40:56Z",
+          "completed_at": "2026-09-17T10:40:59Z",
+          "duration_seconds": 3
+        },
+        {
+          "name": "Complete job",
+          "conclusion": "success",
+          "started_at": "2026-09-17T10:40:59Z",
+          "completed_at": "2026-09-17T10:40:59Z",
+          "duration_seconds": 0
+        }
+      ]
+    },
+    {
+      "name": "release-windows-smoke / Windows canonical-artifact smoke",
+      "runner": "windows-2025",
+      "conclusion": "success",
+      "started_at": "2026-09-17T10:40:20Z",
+      "completed_at": "2026-09-17T10:40:30Z",
+      "duration_seconds": 10,
+      "complete": true,
+      "steps": [
+        {
+          "name": "Set up job",
+          "conclusion": "success",
+          "started_at": "2026-09-17T10:40:22Z",
+          "completed_at": "2026-09-17T10:40:24Z",
+          "duration_seconds": 2
+        },
+        {
+          "name": "Set up exact Java 8 baseline",
+          "conclusion": "success",
+          "started_at": "2026-09-17T10:40:24Z",
+          "completed_at": "2026-09-17T10:40:24Z",
+          "duration_seconds": 0
+        },
+        {
+          "name": "Download canonical Linux artifact",
+          "conclusion": "success",
+          "started_at": "2026-09-17T10:40:24Z",
+          "completed_at": "2026-09-17T10:40:26Z",
+          "duration_seconds": 2
+        },
+        {
+          "name": "Run canonical artifact on Windows",
+          "conclusion": "success",
+          "started_at": "2026-09-17T10:40:26Z",
+          "completed_at": "2026-09-17T10:40:28Z",
+          "duration_seconds": 2
+        },
+        {
+          "name": "Post Set up exact Java 8 baseline",
+          "conclusion": "success",
+          "started_at": "2026-09-17T10:40:28Z",
+          "completed_at": "2026-09-17T10:40:28Z",
+          "duration_seconds": 0
+        },
+        {
+          "name": "Complete job",
+          "conclusion": "success",
+          "started_at": "2026-09-17T10:40:28Z",
+          "completed_at": "2026-09-17T10:40:28Z",
+          "duration_seconds": 0
+        }
+      ]
+    },
+    {
+      "name": "release-publish-build / Publish generated output",
+      "runner": "ubuntu-24.04",
+      "conclusion": null,
+      "started_at": "2026-09-17T10:41:04Z",
+      "completed_at": null,
+      "duration_seconds": 5,
+      "complete": false,
+      "steps": [
+        {
+          "name": "Set up job",
+          "conclusion": "success",
+          "started_at": "2026-09-17T10:41:05Z",
+          "completed_at": "2026-09-17T10:41:06Z",
+          "duration_seconds": 1
+        },
+        {
+          "name": "Checkout exact Java publication finalizer",
+          "conclusion": "success",
+          "started_at": "2026-09-17T10:41:06Z",
+          "completed_at": "2026-09-17T10:41:07Z",
+          "duration_seconds": 1
+        },
+        {
+          "name": "Checkout exact generic publisher implementation",
+          "conclusion": "success",
+          "started_at": "2026-09-17T10:41:07Z",
+          "completed_at": "2026-09-17T10:41:08Z",
+          "duration_seconds": 1
+        },
+        {
+          "name": "Download prepared output",
+          "conclusion": null,
+          "started_at": "2026-09-17T10:41:08Z",
+          "completed_at": null,
+          "duration_seconds": 1
+        }
+      ]
+    }
+  ]
+}
