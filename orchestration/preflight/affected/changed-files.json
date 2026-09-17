@@ -1,0 +1,18 @@
+{
+  "files": [
+    "app/pom.xml",
+    "CHANGELOG.md",
+    "framework/pom.xml",
+    ".github/workflows/java-verify.yml",
+    "pom.xml"
+  ],
+  "options": {
+    "base": "e8066c9e33cf2ed77bb7f37ac8a68707933e28e8",
+    "defaultBranch": true,
+    "head": "0f9dbc2f5aa0beaec8f63465ada83f2bc2a83709",
+    "local": false,
+    "status": [],
+    "stdin": false
+  },
+  "shallow": false
+}

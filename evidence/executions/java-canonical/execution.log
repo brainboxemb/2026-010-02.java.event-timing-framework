@@ -1,0 +1,164 @@
+Java canonical verify
+repository=brainboxemb/2026-010-02.java.event-timing-framework
+source_revision=0f9dbc2f5aa0beaec8f63465ada83f2bc2a83709
+checked_out_sha=0f9dbc2f5aa0beaec8f63465ada83f2bc2a83709
+tool_java_project_revision=c0ca2e1365a64bc626ca331a8170d13340ae0b36
+tool_java_project_version=0.3.2
+
+> java -version
+openjdk version "1.8.0_504"
+OpenJDK Runtime Environment (Temurin)(build 1.8.0_504-b01)
+OpenJDK 64-Bit Server VM (Temurin)(build 25.504-b01, mixed mode)
+
+> ./mvnw --version
+Apache Maven 3.9.16 (2bdd9fddda4b155ebf8000e807eb73fd829a51d5)
+Maven home: /home/runner/.m2/wrapper/dists/apache-maven-3.9.16/56ba1f9f
+Java version: 1.8.0_504, vendor: Temurin, runtime: /usr/lib/jvm/temurin-8-jdk-amd64/jre
+Default locale: en, platform encoding: UTF-8
+OS name: "linux", version: "6.17.0-1022-azure", arch: "amd64", family: "unix"
+
+> ./mvnw --batch-mode --no-transfer-progress verify
+[INFO] Scanning for projects...
+[INFO] ------------------------------------------------------------------------
+[INFO] Reactor Build Order:
+[INFO] 
+[INFO] Event Timing Parent                                                [pom]
+[INFO] Event Timing Framework                                             [jar]
+[INFO] Event Timing Application                                           [jar]
+[INFO] 
+[INFO] -------< io.github.brainboxemb.eventtiming:event-timing-parent >--------
+[INFO] Building Event Timing Parent 0.2.1                                 [1/3]
+[INFO]   from pom.xml
+[INFO] --------------------------------[ pom ]---------------------------------
+[INFO] 
+[INFO] ------< io.github.brainboxemb.eventtiming:event-timing-framework >------
+[INFO] Building Event Timing Framework 0.2.1                              [2/3]
+[INFO]   from framework/pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- resources:3.4.0:resources (default-resources) @ event-timing-framework ---
+[INFO] skip non existing resourceDirectory /home/runner/work/2026-010-02.java.event-timing-framework/2026-010-02.java.event-timing-framework/framework/src/main/resources
+[INFO] 
+[INFO] --- compiler:3.13.0:compile (default-compile) @ event-timing-framework ---
+[INFO] Recompiling the module because of changed source code.
+[INFO] Compiling 12 source files with javac [debug target 1.8] to target/classes
+[INFO] 
+[INFO] --- resources:3.4.0:testResources (default-testResources) @ event-timing-framework ---
+[INFO] skip non existing resourceDirectory /home/runner/work/2026-010-02.java.event-timing-framework/2026-010-02.java.event-timing-framework/framework/src/test/resources
+[INFO] 
+[INFO] --- compiler:3.13.0:testCompile (default-testCompile) @ event-timing-framework ---
+[INFO] Recompiling the module because of changed dependency.
+[INFO] Compiling 3 source files with javac [debug target 1.8] to target/test-classes
+[INFO] 
+[INFO] --- surefire:3.2.5:test (default-test) @ event-timing-framework ---
+[INFO] Using auto detected provider org.apache.maven.surefire.junit4.JUnit4Provider
+[INFO] 
+[INFO] -------------------------------------------------------
+[INFO]  T E S T S
+[INFO] -------------------------------------------------------
+[INFO] Running io.github.brainboxemb.eventtiming.FrameworkStructureTest
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.031 s -- in io.github.brainboxemb.eventtiming.FrameworkStructureTest
+[INFO] Running io.github.brainboxemb.eventtiming.application.BuildIdentityTest
+[INFO] Tests run: 6, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.001 s -- in io.github.brainboxemb.eventtiming.application.BuildIdentityTest
+[INFO] Running io.github.brainboxemb.eventtiming.application.ApplicationStatusModelTest
+[INFO] Tests run: 7, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.004 s -- in io.github.brainboxemb.eventtiming.application.ApplicationStatusModelTest
+[INFO] 
+[INFO] Results:
+[INFO] 
+[INFO] Tests run: 14, Failures: 0, Errors: 0, Skipped: 0
+[INFO] 
+[INFO] 
+[INFO] --- jar:3.5.0:jar (default-jar) @ event-timing-framework ---
+[INFO] Building jar: /home/runner/work/2026-010-02.java.event-timing-framework/2026-010-02.java.event-timing-framework/framework/target/event-timing-framework-0.2.1.jar
+[INFO] 
+[INFO] ---------< io.github.brainboxemb.eventtiming:event-timing-app >---------
+[INFO] Building Event Timing Application 0.2.1                            [3/3]
+[INFO]   from app/pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- git-commit-id:4.9.10:revision (capture-git-build-provenance) @ event-timing-app ---
+[INFO] 
+[INFO] --- resources:3.4.0:resources (default-resources) @ event-timing-app ---
+[INFO] Copying 1 resource from src/main/resources to target/classes
+[INFO] The encoding used to copy filtered properties files has not been set. This means that the same encoding will be used to copy filtered properties files as when copying other filtered resources. This might not be what you want! Run your build with --debug to see which files might be affected. Read more at https://maven.apache.org/plugins/maven-resources-plugin/examples/filtering-properties-files.html
+[INFO] 
+[INFO] --- compiler:3.13.0:compile (default-compile) @ event-timing-app ---
+[INFO] Recompiling the module because of changed dependency.
+[INFO] Compiling 3 source files with javac [debug target 1.8] to target/classes
+[INFO] 
+[INFO] --- resources:3.4.0:testResources (default-testResources) @ event-timing-app ---
+[INFO] skip non existing resourceDirectory /home/runner/work/2026-010-02.java.event-timing-framework/2026-010-02.java.event-timing-framework/app/src/test/resources
+[INFO] 
+[INFO] --- compiler:3.13.0:testCompile (default-testCompile) @ event-timing-app ---
+[INFO] Recompiling the module because of changed dependency.
+[INFO] Compiling 3 source files with javac [debug target 1.8] to target/test-classes
+[INFO] 
+[INFO] --- surefire:3.2.5:test (default-test) @ event-timing-app ---
+[INFO] Using auto detected provider org.apache.maven.surefire.junit4.JUnit4Provider
+[INFO] 
+[INFO] -------------------------------------------------------
+[INFO]  T E S T S
+[INFO] -------------------------------------------------------
+[INFO] Running io.github.brainboxemb.eventtiming.app.BuildIdentityTest
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.038 s -- in io.github.brainboxemb.eventtiming.app.BuildIdentityTest
+[INFO] Running io.github.brainboxemb.eventtiming.app.TimingApplicationLifecycleTest
+Sep 17, 2026 10:39:14 AM io.github.brainboxemb.eventtiming.app.TimingApplicationLifecycle close
+INFO: Closed event-timing-app test-version before start; lifecycle state=STOPPED
+Sep 17, 2026 10:39:14 AM io.github.brainboxemb.eventtiming.app.TimingApplicationLifecycle start
+INFO: Starting event-timing-app test-version (revision=abc123def456 built=2026-09-13T06:00:00Z)
+Sep 17, 2026 10:39:14 AM io.github.brainboxemb.eventtiming.app.TimingApplicationLifecycle start
+INFO: Application lifecycle state=RUNNING
+Sep 17, 2026 10:39:14 AM io.github.brainboxemb.eventtiming.app.TimingApplicationLifecycle start
+INFO: Starting event-timing-app test-version (revision=abc123def456 built=2026-09-13T06:00:00Z)
+Sep 17, 2026 10:39:14 AM io.github.brainboxemb.eventtiming.app.TimingApplicationLifecycle start
+INFO: Application lifecycle state=RUNNING
+Sep 17, 2026 10:39:14 AM io.github.brainboxemb.eventtiming.app.TimingApplicationLifecycle stop
+INFO: Stopped event-timing-app test-version with lifecycle state=STOPPED
+Sep 17, 2026 10:39:14 AM io.github.brainboxemb.eventtiming.app.TimingApplicationLifecycle start
+INFO: Starting event-timing-app test-version (revision=abc123def456 built=2026-09-13T06:00:00Z)
+Sep 17, 2026 10:39:14 AM io.github.brainboxemb.eventtiming.app.TimingApplicationLifecycle start
+INFO: Application lifecycle state=RUNNING
+Sep 17, 2026 10:39:14 AM io.github.brainboxemb.eventtiming.app.TimingApplicationLifecycle stop
+INFO: Stopped event-timing-app test-version with lifecycle state=STOPPED
+[INFO] Tests run: 5, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.024 s -- in io.github.brainboxemb.eventtiming.app.TimingApplicationLifecycleTest
+[INFO] Running io.github.brainboxemb.eventtiming.app.TimingApplicationTest
+[INFO] Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0 s -- in io.github.brainboxemb.eventtiming.app.TimingApplicationTest
+[INFO] 
+[INFO] Results:
+[INFO] 
+[INFO] Tests run: 8, Failures: 0, Errors: 0, Skipped: 0
+[INFO] 
+[INFO] 
+[INFO] --- jar:3.5.0:jar (default-jar) @ event-timing-app ---
+[INFO] Building jar: /home/runner/work/2026-010-02.java.event-timing-framework/2026-010-02.java.event-timing-framework/app/target/event-timing-app-0.2.1.jar
+[INFO] 
+[INFO] --- shade:3.6.0:shade (default) @ event-timing-app ---
+[INFO] Including io.github.brainboxemb.eventtiming:event-timing-framework:jar:0.2.1 in the shaded jar.
+[INFO] Including org.slf4j:slf4j-api:jar:2.0.17 in the shaded jar.
+[INFO] Including org.slf4j:slf4j-jdk14:jar:2.0.17 in the shaded jar.
+[WARNING] slf4j-api-2.0.17.jar, slf4j-jdk14-2.0.17.jar define 2 overlapping class and resource: 
+[WARNING]   - META-INF.versions.9.module-info
+[WARNING]   - META-INF/LICENSE.txt
+[WARNING] event-timing-app-0.2.1.jar, event-timing-framework-0.2.1.jar, slf4j-api-2.0.17.jar, slf4j-jdk14-2.0.17.jar define 1 overlapping resource: 
+[WARNING]   - META-INF/MANIFEST.MF
+[WARNING] maven-shade-plugin has detected that some files are
+[WARNING] present in two or more JARs. When this happens, only one
+[WARNING] single version of the file is copied to the uber jar.
+[WARNING] Usually this is not harmful and you can skip these warnings,
+[WARNING] otherwise try to manually exclude artifacts based on
+[WARNING] mvn dependency:tree -Ddetail=true and the above output.
+[WARNING] See https://maven.apache.org/plugins/maven-shade-plugin/
+[INFO] Replacing original artifact with shaded artifact.
+[INFO] Replacing /home/runner/work/2026-010-02.java.event-timing-framework/2026-010-02.java.event-timing-framework/app/target/event-timing-app-0.2.1.jar with /home/runner/work/2026-010-02.java.event-timing-framework/2026-010-02.java.event-timing-framework/app/target/event-timing-app-0.2.1-shaded.jar
+[INFO] ------------------------------------------------------------------------
+[INFO] Reactor Summary for Event Timing Parent 0.2.1:
+[INFO] 
+[INFO] Event Timing Parent ................................ SUCCESS [  0.002 s]
+[INFO] Event Timing Framework ............................. SUCCESS [ 11.619 s]
+[INFO] Event Timing Application ........................... SUCCESS [  6.504 s]
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  18.214 s
+[INFO] Finished at: 2026-09-17T10:39:14Z
+[INFO] ------------------------------------------------------------------------

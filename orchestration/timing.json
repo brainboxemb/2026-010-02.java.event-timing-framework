@@ -1,0 +1,327 @@
+{
+  "schema_version": 1,
+  "workflow_run_id": 35211527836,
+  "captured_at": "2026-09-17T10:39:31Z",
+  "capture_point": "before-generated-output-push",
+  "selected_windows_mode": "none",
+  "preflight_decision_duration_seconds": 3,
+  "maven_reported_total_time": "18.214 s",
+  "summary": {
+    "started_runner_count": 4,
+    "completed_hosted_runner_seconds": 55,
+    "hosted_runner_seconds_to_capture": 60,
+    "wall_clock_seconds_to_capture": 67
+  },
+  "jobs": [
+    {
+      "name": "release-metadata",
+      "runner": "ubuntu-24.04",
+      "conclusion": "success",
+      "started_at": "2026-09-17T10:38:24Z",
+      "completed_at": "2026-09-17T10:38:27Z",
+      "duration_seconds": 3,
+      "complete": true,
+      "steps": [
+        {
+          "name": "Set up job",
+          "conclusion": "success",
+          "started_at": "2026-09-17T10:38:25Z",
+          "completed_at": "2026-09-17T10:38:25Z",
+          "duration_seconds": 0
+        },
+        {
+          "name": "Checkout exact source revision",
+          "conclusion": "success",
+          "started_at": "2026-09-17T10:38:25Z",
+          "completed_at": "2026-09-17T10:38:26Z",
+          "duration_seconds": 1
+        },
+        {
+          "name": "Validate Maven version, CHANGELOG and tag semantics",
+          "conclusion": "success",
+          "started_at": "2026-09-17T10:38:26Z",
+          "completed_at": "2026-09-17T10:38:26Z",
+          "duration_seconds": 0
+        },
+        {
+          "name": "Verify failed-tag archival semantics",
+          "conclusion": "success",
+          "started_at": "2026-09-17T10:38:26Z",
+          "completed_at": "2026-09-17T10:38:26Z",
+          "duration_seconds": 0
+        },
+        {
+          "name": "Verify logging dependency boundary",
+          "conclusion": "success",
+          "started_at": "2026-09-17T10:38:26Z",
+          "completed_at": "2026-09-17T10:38:26Z",
+          "duration_seconds": 0
+        },
+        {
+          "name": "Post Checkout exact source revision",
+          "conclusion": "success",
+          "started_at": "2026-09-17T10:38:26Z",
+          "completed_at": "2026-09-17T10:38:26Z",
+          "duration_seconds": 0
+        },
+        {
+          "name": "Complete job",
+          "conclusion": "success",
+          "started_at": "2026-09-17T10:38:26Z",
+          "completed_at": "2026-09-17T10:38:26Z",
+          "duration_seconds": 0
+        }
+      ]
+    },
+    {
+      "name": "java-production / Java affected preflight",
+      "runner": "ubuntu-24.04",
+      "conclusion": "success",
+      "started_at": "2026-09-17T10:38:29Z",
+      "completed_at": "2026-09-17T10:38:40Z",
+      "duration_seconds": 11,
+      "complete": true,
+      "steps": [
+        {
+          "name": "Set up job",
+          "conclusion": "success",
+          "started_at": "2026-09-17T10:38:30Z",
+          "completed_at": "2026-09-17T10:38:31Z",
+          "duration_seconds": 1
+        },
+        {
+          "name": "Validate policy inputs",
+          "conclusion": "success",
+          "started_at": "2026-09-17T10:38:31Z",
+          "completed_at": "2026-09-17T10:38:31Z",
+          "duration_seconds": 0
+        },
+        {
+          "name": "Checkout exact consumer source",
+          "conclusion": "success",
+          "started_at": "2026-09-17T10:38:31Z",
+          "completed_at": "2026-09-17T10:38:32Z",
+          "duration_seconds": 1
+        },
+        {
+          "name": "Fetch exact affected-analysis base",
+          "conclusion": "success",
+          "started_at": "2026-09-17T10:38:32Z",
+          "completed_at": "2026-09-17T10:38:32Z",
+          "duration_seconds": 0
+        },
+        {
+          "name": "Checkout exact generic affected owner",
+          "conclusion": "success",
+          "started_at": "2026-09-17T10:38:32Z",
+          "completed_at": "2026-09-17T10:38:33Z",
+          "duration_seconds": 1
+        },
+        {
+          "name": "Checkout exact Java preflight owner",
+          "conclusion": "success",
+          "started_at": "2026-09-17T10:38:33Z",
+          "completed_at": "2026-09-17T10:38:34Z",
+          "duration_seconds": 1
+        },
+        {
+          "name": "Resolve Java and Windows impact once",
+          "conclusion": "success",
+          "started_at": "2026-09-17T10:38:34Z",
+          "completed_at": "2026-09-17T10:38:37Z",
+          "duration_seconds": 3
+        },
+        {
+          "name": "Upload preflight evidence",
+          "conclusion": "success",
+          "started_at": "2026-09-17T10:38:37Z",
+          "completed_at": "2026-09-17T10:38:38Z",
+          "duration_seconds": 1
+        },
+        {
+          "name": "Post Checkout exact Java preflight owner",
+          "conclusion": "success",
+          "started_at": "2026-09-17T10:38:38Z",
+          "completed_at": "2026-09-17T10:38:38Z",
+          "duration_seconds": 0
+        },
+        {
+          "name": "Post Checkout exact generic affected owner",
+          "conclusion": "success",
+          "started_at": "2026-09-17T10:38:38Z",
+          "completed_at": "2026-09-17T10:38:38Z",
+          "duration_seconds": 0
+        },
+        {
+          "name": "Post Checkout exact consumer source",
+          "conclusion": "success",
+          "started_at": "2026-09-17T10:38:38Z",
+          "completed_at": "2026-09-17T10:38:38Z",
+          "duration_seconds": 0
+        },
+        {
+          "name": "Complete job",
+          "conclusion": "success",
+          "started_at": "2026-09-17T10:38:38Z",
+          "completed_at": "2026-09-17T10:38:38Z",
+          "duration_seconds": 0
+        }
+      ]
+    },
+    {
+      "name": "java-production / Java execution / Linux canonical build",
+      "runner": "ubuntu-24.04",
+      "conclusion": "success",
+      "started_at": "2026-09-17T10:38:43Z",
+      "completed_at": "2026-09-17T10:39:24Z",
+      "duration_seconds": 41,
+      "complete": true,
+      "steps": [
+        {
+          "name": "Set up job",
+          "conclusion": "success",
+          "started_at": "2026-09-17T10:38:43Z",
+          "completed_at": "2026-09-17T10:38:46Z",
+          "duration_seconds": 3
+        },
+        {
+          "name": "Validate execution inputs",
+          "conclusion": "success",
+          "started_at": "2026-09-17T10:38:46Z",
+          "completed_at": "2026-09-17T10:38:46Z",
+          "duration_seconds": 0
+        },
+        {
+          "name": "Checkout exact consumer source",
+          "conclusion": "success",
+          "started_at": "2026-09-17T10:38:46Z",
+          "completed_at": "2026-09-17T10:38:47Z",
+          "duration_seconds": 1
+        },
+        {
+          "name": "Set up exact Java 8 baseline",
+          "conclusion": "success",
+          "started_at": "2026-09-17T10:38:47Z",
+          "completed_at": "2026-09-17T10:38:49Z",
+          "duration_seconds": 2
+        },
+        {
+          "name": "Checkout exact tool.java-project implementation",
+          "conclusion": "success",
+          "started_at": "2026-09-17T10:38:49Z",
+          "completed_at": "2026-09-17T10:38:50Z",
+          "duration_seconds": 1
+        },
+        {
+          "name": "Run canonical Java action",
+          "conclusion": "success",
+          "started_at": "2026-09-17T10:38:50Z",
+          "completed_at": "2026-09-17T10:39:17Z",
+          "duration_seconds": 27
+        },
+        {
+          "name": "Upload canonical Java artifact",
+          "conclusion": "success",
+          "started_at": "2026-09-17T10:39:17Z",
+          "completed_at": "2026-09-17T10:39:18Z",
+          "duration_seconds": 1
+        },
+        {
+          "name": "Upload prepared build publication",
+          "conclusion": "success",
+          "started_at": "2026-09-17T10:39:18Z",
+          "completed_at": "2026-09-17T10:39:19Z",
+          "duration_seconds": 1
+        },
+        {
+          "name": "Upload Linux evidence",
+          "conclusion": "success",
+          "started_at": "2026-09-17T10:39:19Z",
+          "completed_at": "2026-09-17T10:39:20Z",
+          "duration_seconds": 1
+        },
+        {
+          "name": "Post Checkout exact tool.java-project implementation",
+          "conclusion": "success",
+          "started_at": "2026-09-17T10:39:20Z",
+          "completed_at": "2026-09-17T10:39:20Z",
+          "duration_seconds": 0
+        },
+        {
+          "name": "Post Set up exact Java 8 baseline",
+          "conclusion": "success",
+          "started_at": "2026-09-17T10:39:20Z",
+          "completed_at": "2026-09-17T10:39:22Z",
+          "duration_seconds": 2
+        },
+        {
+          "name": "Post Checkout exact consumer source",
+          "conclusion": "success",
+          "started_at": "2026-09-17T10:39:22Z",
+          "completed_at": "2026-09-17T10:39:22Z",
+          "duration_seconds": 0
+        },
+        {
+          "name": "Complete job",
+          "conclusion": "success",
+          "started_at": "2026-09-17T10:39:22Z",
+          "completed_at": "2026-09-17T10:39:22Z",
+          "duration_seconds": 0
+        }
+      ]
+    },
+    {
+      "name": "publish-build / Publish generated output",
+      "runner": "ubuntu-24.04",
+      "conclusion": null,
+      "started_at": "2026-09-17T10:39:26Z",
+      "completed_at": null,
+      "duration_seconds": 5,
+      "complete": false,
+      "steps": [
+        {
+          "name": "Set up job",
+          "conclusion": "success",
+          "started_at": "2026-09-17T10:39:27Z",
+          "completed_at": "2026-09-17T10:39:28Z",
+          "duration_seconds": 1
+        },
+        {
+          "name": "Checkout exact Java publication finalizer",
+          "conclusion": "success",
+          "started_at": "2026-09-17T10:39:28Z",
+          "completed_at": "2026-09-17T10:39:29Z",
+          "duration_seconds": 1
+        },
+        {
+          "name": "Checkout exact generic publisher implementation",
+          "conclusion": "success",
+          "started_at": "2026-09-17T10:39:29Z",
+          "completed_at": "2026-09-17T10:39:29Z",
+          "duration_seconds": 0
+        },
+        {
+          "name": "Download prepared output",
+          "conclusion": "success",
+          "started_at": "2026-09-17T10:39:29Z",
+          "completed_at": "2026-09-17T10:39:30Z",
+          "duration_seconds": 1
+        },
+        {
+          "name": "Download Java preflight evidence",
+          "conclusion": "success",
+          "started_at": "2026-09-17T10:39:30Z",
+          "completed_at": "2026-09-17T10:39:30Z",
+          "duration_seconds": 0
+        },
+        {
+          "name": "Collect current workflow timing",
+          "conclusion": null,
+          "started_at": "2026-09-17T10:39:30Z",
+          "completed_at": null,
+          "duration_seconds": 1
+        }
+      ]
+    }
+  ]
+}
