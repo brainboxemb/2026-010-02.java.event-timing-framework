@@ -2,8 +2,10 @@
 
 ## Unreleased
 
-## 0.2.0 — 2026-09-17
+## 0.2.1 — 2026-09-17
 
+- Publish the intended 0.2.x product baseline after the first tagged `0.2.0` candidate was archived as failed during final GitHub Release evidence packaging.
+- Fix GitHub Release packaging so it consumes the finalized immutable `rel/vX.Y.Z/bld` tree, including durable `orchestration/**` evidence, rather than the pre-finalization Actions artifact.
 - Introduce the shared `application` responsibility as the authoritative semantic home for application build identity and current status.
 - Move executable build-metadata loading behind composition and map it into the reusable framework `BuildIdentity`, including IF-03 API major version `1`.
 - Add immutable first-executable status snapshots with application state, minimal timing-system status and observable problem values, plus one application-owned current-status authority for later presentation adapters.
@@ -14,6 +16,12 @@
 - Use event-sensitive Windows qualification: pull requests select `auto`, ordinary protected-main publication uses `none`, and exact release-tag qualification uses `full`.
 - Run native full-Windows Maven release qualification in parallel with the Linux canonical producer and run exact Linux-artifact smoke after the canonical artifact is available.
 - Preserve repository-owned release metadata, embedded build-identity validation, logging dependency boundaries and both product release JARs.
+
+## 0.2.0-failed — 2026-09-17
+
+- Candidate `v0.2.0` at exact source `e8066c9e33cf2ed77bb7f37ac8a68707933e28e8` passed Linux canonical Maven, independent native Windows Maven and exact Linux-produced application-JAR smoke on Windows.
+- Finalized `rel/v0.2.0/bld` publication also succeeded, but GitHub Release packaging incorrectly read the pre-finalization Actions artifact and failed because `orchestration/**` was not present there yet.
+- The release fail-safe removed normal `v0.2.0` and preserved the consumed candidate as `v0.2.0-failed`; version `0.2.0` is not reused.
 
 ## 0.1.0 — 2026-09-13
 
