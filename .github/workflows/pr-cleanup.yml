@@ -14,10 +14,8 @@ permissions:
   contents: write
 
 jobs:
-  # Generated-output branch lifecycle is generic Git/repository behaviour. Keep
-  # product Java/release semantics out of this cleanup caller.
   cleanup:
-    uses: brainboxemb/tool.git-project/.github/workflows/reusable-pr-preview-cleanup.yml@v0.2.2
+    uses: brainboxemb/tool.git-project/.github/workflows/reusable-pr-preview-cleanup.yml@v0.2.8
     with:
       preview_suffixes: bld
       pr_number: ${{ inputs.pr_number || github.event.pull_request.number }}

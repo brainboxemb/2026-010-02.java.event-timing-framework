@@ -20,7 +20,8 @@ This repository implements the public Java framework for SI-01 plus executable a
 - Do not create those future applications or optional libraries until a current implementation/test need justifies them.
 - Keep public surfaces deliberately small.
 - Do not introduce substantial future capability merely to make the skeleton look complete.
-- Add tests with implementation changes and keep CI green on Linux and Windows.
+- Add tests with implementation changes and keep the released Linux/Windows contract green, but do not allocate Windows on every build: pull requests use affected `auto` selection, ordinary protected-main publication uses `none`, and exact release qualification uses `full`.
+- Keep Moon limited to consumer-owned impact declarations. Maven remains Java build/test authority and released `tool.java-project` owns shared execution, selective Windows qualification, evidence and generated build publication.
 
 ## Code documentation
 
@@ -48,6 +49,6 @@ Do not name a specific real-world event in public repository documentation.
 
 ## Toolchain
 
-Generic repository bootstrap/dependency handling is owned by `brainboxemb/tool.git-project`. Java build/test/CI tooling is owned by `brainboxemb/tool.java-project`. Consumers pin reviewed immutable commit SHAs while these tools are pre-v1.
+Generic repository bootstrap/dependency handling is owned by `brainboxemb/tool.git-project`. Java build/test/CI tooling is owned by `brainboxemb/tool.java-project`. Keep the semantic release in `project.yml` and exact immutable workflow/gitlink provenance aligned to the reviewed release.
 
 Docker is not a prerequisite for normal Java compile/unit-test work. Add Docker/Compose where it solves a concrete integration, reproducibility or long-term/offline build requirement rather than by default.
