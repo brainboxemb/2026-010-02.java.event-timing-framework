@@ -6,7 +6,12 @@
 - Move executable build-metadata loading behind composition and map it into the reusable framework `BuildIdentity`, including IF-03 API major version `1`.
 - Add immutable first-executable status snapshots with application state, minimal timing-system status and observable problem values, plus one application-owned current-status authority for later presentation adapters.
 - Keep process hosting/shutdown, external settings and concrete console/remote/HTTP/WebSocket adapters deferred to their later SIP Step-3 activities.
-- Adopt `tool.java-project v0.1.4` so persistent Java build output retains the common producer `execution.json`/`execution.log` evidence beside existing toolchain provenance and Surefire reports.
+- Adopt released `tool.java-project v0.3.2` and `tool.git-project v0.2.8` as the Migration-006 execution baseline.
+- Replace repository-owned Linux/Windows/Moon build orchestration with shared Java production workflows while keeping Maven authoritative for the multi-module reactor.
+- Keep Moon as `java.canonical` / `java.windows-full` impact declarations only and retain exact preflight/timing evidence in generated `bld` output.
+- Use event-sensitive Windows qualification: pull requests select `auto`, ordinary protected-main publication uses `none`, and exact release-tag qualification uses `full`.
+- Run native full-Windows Maven release qualification in parallel with the Linux canonical producer and run exact Linux-artifact smoke after the canonical artifact is available.
+- Preserve repository-owned release metadata, embedded build-identity validation, logging dependency boundaries and both product release JARs.
 
 ## 0.1.0 — 2026-09-13
 
