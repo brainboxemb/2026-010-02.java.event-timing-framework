@@ -9,6 +9,7 @@ import org.junit.Test;
 import static org.junit.Assert.assertArrayEquals;
 
 public class FrameworkStructureTest {
+    // Migration-006 canary: Java-only changes should select Windows smoke, not full Maven verification.
     @Test
     public void keepsInitialResponsibilitiesInsideOneFrameworkArtifact() {
         assertArrayEquals(
