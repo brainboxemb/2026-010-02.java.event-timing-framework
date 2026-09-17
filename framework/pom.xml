@@ -4,7 +4,7 @@
   <parent>
     <groupId>io.github.brainboxemb.eventtiming</groupId>
     <artifactId>event-timing-parent</artifactId>
-    <version>0.2.0-SNAPSHOT</version>
+    <version>0.2.0</version>
   </parent>
   <artifactId>event-timing-framework</artifactId>
   <name>Event Timing Framework</name>
