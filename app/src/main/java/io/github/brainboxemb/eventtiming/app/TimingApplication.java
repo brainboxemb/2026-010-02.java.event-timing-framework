@@ -12,15 +12,12 @@ import io.github.brainboxemb.eventtiming.application.CommandHandler;
  * objects.</p>
  */
 public final class TimingApplication implements AutoCloseable {
-    private final BuildIdentity buildIdentity;
     private final CommandHandler commandHandler;
     private final TimingApplicationLifecycle lifecycle;
 
     private TimingApplication(
-            BuildIdentity buildIdentity,
             CommandHandler commandHandler,
             TimingApplicationLifecycle lifecycle) {
-        this.buildIdentity = buildIdentity;
         this.commandHandler = commandHandler;
         this.lifecycle = lifecycle;
     }
@@ -80,7 +77,7 @@ public final class TimingApplication implements AutoCloseable {
         public TimingApplication build() {
             CommandHandler commandHandler = new CommandHandler(buildIdentity);
             TimingApplicationLifecycle lifecycle = new TimingApplicationLifecycle(buildIdentity);
-            return new TimingApplication(buildIdentity, commandHandler, lifecycle);
+            return new TimingApplication(commandHandler, lifecycle);
         }
     }
 }
