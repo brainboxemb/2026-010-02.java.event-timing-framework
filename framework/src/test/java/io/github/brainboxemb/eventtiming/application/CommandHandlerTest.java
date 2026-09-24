@@ -1,5 +1,7 @@
 package io.github.brainboxemb.eventtiming.application;
 
+import io.github.brainboxemb.eventtiming.infra.BuildIdentity;
+
 import org.junit.Test;
 
 import static org.junit.Assert.assertSame;
