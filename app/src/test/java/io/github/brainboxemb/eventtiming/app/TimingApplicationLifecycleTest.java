@@ -1,6 +1,6 @@
 package io.github.brainboxemb.eventtiming.app;
 
-import io.github.brainboxemb.eventtiming.application.BuildIdentity;
+import io.github.brainboxemb.eventtiming.infra.BuildIdentity;
 
 import org.junit.Test;
 
