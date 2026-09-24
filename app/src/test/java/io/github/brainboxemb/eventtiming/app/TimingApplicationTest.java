@@ -18,6 +18,7 @@ public class TimingApplicationTest {
 
         TimingApplication application = TimingApplication.builder(identity).build();
 
+        assertSame(identity, application.buildIdentity());
         assertSame(identity, application.commandHandler().version());
         assertEquals(TimingApplicationLifecycle.State.NEW, application.state());
     }

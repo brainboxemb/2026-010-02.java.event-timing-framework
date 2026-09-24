@@ -13,8 +13,8 @@ import static org.junit.Assert.assertTrue;
 
 public class BuildIdentityTest {
     @Test
-    public void loadsFilteredBuildIdentityIntoSharedApplicationValue() {
-        BuildIdentity identity = BuildIdentityLoader.load();
+    public void loadsFilteredBuildIdentityIntoApplication() {
+        BuildIdentity identity = TimingApplication.embeddedBuildIdentity();
         String expectedProjectVersion = System.getProperty("eventTiming.expectedProjectVersion");
 
         assertNotNull("Maven must expose the project version to the test JVM", expectedProjectVersion);
