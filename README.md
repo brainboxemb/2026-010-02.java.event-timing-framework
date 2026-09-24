@@ -21,14 +21,19 @@ app/         event-timing-app         runnable/default application
 
 The root `event-timing-parent` POM is build/aggregation metadata rather than a deployed product component.
 
-The reusable `event-timing-framework` JAR contains the initial responsibility-oriented Java package structure:
+The reusable `event-timing-framework` JAR is organised by logical responsibility, but a
+layer/package is not represented by a runtime marker object merely to make the source tree mirror
+the architecture diagram.
+
+Current real framework behaviour starts under:
 
 ```text
-io.github.brainboxemb.eventtiming.domain     application/domain model, rules and services
-io.github.brainboxemb.eventtiming.core       reusable runtime engine and orchestration
-io.github.brainboxemb.eventtiming.platform   execution-platform/environment abstractions
-io.github.brainboxemb.eventtiming.comm       communication contracts and reusable communication concerns
+io.github.brainboxemb.eventtiming.application
 ```
+
+Further package responsibilities such as `domain`, `core`, `presentation`, `integration` and
+`platform` are introduced when real classes require those boundaries. Empty `*Layer` marker
+classes are deliberately not kept as architecture evidence.
 
 The executable lives separately under:
 
@@ -36,7 +41,9 @@ The executable lives separately under:
 io.github.brainboxemb.eventtiming.app
 ```
 
-The framework still contains small marker classes used to prove the initial package structure. The application now has a real but deliberately minimal `NEW -> RUNNING -> STOPPED` lifecycle; neither defines future timing-domain capability merely to make the skeleton look complete.
+The application has a deliberately minimal `NEW -> RUNNING -> STOPPED` executable lifecycle and
+now composes the first shared client boundary, `CommandHandler`, for the authoritative version
+query. Future timing-domain capability is added only when its use case is implemented.
 
 ### Artifact rule
 
@@ -47,7 +54,7 @@ A package or architecture layer is **not** a publication boundary by itself. Int
 - deployment, ownership or release/versioning requires separation;
 - public/private implementation boundaries require independent composition.
 
-This keeps `domain`, `core`, `platform` and `comm` together while the structure is being proven. A later capability such as RabbitMQ, a platform-specific implementation, or reusable test support can be split only when its consumer and boundary are concrete.
+This keeps logical responsibilities inside the one framework artifact while real package boundaries emerge from implemented behaviour. A later capability such as RabbitMQ, a platform-specific implementation, or reusable test support can be split only when its consumer and boundary are concrete.
 
 ### Derived applications
 
