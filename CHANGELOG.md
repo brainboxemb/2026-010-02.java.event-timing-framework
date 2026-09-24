@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Route repository agent guidance through `brainboxemb.meta/AGENTS.md`, make dependency-owner AGENTS explicitly non-inherited, and keep implementation-specific architecture/boundary guidance local.
+
 ## 0.2.1 — 2026-09-17
 
 - Publish the intended 0.2.x product baseline after the first tagged `0.2.0` candidate was archived as failed during final GitHub Release evidence packaging.
