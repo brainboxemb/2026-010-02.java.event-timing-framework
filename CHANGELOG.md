@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Resume the active Step-3 `0.2.x` development line as `0.2.2-SNAPSHOT` after the published `v0.2.1` release, preventing ordinary `main` pushes from being misclassified as attempts to recreate `v0.2.1`.
+
 - Inline embedded build-metadata reading into `TimingApplication`, make the executable composition directly own its `BuildIdentity`, and remove the standalone `BuildIdentityLoader` class; deployment configuration remains a separate Step-3 concern.
 
 - Simplify the first-executable implementation around real behaviour: keep the minimal shared `CommandHandler.version()` boundary and compact `TimingApplication.Builder`, remove bootstrap-only `*Layer` markers and premature status-model objects, and move `BuildIdentity` to `infra` because build provenance is infrastructure rather than application/domain state.
