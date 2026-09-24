@@ -59,7 +59,7 @@ public final class ApplicationStatusSnapshot {
     }
 
     public List<WaypointStatus> waypoints() {
-        return timingSystems;
+        return waypoints;
     }
 
     public List<ApplicationProblem> problems() {
