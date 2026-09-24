@@ -2,7 +2,7 @@
 
 ## Unreleased
 
-- Align the implemented first-executable status model with the current Waypoint architecture: expose `WaypointStatus`, `WaypointLifecycle`, `waypoints()` and stable `uniqueId` semantics in place of the earlier timing-system names, without adding speculative command handling.
+- Align the implemented first-executable slice with the current Waypoint/application architecture: expose `WaypointStatus`, `WaypointLifecycle`, `waypoints()` and stable `uniqueId` semantics; add the minimal shared `CommandHandler.version()` client boundary and compact `TimingApplication.Builder` composition; remove bootstrap-only `*Layer` marker objects/tests so architecture layers remain logical boundaries rather than runtime objects.
 
 - Route repository agent guidance through `brainboxemb.meta/AGENTS.md`, make dependency-owner AGENTS explicitly non-inherited, and keep implementation-specific architecture/boundary guidance local.
 
