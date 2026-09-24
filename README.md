@@ -25,15 +25,18 @@ The reusable `event-timing-framework` JAR is organised by logical responsibility
 layer/package is not represented by a runtime marker object merely to make the source tree mirror
 the architecture diagram.
 
-Current real framework behaviour starts under:
+Current real framework behaviour is deliberately small:
 
 ```text
-io.github.brainboxemb.eventtiming.application
+io.github.brainboxemb.eventtiming.application.CommandHandler
+io.github.brainboxemb.eventtiming.infra.BuildIdentity
 ```
 
-Further package responsibilities such as `domain`, `core`, `presentation`, `integration` and
-`platform` are introduced when real classes require those boundaries. Empty `*Layer` marker
-classes are deliberately not kept as architecture evidence.
+`application` owns the shared client-facing request boundary. `infra` owns build/runtime
+provenance. Further package responsibilities such as `domain`, `core`, `presentation`,
+`integration` and `platform` are introduced only when real classes require those boundaries.
+Empty `*Layer` marker classes and pre-modelled future status objects are deliberately not kept as
+architecture evidence.
 
 The executable lives separately under:
 
