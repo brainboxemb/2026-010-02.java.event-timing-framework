@@ -16,14 +16,14 @@ public final class ApplicationStatusSnapshot {
     private final BuildIdentity buildIdentity;
     private final ApplicationState applicationState;
     private final Instant startedAt;
-    private final List<TimingSystemStatus> timingSystems;
+    private final List<WaypointStatus> waypoints;
     private final List<ApplicationProblem> problems;
 
     public ApplicationStatusSnapshot(
             BuildIdentity buildIdentity,
             ApplicationState applicationState,
             Instant startedAt,
-            List<TimingSystemStatus> timingSystems,
+            List<WaypointStatus> waypoints,
             List<ApplicationProblem> problems) {
         if (buildIdentity == null) {
             throw new IllegalArgumentException("buildIdentity must not be null");
@@ -37,7 +37,7 @@ public final class ApplicationStatusSnapshot {
         this.buildIdentity = buildIdentity;
         this.applicationState = applicationState;
         this.startedAt = startedAt;
-        this.timingSystems = immutableCopy(timingSystems, "timingSystems");
+        this.waypoints = immutableCopy(waypoints, "waypoints");
         this.problems = immutableCopy(problems, "problems");
     }
 
@@ -58,8 +58,8 @@ public final class ApplicationStatusSnapshot {
         return startedAt;
     }
 
-    public List<TimingSystemStatus> timingSystems() {
-        return timingSystems;
+    public List<WaypointStatus> waypoints() {
+        return waypoints;
     }
 
     public List<ApplicationProblem> problems() {

@@ -1,47 +1,83 @@
 package io.github.brainboxemb.eventtiming.app;
 
 import io.github.brainboxemb.eventtiming.application.BuildIdentity;
-import io.github.brainboxemb.eventtiming.core.CoreLayer;
+import io.github.brainboxemb.eventtiming.application.CommandHandler;
 
 /**
  * Executable composition root for the current SI-01 application baseline.
  *
- * <p>The class intentionally performs only composition/lifecycle work. Timing-domain behaviour
- * belongs in the reusable framework; later transports and integrations are wired here (or through
- * application-owned composition classes) rather than being hard-coded into framework services.
- * See the SI-01 SAD and Java component design in the meta repository.</p>
+ * <p>The class performs composition/lifecycle work and exposes the shared application boundary
+ * needed by presentation adapters. Timing-domain behaviour belongs in the reusable framework;
+ * later transports and integrations are wired here rather than represented by layer-marker
+ * objects.</p>
  */
-public final class TimingApplication {
-    private TimingApplication() {
+public final class TimingApplication implements AutoCloseable {
+    private final CommandHandler commandHandler;
+    private final TimingApplicationLifecycle lifecycle;
+
+    private TimingApplication(
+            CommandHandler commandHandler,
+            TimingApplicationLifecycle lifecycle) {
+        this.commandHandler = commandHandler;
+        this.lifecycle = lifecycle;
     }
 
-    /** Returns a minimal framework marker used by Step-2 dependency/composition evidence. */
-    public static String frameworkComponent() {
-        return CoreLayer.name();
+    public static Builder builder(BuildIdentity buildIdentity) {
+        return new Builder(buildIdentity);
+    }
+
+    public void start() {
+        lifecycle.start();
+    }
+
+    public CommandHandler commandHandler() {
+        return commandHandler;
+    }
+
+    TimingApplicationLifecycle.State state() {
+        return lifecycle.state();
+    }
+
+    @Override
+    public void close() {
+        lifecycle.close();
     }
 
     /**
-     * Loads the identity embedded by Maven, starts the application lifecycle and always closes it.
-     * The final stdout line is deliberately stable because CI uses it as a cross-platform smoke
-     * contract; richer build provenance is emitted through normal lifecycle logging.
+     * Loads the identity embedded by Maven, builds the application composition, starts it and
+     * always closes it. The final stdout line remains stable for cross-platform smoke evidence.
      */
     public static void main(String[] args) {
-        if (!"core".equals(frameworkComponent())) {
-            throw new IllegalStateException("Framework library is not composed as expected.");
-        }
-
         BuildIdentity buildIdentity = BuildIdentityLoader.load();
-        TimingApplicationLifecycle lifecycle = new TimingApplicationLifecycle(buildIdentity);
+        TimingApplication application = TimingApplication.builder(buildIdentity).build();
         try {
-            lifecycle.start();
+            application.start();
         } finally {
-            lifecycle.close();
+            application.close();
         }
 
-        System.out.println(smokeOutput(buildIdentity, lifecycle.state()));
+        System.out.println(smokeOutput(application.commandHandler().version(), application.state()));
     }
 
     static String smokeOutput(BuildIdentity buildIdentity, TimingApplicationLifecycle.State state) {
         return "event-timing-app lifecycle OK version=" + buildIdentity.version() + " state=" + state;
+    }
+
+    /** Small composition builder that creates only objects required by the current executable. */
+    public static final class Builder {
+        private final BuildIdentity buildIdentity;
+
+        private Builder(BuildIdentity buildIdentity) {
+            if (buildIdentity == null) {
+                throw new IllegalArgumentException("buildIdentity must not be null");
+            }
+            this.buildIdentity = buildIdentity;
+        }
+
+        public TimingApplication build() {
+            CommandHandler commandHandler = new CommandHandler(buildIdentity);
+            TimingApplicationLifecycle lifecycle = new TimingApplicationLifecycle(buildIdentity);
+            return new TimingApplication(commandHandler, lifecycle);
+        }
     }
 }
