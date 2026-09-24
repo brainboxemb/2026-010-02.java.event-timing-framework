@@ -1,4 +1,4 @@
-package io.github.brainboxemb.eventtiming.application;
+package io.github.brainboxemb.eventtiming.infra;
 
 import org.junit.Test;
 

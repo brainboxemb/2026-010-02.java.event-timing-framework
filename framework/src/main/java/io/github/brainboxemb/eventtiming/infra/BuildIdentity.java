@@ -1,11 +1,11 @@
-package io.github.brainboxemb.eventtiming.application;
+package io.github.brainboxemb.eventtiming.infra;
 
 /**
  * Immutable identity of one built application artifact.
  *
- * <p>The identity is owned by the application semantics rather than by any presentation
- * transport. Executable composition is responsible for loading these values from its built
- * artifact and supplying the resulting value to shared application/status behaviour.</p>
+ * <p>This is build/runtime provenance infrastructure. Executable composition loads these values
+ * from the built artifact and application-facing code may expose them to clients without becoming
+ * the owner of the provenance itself.</p>
  *
  * <p>Field semantics follow the first-executable IF-03 contract in the meta repository
  * {@code docs/40-01-IDD-application-control-status.md}.</p>

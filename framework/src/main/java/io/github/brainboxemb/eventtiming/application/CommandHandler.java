@@ -1,5 +1,7 @@
 package io.github.brainboxemb.eventtiming.application;
 
+import io.github.brainboxemb.eventtiming.infra.BuildIdentity;
+
 /**
  * Shared transport-independent application boundary for client commands and simple queries.
  *
