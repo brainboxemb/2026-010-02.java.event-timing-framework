@@ -33,8 +33,8 @@ io.github.brainboxemb.eventtiming.infra.BuildIdentity
 ```
 
 `application` owns the shared client-facing request boundary. `infra` owns build/runtime
-provenance. Further package responsibilities such as `domain`, `core`, `presentation`,
-`integration` and `platform` are introduced only when real classes require those boundaries.
+provenance. Further package responsibilities such as `domain`, `core`, `presentation`, `io`
+and `platform` are introduced only when real classes require those boundaries.
 Empty `*Layer` marker classes and pre-modelled future status objects are deliberately not kept as
 architecture evidence.
 
@@ -133,7 +133,7 @@ source revision       full Git commit captured at build time
 build timestamp       UTC/ISO-8601 wall-clock build time
 ```
 
-`pl.project13.maven:git-commit-id-plugin:4.9.10` supplies the Git revision and build time during the Maven `initialize` phase; normal resource filtering then packages only the values the runtime needs. The plugin version is intentionally pinned because it remains compatible with the Java 8 build baseline. `BuildIdentity` reads those packaged values and never consults a working Git checkout at runtime.
+`pl.project13.maven:git-commit-id-plugin:4.9.10` supplies the Git revision and build time during the Maven `initialize` phase; normal resource filtering then packages only the values the runtime needs. The plugin version is intentionally pinned because it remains compatible with the Java 8 build baseline. The executable bootstrap reads those packaged values into its `BuildIdentity`; the framework value itself never knows about the resource file or a working Git checkout.
 
 A Git tag does **not** silently determine or override the application version. If the POM still contains a `-SNAPSHOT` version, building a commit tagged as a release still reports that snapshot version. A valid release deliberately aligns Maven version, CHANGELOG release section and Git tag.
 
