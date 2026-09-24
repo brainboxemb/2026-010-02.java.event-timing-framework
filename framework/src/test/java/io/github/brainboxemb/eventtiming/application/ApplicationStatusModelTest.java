@@ -25,7 +25,7 @@ public class ApplicationStatusModelTest {
     @Test
     public void snapshotDefensivelyCopiesStatusCollections() {
         BuildIdentity identity = identity("revision-one");
-        List<WaypointStatus> waypoints = new ArrayList<TimingSystemStatus>();
+        List<WaypointStatus> waypoints = new ArrayList<WaypointStatus>();
         List<ApplicationProblem> problems = new ArrayList<ApplicationProblem>();
         waypoints.add(new WaypointStatus("waypoint-a", WaypointLifecycle.CLOSED));
         problems.add(new ApplicationProblem("CONFIG_WARNING", ProblemSeverity.WARNING, "Synthetic warning"));
