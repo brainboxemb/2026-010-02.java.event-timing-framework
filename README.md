@@ -54,8 +54,8 @@ This keeps `domain`, `core`, `platform` and `comm` together while the structure 
 The framework is intended to support more than one executable composition. Examples that may later become separate applications include:
 
 ```text
-single-system application   compose exactly one TimingSystemInstance
-multi-system application    compose and route 1..X TimingSystemInstance objects
+single-waypoint application compose exactly one Waypoint
+multi-waypoint application  compose and coordinate 1..N Waypoint objects
 ```
 
 Those applications should reuse the same framework library and inject/select their own concrete components. They are not created during Step 2 merely to predict future structure.
