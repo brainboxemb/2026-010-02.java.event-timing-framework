@@ -25,33 +25,33 @@ public class ApplicationStatusModelTest {
     @Test
     public void snapshotDefensivelyCopiesStatusCollections() {
         BuildIdentity identity = identity("revision-one");
-        List<TimingSystemStatus> timingSystems = new ArrayList<TimingSystemStatus>();
+        List<WaypointStatus> waypoints = new ArrayList<TimingSystemStatus>();
         List<ApplicationProblem> problems = new ArrayList<ApplicationProblem>();
-        timingSystems.add(new TimingSystemStatus("system-a", TimingSystemLifecycle.CLOSED));
+        waypoints.add(new WaypointStatus("waypoint-a", WaypointLifecycle.CLOSED));
         problems.add(new ApplicationProblem("CONFIG_WARNING", ProblemSeverity.WARNING, "Synthetic warning"));
 
         ApplicationStatusSnapshot snapshot = new ApplicationStatusSnapshot(
                 identity,
                 ApplicationState.DEGRADED,
                 Instant.parse("2026-09-13T06:00:00Z"),
-                timingSystems,
+                waypoints,
                 problems);
 
-        timingSystems.clear();
+        waypoints.clear();
         problems.clear();
 
-        assertEquals(1, snapshot.timingSystems().size());
-        assertEquals("system-a", snapshot.timingSystems().get(0).id());
-        assertEquals(TimingSystemLifecycle.CLOSED, snapshot.timingSystems().get(0).lifecycle());
+        assertEquals(1, snapshot.waypoints().size());
+        assertEquals("waypoint-a", snapshot.waypoints().get(0).uniqueId());
+        assertEquals(WaypointLifecycle.CLOSED, snapshot.waypoints().get(0).lifecycle());
         assertEquals(1, snapshot.problems().size());
         assertEquals("CONFIG_WARNING", snapshot.problems().get(0).code());
         assertEquals(ProblemSeverity.WARNING, snapshot.problems().get(0).severity());
     }
 
     @Test(expected = UnsupportedOperationException.class)
-    public void snapshotTimingSystemsAreUnmodifiable() {
+    public void snapshotWaypointsAreUnmodifiable() {
         ApplicationStatusSnapshot snapshot = status(identity("revision-one"), ApplicationState.RUNNING);
-        snapshot.timingSystems().add(new TimingSystemStatus("system-b", TimingSystemLifecycle.CLOSED));
+        snapshot.waypoints().add(new WaypointStatus("waypoint-b", WaypointLifecycle.CLOSED));
     }
 
     @Test
@@ -81,8 +81,8 @@ public class ApplicationStatusModelTest {
     }
 
     @Test(expected = IllegalArgumentException.class)
-    public void timingSystemRejectsBlankId() {
-        new TimingSystemStatus(" ", TimingSystemLifecycle.CLOSED);
+    public void waypointRejectsBlankUniqueId() {
+        new WaypointStatus(" ", WaypointLifecycle.CLOSED);
     }
 
     private static BuildIdentity identity(String revision) {
@@ -101,7 +101,7 @@ public class ApplicationStatusModelTest {
                 state,
                 Instant.parse("2026-09-13T06:00:00Z"),
                 Collections.singletonList(
-                        new TimingSystemStatus("system-a", TimingSystemLifecycle.CLOSED)),
+                        new WaypointStatus("waypoint-a", WaypointLifecycle.CLOSED)),
                 Collections.<ApplicationProblem>emptyList());
     }
 }
