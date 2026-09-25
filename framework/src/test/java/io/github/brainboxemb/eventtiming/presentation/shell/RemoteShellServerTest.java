@@ -2,6 +2,7 @@ package io.github.brainboxemb.eventtiming.presentation.shell;
 
 import io.github.brainboxemb.eventtiming.application.ApplicationStatus;
 import io.github.brainboxemb.eventtiming.application.CommandHandler;
+import io.github.brainboxemb.eventtiming.domain.timing.TimingNode;
 import io.github.brainboxemb.eventtiming.domain.timing.TimingNodeId;
 import io.github.brainboxemb.eventtiming.infra.BuildIdentity;
 
@@ -70,8 +71,8 @@ public class RemoteShellServerTest {
                 String response = readToEnd(second.getInputStream());
                 assertTrue(response.contains("Version      : test-version"));
                 assertTrue(response.contains("Timing node"));
-                assertTrue(response.contains("Id : timing-node-01"));
-                assertFalse(response.contains("State       : RUNNING"));
+                assertTrue(response.contains("Id        : timing-node-01"));
+                assertTrue(response.contains("Lifecycle : CLOSED"));
                 assertTrue(response.contains("Stopping application."));
             }
 
@@ -119,6 +120,8 @@ public class RemoteShellServerTest {
                 false);
         return new CommandHandler(
                 identity,
-                () -> new ApplicationStatus("RUNNING", new TimingNodeId("timing-node-01")));
+                () -> new ApplicationStatus(
+                        new TimingNodeId("timing-node-01"),
+                        TimingNode.Lifecycle.CLOSED));
     }
 }

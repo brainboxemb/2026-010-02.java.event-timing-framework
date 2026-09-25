@@ -90,10 +90,21 @@ presentation:
   remoteShell:
     bindAddress: 127.0.0.1
     port: 8023
+  http:
+    bindAddress: 127.0.0.1
+    port: 8081
 ```
 
 The remote shell is a small line-oriented TCP development/service endpoint. It is **not** an SSH
-or Telnet protocol implementation. The committed development example is explicitly loopback-only;
+or Telnet protocol implementation. A06 also exposes IF-03 over HTTP/JSON on the configured HTTP
+listener:
+
+```text
+GET /api/v1/version
+GET /api/v1/status
+```
+
+The committed development example keeps both network presentation listeners loopback-only;
 binding to another interface must be a deliberate configuration change.
 
 A synthetic development example is kept at `config/application.yml`. After building, start the
@@ -124,6 +135,24 @@ request graceful application shutdown.
 The temporary no-argument startup remains only for the existing artifact smoke check. Multiple
 TimingNodes, further presentation endpoints, platform/profile overlays and I/O configuration are
 added only when their SIP activities provide a real consumer.
+
+### A06 JavaFX test client
+
+`test-client/` is a standalone Java 17 / JavaFX development tool for manually inspecting IF-03.
+It is deliberately not part of the Java-8 SI-01 Maven reactor and has no dependency on
+`event-timing-framework` or `event-timing-app`.
+
+With JDK 17 selected:
+
+```powershell
+.\mvnw.cmd -f test-client\pom.xml javafx:run
+```
+
+The client defaults to `http://127.0.0.1:8081` and provides **Get Version** and **Get Status**
+actions with both parsed fields and the raw JSON response. Its **Terminal** tab also connects
+directly to the A05 development shell, defaulting to `127.0.0.1:8023`, so manual shell
+verification does not require a separate PuTTY session. See `test-client/README.md`.
+
 
 ## Local checkout and project tooling
 

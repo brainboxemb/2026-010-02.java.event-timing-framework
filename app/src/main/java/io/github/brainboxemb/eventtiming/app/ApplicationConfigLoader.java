@@ -14,16 +14,12 @@ import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.constructor.SafeConstructor;
 import org.yaml.snakeyaml.error.YAMLException;
 
-/**
- * Loads application configuration from one external YAML file.
- *
- * <p>The loader parses safe generic YAML values and maps them explicitly. Fields without an
- * implemented consumer are rejected.</p>
- */
+/** Loads and validates the currently implemented application configuration. */
 final class ApplicationConfigLoader {
     private static final String TIMING_NODE_ID = "timingNodeId";
     private static final String PRESENTATION = "presentation";
     private static final String REMOTE_SHELL = "remoteShell";
+    private static final String HTTP = "http";
     private static final String BIND_ADDRESS = "bindAddress";
     private static final String PORT = "port";
 
@@ -56,54 +52,65 @@ final class ApplicationConfigLoader {
 
         TimingNodeId timingNodeId = new TimingNodeId(
                 requireString(root.get(TIMING_NODE_ID), TIMING_NODE_ID));
-        PresentationConfig presentation = mapPresentation(root.get(PRESENTATION));
-
-        return new ApplicationConfig(timingNodeId, presentation);
+        return new ApplicationConfig(timingNodeId, mapPresentation(root.get(PRESENTATION)));
     }
 
     private static PresentationConfig mapPresentation(Object rawPresentation) {
         if (rawPresentation == null) {
-            return new PresentationConfig(null);
+            return new PresentationConfig(null, null);
         }
 
         Map<?, ?> presentation = requireMapping(rawPresentation, PRESENTATION);
-        rejectUnknownFields(presentation, PRESENTATION, REMOTE_SHELL);
-
-        Object rawRemoteShell = presentation.get(REMOTE_SHELL);
-        if (rawRemoteShell == null) {
-            return new PresentationConfig(null);
-        }
-
-        Map<?, ?> remoteShell = requireMapping(rawRemoteShell, PRESENTATION + "." + REMOTE_SHELL);
-        rejectUnknownFields(
-                remoteShell,
-                PRESENTATION + "." + REMOTE_SHELL,
-                BIND_ADDRESS,
-                PORT);
-
-        if (!remoteShell.containsKey(BIND_ADDRESS)) {
-            throw new IllegalArgumentException(
-                    "Missing required configuration field: "
-                            + PRESENTATION + "." + REMOTE_SHELL + "." + BIND_ADDRESS);
-        }
-        if (!remoteShell.containsKey(PORT)) {
-            throw new IllegalArgumentException(
-                    "Missing required configuration field: "
-                            + PRESENTATION + "." + REMOTE_SHELL + "." + PORT);
-        }
-
-        String bindAddress = requireString(
-                remoteShell.get(BIND_ADDRESS),
-                PRESENTATION + "." + REMOTE_SHELL + "." + BIND_ADDRESS);
-        Object rawPort = remoteShell.get(PORT);
-        if (!(rawPort instanceof Integer)) {
-            throw new IllegalArgumentException(
-                    PRESENTATION + "." + REMOTE_SHELL + "." + PORT
-                            + " must be a YAML integer");
-        }
+        rejectUnknownFields(presentation, PRESENTATION, REMOTE_SHELL, HTTP);
 
         return new PresentationConfig(
-                new RemoteShellConfig(bindAddress, ((Integer) rawPort).intValue()));
+                mapRemoteShell(presentation.get(REMOTE_SHELL)),
+                mapHttp(presentation.get(HTTP)));
+    }
+
+    private static RemoteShellConfig mapRemoteShell(Object raw) {
+        if (raw == null) {
+            return null;
+        }
+        Map<?, ?> values = endpointMapping(raw, PRESENTATION + "." + REMOTE_SHELL);
+        return new RemoteShellConfig(
+                requireString(values.get(BIND_ADDRESS),
+                        PRESENTATION + "." + REMOTE_SHELL + "." + BIND_ADDRESS),
+                requirePort(values.get(PORT),
+                        PRESENTATION + "." + REMOTE_SHELL + "." + PORT));
+    }
+
+    private static HttpConfig mapHttp(Object raw) {
+        if (raw == null) {
+            return null;
+        }
+        Map<?, ?> values = endpointMapping(raw, PRESENTATION + "." + HTTP);
+        return new HttpConfig(
+                requireString(values.get(BIND_ADDRESS),
+                        PRESENTATION + "." + HTTP + "." + BIND_ADDRESS),
+                requirePort(values.get(PORT),
+                        PRESENTATION + "." + HTTP + "." + PORT));
+    }
+
+    private static Map<?, ?> endpointMapping(Object raw, String field) {
+        Map<?, ?> values = requireMapping(raw, field);
+        rejectUnknownFields(values, field, BIND_ADDRESS, PORT);
+        if (!values.containsKey(BIND_ADDRESS)) {
+            throw new IllegalArgumentException(
+                    "Missing required configuration field: " + field + "." + BIND_ADDRESS);
+        }
+        if (!values.containsKey(PORT)) {
+            throw new IllegalArgumentException(
+                    "Missing required configuration field: " + field + "." + PORT);
+        }
+        return values;
+    }
+
+    private static int requirePort(Object value, String field) {
+        if (!(value instanceof Integer)) {
+            throw new IllegalArgumentException(field + " must be a YAML integer");
+        }
+        return ((Integer) value).intValue();
     }
 
     private static Map<?, ?> requireMapping(Object value, String field) {

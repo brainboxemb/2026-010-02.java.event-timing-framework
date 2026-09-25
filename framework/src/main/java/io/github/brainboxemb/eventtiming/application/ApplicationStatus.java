@@ -1,28 +1,31 @@
 package io.github.brainboxemb.eventtiming.application;
 
+import io.github.brainboxemb.eventtiming.domain.timing.TimingNode;
 import io.github.brainboxemb.eventtiming.domain.timing.TimingNodeId;
 
-/** Minimal transport-independent application status used by current presentation adapters. */
+/** Transport-independent current TimingNode status used by presentation adapters. */
 public final class ApplicationStatus {
-    private final String applicationState;
     private final TimingNodeId timingNodeId;
+    private final TimingNode.Lifecycle timingNodeLifecycle;
 
-    public ApplicationStatus(String applicationState, TimingNodeId timingNodeId) {
-        if (applicationState == null || applicationState.trim().isEmpty()) {
-            throw new IllegalArgumentException("applicationState must not be blank");
-        }
+    public ApplicationStatus(
+            TimingNodeId timingNodeId,
+            TimingNode.Lifecycle timingNodeLifecycle) {
         if (timingNodeId == null) {
             throw new IllegalArgumentException("timingNodeId must not be null");
         }
-        this.applicationState = applicationState;
+        if (timingNodeLifecycle == null) {
+            throw new IllegalArgumentException("timingNodeLifecycle must not be null");
+        }
         this.timingNodeId = timingNodeId;
-    }
-
-    public String applicationState() {
-        return applicationState;
+        this.timingNodeLifecycle = timingNodeLifecycle;
     }
 
     public TimingNodeId timingNodeId() {
         return timingNodeId;
+    }
+
+    public TimingNode.Lifecycle timingNodeLifecycle() {
+        return timingNodeLifecycle;
     }
 }

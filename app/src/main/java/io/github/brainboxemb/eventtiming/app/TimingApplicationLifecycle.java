@@ -2,6 +2,8 @@ package io.github.brainboxemb.eventtiming.app;
 
 import io.github.brainboxemb.eventtiming.infra.BuildIdentity;
 
+import java.time.Instant;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -17,6 +19,7 @@ public final class TimingApplicationLifecycle implements AutoCloseable {
 
     private final BuildIdentity buildIdentity;
     private State state = State.NEW;
+    private Instant startedAt;
 
     public TimingApplicationLifecycle(BuildIdentity buildIdentity) {
         if (buildIdentity == null) {
@@ -31,6 +34,7 @@ public final class TimingApplicationLifecycle implements AutoCloseable {
             throw new IllegalStateException("Application can only start from NEW; current state=" + state);
         }
         LOG.info("Starting {} ({})", buildIdentity.displayName(), buildIdentity.provenance());
+        startedAt = Instant.now();
         state = State.RUNNING;
         LOG.info("Application lifecycle state={}", state);
     }
@@ -47,6 +51,13 @@ public final class TimingApplicationLifecycle implements AutoCloseable {
 
     public synchronized State state() {
         return state;
+    }
+
+    public synchronized Instant startedAt() {
+        if (startedAt == null) {
+            throw new IllegalStateException("Application has not started");
+        }
+        return startedAt;
     }
 
     /** Waits without polling until the application reaches {@link State#STOPPED}. */

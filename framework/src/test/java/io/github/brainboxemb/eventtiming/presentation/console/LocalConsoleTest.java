@@ -2,6 +2,7 @@ package io.github.brainboxemb.eventtiming.presentation.console;
 
 import io.github.brainboxemb.eventtiming.application.ApplicationStatus;
 import io.github.brainboxemb.eventtiming.application.CommandHandler;
+import io.github.brainboxemb.eventtiming.domain.timing.TimingNode;
 import io.github.brainboxemb.eventtiming.domain.timing.TimingNodeId;
 import io.github.brainboxemb.eventtiming.infra.BuildIdentity;
 
@@ -30,7 +31,7 @@ public class LocalConsoleTest {
         String text = output.toString();
         assertTrue(text.contains("help     Show available commands"));
         assertTrue(text.contains("version  Show application version"));
-        assertTrue(text.contains("status   Show application status"));
+        assertTrue(text.contains("status   Show TimingNode status"));
         assertTrue(text.contains("quit     Stop the application"));
         assertTrue(text.contains("exit     Alias for quit"));
         assertTrue(text.contains("event-timing-app"));
@@ -40,8 +41,8 @@ public class LocalConsoleTest {
         assertTrue(text.contains("Build origin : local"));
         assertTrue(text.contains("Source state : clean"));
         assertTrue(text.contains("Timing node"));
-        assertTrue(text.contains("Id : timing-node-01"));
-        assertFalse(text.contains("State       : RUNNING"));
+        assertTrue(text.contains("Id        : timing-node-01"));
+        assertTrue(text.contains("Lifecycle : CLOSED"));
         assertTrue(stopped.get());
     }
 
@@ -85,6 +86,8 @@ public class LocalConsoleTest {
                 false);
         return new CommandHandler(
                 identity,
-                () -> new ApplicationStatus("RUNNING", new TimingNodeId("timing-node-01")));
+                () -> new ApplicationStatus(
+                        new TimingNodeId("timing-node-01"),
+                        TimingNode.Lifecycle.CLOSED));
     }
 }

@@ -89,7 +89,7 @@ public final class TerminalSession {
         output.println("Commands:");
         output.println("  help     Show available commands");
         output.println("  version  Show application version");
-        output.println("  status   Show application status");
+        output.println("  status   Show TimingNode status");
         output.println("  quit     Stop the application");
         output.println("  exit     Alias for quit");
     }
@@ -107,6 +107,7 @@ public final class TerminalSession {
     private void showStatus(PrintWriter output) {
         ApplicationStatus status = commandHandler.status();
         output.println("Timing node");
-        output.println("  Id : " + status.timingNodeId().value());
+        output.println("  Id        : " + status.timingNodeId().value());
+        output.println("  Lifecycle : " + status.timingNodeLifecycle().name());
     }
 }
