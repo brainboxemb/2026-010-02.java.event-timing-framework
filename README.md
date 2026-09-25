@@ -34,6 +34,8 @@ io.github.brainboxemb.eventtiming.domain.timing.TimingNode
 io.github.brainboxemb.eventtiming.domain.timing.TimingNodeId
 io.github.brainboxemb.eventtiming.infra.BuildIdentity
 io.github.brainboxemb.eventtiming.presentation.console.LocalConsole
+io.github.brainboxemb.eventtiming.presentation.terminal.TerminalSession
+io.github.brainboxemb.eventtiming.presentation.shell.RemoteShellServer
 ```
 
 `application` owns the shared client-facing request boundary. `infra` owns build/runtime
@@ -79,11 +81,20 @@ The working design is coordinated in the meta repository, especially `docs/31-01
 ### Current Step-3 application
 
 The executable uses one external YAML file for the single TimingNode currently composed by the
-application. Only the identity has a real configuration consumer yet:
+application. A05 adds the first real presentation listener configuration:
 
 ```yaml
 timingNodeId: timing-node-01
+
+presentation:
+  remoteShell:
+    bindAddress: 127.0.0.1
+    port: 8023
 ```
+
+The remote shell is a small line-oriented TCP development/service endpoint. It is **not** an SSH
+or Telnet protocol implementation. The committed development example is explicitly loopback-only;
+binding to another interface must be a deliberate configuration change.
 
 A synthetic development example is kept at `config/application.yml`. After building, start the
 configured application with:
@@ -96,7 +107,7 @@ The configured process stays running until the JVM receives a normal shutdown re
 development terminal, **Ctrl+C** remains a normal stop route on Windows and Linux; the JVM shutdown
 hook closes the application through the same lifecycle path used by tests.
 
-The local console is available while the configured application is running:
+The local console and A05 remote terminal use the same command session:
 
 ```text
 help      show available commands
@@ -106,8 +117,12 @@ quit      stop the application cleanly
 exit      alias for quit
 ```
 
-The temporary no-argument startup remains only for the existing artifact smoke check.
-Presentation settings, multiple TimingNodes, platform/profile overlays and I/O configuration are
+A remote client disconnect ends only that terminal session. A later connection can reconnect to
+the same listener. `quit` / `exit` intentionally retain the same meaning as the local console and
+request graceful application shutdown.
+
+The temporary no-argument startup remains only for the existing artifact smoke check. Multiple
+TimingNodes, further presentation endpoints, platform/profile overlays and I/O configuration are
 added only when their SIP activities provide a real consumer.
 
 ## Local checkout and project tooling
