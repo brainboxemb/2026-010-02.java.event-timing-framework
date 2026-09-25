@@ -106,8 +106,7 @@ public final class TerminalSession {
 
     private void showStatus(PrintWriter output) {
         ApplicationStatus status = commandHandler.status();
-        output.println(commandHandler.version().application());
-        output.println("  State       : " + status.applicationState());
-        output.println("  Timing node : " + status.timingNodeId().value());
+        output.println("Timing node");
+        output.println("  Id : " + status.timingNodeId().value());
     }
 }
