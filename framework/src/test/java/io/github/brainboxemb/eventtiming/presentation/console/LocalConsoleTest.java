@@ -33,10 +33,12 @@ public class LocalConsoleTest {
         assertTrue(text.contains("status   Show application status"));
         assertTrue(text.contains("quit     Stop the application"));
         assertTrue(text.contains("exit     Alias for quit"));
-        assertTrue(text.contains("application=event-timing-app version=test-version"));
-        assertTrue(text.contains("sourceRef=feature/test"));
-        assertTrue(text.contains("buildOrigin=local"));
-        assertTrue(text.contains("dirty=false"));
+        assertTrue(text.contains("event-timing-app"));
+        assertTrue(text.contains("Version      : test-version"));
+        assertTrue(text.contains("Revision     : abc123def456"));
+        assertTrue(text.contains("Source ref   : feature/test"));
+        assertTrue(text.contains("Build origin : local"));
+        assertTrue(text.contains("Source state : clean"));
         assertTrue(text.contains("applicationState=RUNNING timingNodeId=timing-node-01"));
         assertTrue(stopped.get());
     }
