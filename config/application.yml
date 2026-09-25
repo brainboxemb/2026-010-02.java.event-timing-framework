@@ -1,4 +1,4 @@
-# Step-3 development configuration: one logical TimingNode plus A05 remote terminal.
+# Step-3 development configuration: one TimingNode plus presentation adapters.
 timingNodeId: timing-node-01
 
 presentation:
@@ -6,3 +6,7 @@ presentation:
     # Development/service baseline: explicit loopback-only listener.
     bindAddress: 127.0.0.1
     port: 8023
+  http:
+    # IF-03 development baseline: explicit loopback-only listener.
+    bindAddress: 127.0.0.1
+    port: 8081
