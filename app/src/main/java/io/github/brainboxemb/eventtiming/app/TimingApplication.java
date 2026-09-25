@@ -6,6 +6,7 @@ import io.github.brainboxemb.eventtiming.infra.BuildIdentity;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Properties;
 
@@ -84,16 +85,12 @@ public final class TimingApplication implements AutoCloseable {
                     "Usage: java -jar event-timing-app-<version>.jar <application.yml>");
         }
 
-        ApplicationConfig config;
+        TimingApplication application;
         try {
-            config = ApplicationConfigLoader.load(Paths.get(args[0]));
+            application = configured(buildIdentity, Paths.get(args[0]));
         } catch (IOException ex) {
             throw new IllegalStateException("Unable to load application configuration: " + args[0], ex);
         }
-
-        TimingNode timingNode = new TimingNode(config.timingNodeId());
-        TimingApplication application =
-                TimingApplication.builder(buildIdentity).timingNode(timingNode).build();
         try {
             application.start();
         } finally {
@@ -101,6 +98,13 @@ public final class TimingApplication implements AutoCloseable {
         }
 
         System.out.println(smokeOutput(application.buildIdentity(), application.state()));
+    }
+
+    static TimingApplication configured(BuildIdentity buildIdentity, Path configPath)
+            throws IOException {
+        ApplicationConfig config = ApplicationConfigLoader.load(configPath);
+        TimingNode timingNode = new TimingNode(config.timingNodeId());
+        return TimingApplication.builder(buildIdentity).timingNode(timingNode).build();
     }
 
     private static void runArtifactSmoke(BuildIdentity buildIdentity) {

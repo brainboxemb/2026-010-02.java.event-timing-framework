@@ -4,12 +4,21 @@ import io.github.brainboxemb.eventtiming.domain.TimingNode;
 import io.github.brainboxemb.eventtiming.domain.TimingNodeId;
 import io.github.brainboxemb.eventtiming.infra.BuildIdentity;
 
+import java.io.File;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertSame;
 
 public class TimingApplicationTest {
+    @Rule
+    public TemporaryFolder temporaryFolder = new TemporaryFolder();
+
     @Test
     public void builderComposesConfiguredTimingNodeAndSharedBoundary() {
         BuildIdentity identity = BuildIdentity.firstApiVersion(
@@ -26,6 +35,25 @@ public class TimingApplicationTest {
         assertSame(timingNode, application.timingNode());
         assertEquals("timing-node-01", application.timingNode().timingNodeId().value());
         assertSame(identity, application.commandHandler().version());
+        assertEquals(TimingApplicationLifecycle.State.NEW, application.state());
+    }
+
+    @Test
+    public void loadsConfigurationIntoApplicationComposition() throws Exception {
+        File config = temporaryFolder.newFile("application.yml");
+        Files.write(
+                config.toPath(),
+                "timingNodeId: configured-node\n".getBytes(StandardCharsets.UTF_8));
+        BuildIdentity identity = BuildIdentity.firstApiVersion(
+                "event-timing-app",
+                "test-version",
+                "abc123def456",
+                "2026-09-13T06:00:00Z");
+
+        TimingApplication application = TimingApplication.configured(identity, config.toPath());
+
+        assertSame(identity, application.buildIdentity());
+        assertEquals("configured-node", application.timingNode().timingNodeId().value());
         assertEquals(TimingApplicationLifecycle.State.NEW, application.state());
     }
 
