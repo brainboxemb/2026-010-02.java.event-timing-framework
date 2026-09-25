@@ -49,7 +49,12 @@ public class TimingApplicationTest {
         File config = temporaryFolder.newFile("application.yml");
         Files.write(
                 config.toPath(),
-                "timingNodeId: configured-node\n".getBytes(StandardCharsets.UTF_8));
+                ("timingNodeId: configured-node\n"
+                        + "presentation:\n"
+                        + "  remoteShell:\n"
+                        + "    bindAddress: 127.0.0.1\n"
+                        + "    port: 8023\n")
+                        .getBytes(StandardCharsets.UTF_8));
         BuildIdentity identity = BuildIdentity.firstApiVersion(
                 "event-timing-app",
                 "test-version",
@@ -65,6 +70,8 @@ public class TimingApplicationTest {
         assertEquals(
                 "configured-node",
                 application.commandHandler().status().timingNodeId().value());
+        assertEquals("127.0.0.1", application.remoteShellConfig().bindAddress());
+        assertEquals(8023, application.remoteShellConfig().port());
         assertEquals(TimingApplicationLifecycle.State.NEW, application.state());
     }
 
