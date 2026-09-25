@@ -36,4 +36,4 @@ jobs:
 
       - name: Verify standalone JavaFX test client
         shell: bash
-        run: ./mvnw -f test-client/pom.xml verify
+        run: ./mvnw -f test-client/pom.xml -DeventTiming.buildOrigin=github-actions verify
