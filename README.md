@@ -151,9 +151,11 @@ the Maven project.
 On first open, NetBeans may perform a **priming build** to resolve the reactor/dependencies. That
 Maven preparation can compile and run tests; it is not the application Run action.
 
-The repository contains `nbactions.xml` so **Run Project** on the root Maven project starts the
-executable `app/` module with `../config/application.yml`. The root POM remains build/aggregation
-metadata and is not made into an executable application.
+The repository contains `nbactions.xml` so **Run Project** on the root Maven project first
+installs the current reactor sources with tests skipped, then starts the executable `app/`
+module with `config/application.yml`. This ensures the app uses the sibling framework from the
+same checkout rather than an older local SNAPSHOT. The root POM remains build/aggregation metadata
+and is not made into an executable application.
 
 Use **Run Project**, then enter:
 
