@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<actions>
+    <action>
+        <actionName>run</actionName>
+        <displayName>Run Event Timing Application</displayName>
+        <packagings>
+            <packaging>pom</packaging>
+        </packagings>
+        <basedir>app</basedir>
+        <recursive>false</recursive>
+        <goals>
+            <goal>process-classes</goal>
+            <goal>org.codehaus.mojo:exec-maven-plugin:3.6.4:java</goal>
+        </goals>
+        <properties>
+            <exec.mainClass>io.github.brainboxemb.eventtiming.app.TimingApplication</exec.mainClass>
+            <exec.args>../config/application.yml</exec.args>
+        </properties>
+    </action>
+</actions>
