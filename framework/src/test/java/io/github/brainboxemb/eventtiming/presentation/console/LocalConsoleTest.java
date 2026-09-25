@@ -34,6 +34,9 @@ public class LocalConsoleTest {
         assertTrue(text.contains("quit     Stop the application"));
         assertTrue(text.contains("exit     Alias for quit"));
         assertTrue(text.contains("application=event-timing-app version=test-version"));
+        assertTrue(text.contains("sourceRef=feature/test"));
+        assertTrue(text.contains("buildOrigin=local"));
+        assertTrue(text.contains("dirty=false"));
         assertTrue(text.contains("applicationState=RUNNING timingNodeId=timing-node-01"));
         assertTrue(stopped.get());
     }
