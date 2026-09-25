@@ -22,6 +22,7 @@ public class ApplicationConfigLoaderTest {
         assertEquals("timing-node-01", config.timingNodeId().value());
         assertNull(config.presentation().remoteShell());
         assertNull(config.presentation().http());
+        assertNull(config.presentation().webSocket());
     }
 
     @Test
@@ -34,12 +35,17 @@ public class ApplicationConfigLoaderTest {
                         + "    port: 8023\n"
                         + "  http:\n"
                         + "    bindAddress: 127.0.0.1\n"
-                        + "    port: 8081\n");
+                        + "    port: 8081\n"
+                        + "  webSocket:\n"
+                        + "    bindAddress: 127.0.0.1\n"
+                        + "    port: 8082\n");
 
         assertEquals("127.0.0.1", config.presentation().remoteShell().bindAddress());
         assertEquals(8023, config.presentation().remoteShell().port());
         assertEquals("127.0.0.1", config.presentation().http().bindAddress());
         assertEquals(8081, config.presentation().http().port());
+        assertEquals("127.0.0.1", config.presentation().webSocket().bindAddress());
+        assertEquals(8082, config.presentation().webSocket().port());
     }
 
     @Test(expected = IllegalArgumentException.class)

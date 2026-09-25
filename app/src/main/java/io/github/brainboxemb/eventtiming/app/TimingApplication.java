@@ -7,6 +7,7 @@ import io.github.brainboxemb.eventtiming.infra.BuildIdentity;
 import io.github.brainboxemb.eventtiming.presentation.console.LocalConsole;
 import io.github.brainboxemb.eventtiming.presentation.http.HttpStatusServer;
 import io.github.brainboxemb.eventtiming.presentation.shell.RemoteShellServer;
+import io.github.brainboxemb.eventtiming.presentation.websocket.WebSocketStatusServer;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -33,6 +34,7 @@ public final class TimingApplication implements AutoCloseable {
     private final TimingApplicationLifecycle lifecycle;
     private final RemoteShellConfig remoteShellConfig;
     private final HttpConfig httpConfig;
+    private final WebSocketConfig webSocketConfig;
 
     private TimingApplication(
             BuildIdentity buildIdentity,
@@ -40,13 +42,15 @@ public final class TimingApplication implements AutoCloseable {
             CommandHandler commandHandler,
             TimingApplicationLifecycle lifecycle,
             RemoteShellConfig remoteShellConfig,
-            HttpConfig httpConfig) {
+            HttpConfig httpConfig,
+            WebSocketConfig webSocketConfig) {
         this.buildIdentity = buildIdentity;
         this.timingNode = timingNode;
         this.commandHandler = commandHandler;
         this.lifecycle = lifecycle;
         this.remoteShellConfig = remoteShellConfig;
         this.httpConfig = httpConfig;
+        this.webSocketConfig = webSocketConfig;
     }
 
     public static Builder builder(BuildIdentity buildIdentity) {
@@ -75,6 +79,10 @@ public final class TimingApplication implements AutoCloseable {
 
     HttpConfig httpConfig() {
         return httpConfig;
+    }
+
+    WebSocketConfig webSocketConfig() {
+        return webSocketConfig;
     }
 
     TimingApplicationLifecycle.State state() {
@@ -119,10 +127,12 @@ public final class TimingApplication implements AutoCloseable {
         runtime.addShutdownHook(shutdownHook);
 
         HttpStatusServer http = null;
+        WebSocketStatusServer webSocket = null;
         RemoteShellServer remoteShell = null;
         try {
             application.start();
             http = startHttp(application);
+            webSocket = startWebSocket(application);
             remoteShell = startRemoteShell(application);
             startLocalConsole(application);
             application.awaitStopped();
@@ -131,6 +141,9 @@ public final class TimingApplication implements AutoCloseable {
         } catch (InterruptedException ex) {
             Thread.currentThread().interrupt();
         } finally {
+            if (webSocket != null) {
+                webSocket.close();
+            }
             if (http != null) {
                 http.close();
             }
@@ -152,6 +165,21 @@ public final class TimingApplication implements AutoCloseable {
         }
 
         HttpStatusServer server = new HttpStatusServer(
+                config.bindAddress(),
+                config.port(),
+                application.commandHandler());
+        server.start();
+        return server;
+    }
+
+    private static WebSocketStatusServer startWebSocket(TimingApplication application)
+            throws IOException {
+        WebSocketConfig config = application.webSocketConfig();
+        if (config == null) {
+            return null;
+        }
+
+        WebSocketStatusServer server = new WebSocketStatusServer(
                 config.bindAddress(),
                 config.port(),
                 application.commandHandler());
@@ -202,6 +230,7 @@ public final class TimingApplication implements AutoCloseable {
                 .timingNode(timingNode)
                 .remoteShellConfig(config.presentation().remoteShell())
                 .httpConfig(config.presentation().http())
+                .webSocketConfig(config.presentation().webSocket())
                 .build();
     }
 
@@ -259,6 +288,7 @@ public final class TimingApplication implements AutoCloseable {
         private TimingNode timingNode;
         private RemoteShellConfig remoteShellConfig;
         private HttpConfig httpConfig;
+        private WebSocketConfig webSocketConfig;
 
         private Builder(BuildIdentity buildIdentity) {
             if (buildIdentity == null) {
@@ -285,6 +315,11 @@ public final class TimingApplication implements AutoCloseable {
             return this;
         }
 
+        Builder webSocketConfig(WebSocketConfig webSocketConfig) {
+            this.webSocketConfig = webSocketConfig;
+            return this;
+        }
+
         public TimingApplication build() {
             if (timingNode == null) {
                 throw new IllegalStateException("timingNode must be configured before build");
@@ -301,7 +336,8 @@ public final class TimingApplication implements AutoCloseable {
                     commandHandler,
                     lifecycle,
                     remoteShellConfig,
-                    httpConfig);
+                    httpConfig,
+                    webSocketConfig);
         }
     }
 }

@@ -7,6 +7,10 @@ presentation:
     bindAddress: 127.0.0.1
     port: 8023
   http:
-    # IF-03 development baseline: explicit loopback-only listener.
+    # IF-03 request/response development baseline: loopback-only.
     bindAddress: 127.0.0.1
     port: 8081
+  webSocket:
+    # IF-03 live event development baseline: separate loopback-only listener.
+    bindAddress: 127.0.0.1
+    port: 8082

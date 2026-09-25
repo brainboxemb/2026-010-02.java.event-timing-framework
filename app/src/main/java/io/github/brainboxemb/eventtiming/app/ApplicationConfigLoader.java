@@ -20,6 +20,7 @@ final class ApplicationConfigLoader {
     private static final String PRESENTATION = "presentation";
     private static final String REMOTE_SHELL = "remoteShell";
     private static final String HTTP = "http";
+    private static final String WEB_SOCKET = "webSocket";
     private static final String BIND_ADDRESS = "bindAddress";
     private static final String PORT = "port";
 
@@ -57,15 +58,16 @@ final class ApplicationConfigLoader {
 
     private static PresentationConfig mapPresentation(Object rawPresentation) {
         if (rawPresentation == null) {
-            return new PresentationConfig(null, null);
+            return new PresentationConfig(null, null, null);
         }
 
         Map<?, ?> presentation = requireMapping(rawPresentation, PRESENTATION);
-        rejectUnknownFields(presentation, PRESENTATION, REMOTE_SHELL, HTTP);
+        rejectUnknownFields(presentation, PRESENTATION, REMOTE_SHELL, HTTP, WEB_SOCKET);
 
         return new PresentationConfig(
                 mapRemoteShell(presentation.get(REMOTE_SHELL)),
-                mapHttp(presentation.get(HTTP)));
+                mapHttp(presentation.get(HTTP)),
+                mapWebSocket(presentation.get(WEB_SOCKET)));
     }
 
     private static RemoteShellConfig mapRemoteShell(Object raw) {
@@ -90,6 +92,18 @@ final class ApplicationConfigLoader {
                         PRESENTATION + "." + HTTP + "." + BIND_ADDRESS),
                 requirePort(values.get(PORT),
                         PRESENTATION + "." + HTTP + "." + PORT));
+    }
+
+    private static WebSocketConfig mapWebSocket(Object raw) {
+        if (raw == null) {
+            return null;
+        }
+        Map<?, ?> values = endpointMapping(raw, PRESENTATION + "." + WEB_SOCKET);
+        return new WebSocketConfig(
+                requireString(values.get(BIND_ADDRESS),
+                        PRESENTATION + "." + WEB_SOCKET + "." + BIND_ADDRESS),
+                requirePort(values.get(PORT),
+                        PRESENTATION + "." + WEB_SOCKET + "." + PORT));
     }
 
     private static Map<?, ?> endpointMapping(Object raw, String field) {

@@ -56,7 +56,10 @@ public class TimingApplicationTest {
                         + "    port: 8023\n"
                         + "  http:\n"
                         + "    bindAddress: 127.0.0.1\n"
-                        + "    port: 8081\n")
+                        + "    port: 8081\n"
+                        + "  webSocket:\n"
+                        + "    bindAddress: 127.0.0.1\n"
+                        + "    port: 8082\n")
                         .getBytes(StandardCharsets.UTF_8));
 
         TimingApplication application = TimingApplication.configured(identity(), config.toPath());
@@ -66,6 +69,8 @@ public class TimingApplicationTest {
         assertEquals(8023, application.remoteShellConfig().port());
         assertEquals("127.0.0.1", application.httpConfig().bindAddress());
         assertEquals(8081, application.httpConfig().port());
+        assertEquals("127.0.0.1", application.webSocketConfig().bindAddress());
+        assertEquals(8082, application.webSocketConfig().port());
     }
 
     @Test(expected = IllegalArgumentException.class)
