@@ -1,10 +1,13 @@
 package io.github.brainboxemb.eventtiming.app;
 
 import io.github.brainboxemb.eventtiming.application.CommandHandler;
+import io.github.brainboxemb.eventtiming.domain.timing.TimingNode;
 import io.github.brainboxemb.eventtiming.infra.BuildIdentity;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Properties;
 
 /**
@@ -19,14 +22,17 @@ public final class TimingApplication implements AutoCloseable {
     private static final String BUILD_IDENTITY_RESOURCE = "/event-timing-build.properties";
 
     private final BuildIdentity buildIdentity;
+    private final TimingNode timingNode;
     private final CommandHandler commandHandler;
     private final TimingApplicationLifecycle lifecycle;
 
     private TimingApplication(
             BuildIdentity buildIdentity,
+            TimingNode timingNode,
             CommandHandler commandHandler,
             TimingApplicationLifecycle lifecycle) {
         this.buildIdentity = buildIdentity;
+        this.timingNode = timingNode;
         this.commandHandler = commandHandler;
         this.lifecycle = lifecycle;
     }
@@ -43,6 +49,10 @@ public final class TimingApplication implements AutoCloseable {
         return commandHandler;
     }
 
+    TimingNode timingNode() {
+        return timingNode;
+    }
+
     BuildIdentity buildIdentity() {
         return buildIdentity;
     }
@@ -57,11 +67,28 @@ public final class TimingApplication implements AutoCloseable {
     }
 
     /**
-     * Obtains the identity embedded by Maven, builds the application composition, starts it and
-     * always closes it. The final stdout line remains stable for cross-platform smoke evidence.
+     * Starts the application from the supplied configuration file.
+     *
+     * <p>The temporary no-argument startup is retained for the existing build smoke test.</p>
      */
     public static void main(String[] args) {
-        TimingApplication application = TimingApplication.builder(embeddedBuildIdentity()).build();
+        BuildIdentity buildIdentity = embeddedBuildIdentity();
+
+        if (args.length == 0) {
+            runArtifactSmoke(buildIdentity);
+            return;
+        }
+        if (args.length != 1) {
+            throw new IllegalArgumentException(
+                    "Usage: java -jar event-timing-app-<version>.jar <application.yml>");
+        }
+
+        TimingApplication application;
+        try {
+            application = configured(buildIdentity, Paths.get(args[0]));
+        } catch (IOException ex) {
+            throw new IllegalStateException("Unable to load application configuration: " + args[0], ex);
+        }
         try {
             application.start();
         } finally {
@@ -71,12 +98,24 @@ public final class TimingApplication implements AutoCloseable {
         System.out.println(smokeOutput(application.buildIdentity(), application.state()));
     }
 
-    /**
-     * Reads the build metadata embedded in this executable artifact.
-     *
-     * <p>This is bootstrap detail rather than an application/framework service: deployment
-     * configuration is loaded separately once the Step-3 configuration slice is implemented.</p>
-     */
+    static TimingApplication configured(BuildIdentity buildIdentity, Path configPath)
+            throws IOException {
+        ApplicationConfig config = ApplicationConfigLoader.load(configPath);
+        TimingNode timingNode = new TimingNode(config.timingNodeId());
+        return TimingApplication.builder(buildIdentity).timingNode(timingNode).build();
+    }
+
+    private static void runArtifactSmoke(BuildIdentity buildIdentity) {
+        TimingApplicationLifecycle lifecycle = new TimingApplicationLifecycle(buildIdentity);
+        try {
+            lifecycle.start();
+        } finally {
+            lifecycle.close();
+        }
+        System.out.println(smokeOutput(buildIdentity, lifecycle.state()));
+    }
+
+    /** Reads the build metadata embedded in this executable artifact. */
     static BuildIdentity embeddedBuildIdentity() {
         Properties properties = new Properties();
         try (InputStream input =
@@ -105,6 +144,7 @@ public final class TimingApplication implements AutoCloseable {
     /** Small composition builder that creates only objects required by the current executable. */
     public static final class Builder {
         private final BuildIdentity buildIdentity;
+        private TimingNode timingNode;
 
         private Builder(BuildIdentity buildIdentity) {
             if (buildIdentity == null) {
@@ -113,10 +153,21 @@ public final class TimingApplication implements AutoCloseable {
             this.buildIdentity = buildIdentity;
         }
 
+        public Builder timingNode(TimingNode timingNode) {
+            if (timingNode == null) {
+                throw new IllegalArgumentException("timingNode must not be null");
+            }
+            this.timingNode = timingNode;
+            return this;
+        }
+
         public TimingApplication build() {
+            if (timingNode == null) {
+                throw new IllegalStateException("timingNode must be configured before build");
+            }
             CommandHandler commandHandler = new CommandHandler(buildIdentity);
             TimingApplicationLifecycle lifecycle = new TimingApplicationLifecycle(buildIdentity);
-            return new TimingApplication(buildIdentity, commandHandler, lifecycle);
+            return new TimingApplication(buildIdentity, timingNode, commandHandler, lifecycle);
         }
     }
 }

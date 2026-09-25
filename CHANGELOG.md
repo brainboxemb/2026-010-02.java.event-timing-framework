@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Start SIP Step-3 A02 with one external YAML configuration file: load and validate a single `TimingNodeId`, introduce the minimal reusable `TimingNodeId` / `TimingNode` domain objects, and compose that configured TimingNode without prebuilding presentation, overlay or I/O configuration models.
+
 - Align implementation terminology with the accepted architecture: future logical timing aggregates are `TimingNode` objects identified by `TimingNodeId`; update README scope/examples without introducing compatibility types before the first real Step-3 configuration slice.
 
 - Resume the active Step-3 `0.2.x` development line as `0.2.2-SNAPSHOT` after the published `v0.2.1` release, preventing ordinary `main` pushes from being misclassified as attempts to recreate `v0.2.1`.

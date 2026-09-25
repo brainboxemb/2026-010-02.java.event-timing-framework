@@ -29,6 +29,8 @@ Current real framework behaviour is deliberately small:
 
 ```text
 io.github.brainboxemb.eventtiming.application.CommandHandler
+io.github.brainboxemb.eventtiming.domain.timing.TimingNode
+io.github.brainboxemb.eventtiming.domain.timing.TimingNodeId
 io.github.brainboxemb.eventtiming.infra.BuildIdentity
 ```
 
@@ -71,6 +73,25 @@ multi-TimingNode application  compose and coordinate 1..N TimingNode objects
 Those applications should reuse the same framework library and inject/select their own concrete components. New Step-3 configuration/domain types use `TimingNode` / `TimingNodeId` directly; the repository does not introduce legacy `Waypoint` / `UniqueID` compatibility names.
 
 The working design is coordinated in the meta repository, especially `docs/31-01-SDD-02-java-component-design.md`.
+
+### Current A02 configuration slice
+
+A02 introduces one external YAML file for the single TimingNode currently composed by the executable.
+Only the identity has a real configuration consumer yet:
+
+```yaml
+timingNodeId: timing-node-01
+```
+
+A synthetic development example is kept at `config/application.yml`. After building, exercise the
+configuration path with:
+
+```bash
+java -jar app/target/event-timing-app-<version>.jar config/application.yml
+```
+
+Presentation settings, multiple TimingNodes, platform/profile overlays and I/O configuration are
+not implemented by A02; they are added only when their SIP activities provide a real consumer.
 
 ## Local checkout and project tooling
 

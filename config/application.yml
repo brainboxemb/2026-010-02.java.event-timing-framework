@@ -1,0 +1,2 @@
+# A02 development configuration: exactly one logical TimingNode identity.
+timingNodeId: timing-node-01
