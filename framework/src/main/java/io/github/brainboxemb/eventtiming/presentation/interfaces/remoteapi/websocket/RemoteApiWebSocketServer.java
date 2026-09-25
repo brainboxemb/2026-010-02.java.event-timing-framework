@@ -1,7 +1,7 @@
-package io.github.brainboxemb.eventtiming.presentation.websocket;
+package io.github.brainboxemb.eventtiming.presentation.interfaces.remoteapi.websocket;
 
 import io.github.brainboxemb.eventtiming.application.CommandHandler;
-import io.github.brainboxemb.eventtiming.presentation.control.ApplicationControlJson;
+import io.github.brainboxemb.eventtiming.presentation.interfaces.remoteapi.messages.RemoteApiMessageWriter;
 
 import java.io.IOException;
 import java.net.InetAddress;
@@ -23,11 +23,11 @@ import org.java_websocket.server.WebSocketServer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/** WebSocket adapter for IF-03 status snapshots and change events. */
-public final class WebSocketStatusServer implements AutoCloseable {
+/** WebSocket transport for IF-03 Remote API events. */
+public final class RemoteApiWebSocketServer implements AutoCloseable {
     public static final String EVENTS_PATH = "/api/v1/events";
 
-    private static final Logger LOG = LoggerFactory.getLogger(WebSocketStatusServer.class);
+    private static final Logger LOG = LoggerFactory.getLogger(RemoteApiWebSocketServer.class);
     private static final int MAX_INBOUND_FRAME_BYTES = 64 * 1024;
     private static final long START_TIMEOUT_MILLIS = 3000L;
 
@@ -38,14 +38,14 @@ public final class WebSocketStatusServer implements AutoCloseable {
 
     private Server server;
 
-    public WebSocketStatusServer(
+    public RemoteApiWebSocketServer(
             String bindAddress,
             int port,
             CommandHandler commandHandler) {
         this(bindAddress, port, commandHandler, Clock.systemUTC());
     }
 
-    WebSocketStatusServer(
+    RemoteApiWebSocketServer(
             String bindAddress,
             int port,
             CommandHandler commandHandler,
@@ -119,7 +119,7 @@ public final class WebSocketStatusServer implements AutoCloseable {
     }
 
     private String eventJson(String eventType) {
-        return ApplicationControlJson.statusEvent(
+        return RemoteApiMessageWriter.statusEvent(
                 eventType,
                 clock.instant(),
                 commandHandler.version(),

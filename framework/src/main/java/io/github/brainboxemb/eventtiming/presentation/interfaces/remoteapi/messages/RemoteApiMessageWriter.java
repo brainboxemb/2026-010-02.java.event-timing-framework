@@ -1,11 +1,11 @@
-package io.github.brainboxemb.eventtiming.presentation.control;
+package io.github.brainboxemb.eventtiming.presentation.interfaces.remoteapi.messages;
 
 import io.github.brainboxemb.eventtiming.application.ApplicationStatus;
 import io.github.brainboxemb.eventtiming.infra.BuildIdentity;
 
 /** Explicit JSON mapping for the IF-03 first-executable contract. */
-public final class ApplicationControlJson {
-    private ApplicationControlJson() {
+public final class RemoteApiMessageWriter {
+    private RemoteApiMessageWriter() {
     }
 
     public static String version(BuildIdentity identity) {
