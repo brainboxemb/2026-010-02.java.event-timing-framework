@@ -54,6 +54,18 @@ public final class TestClientFxApplication extends Application {
 
     private final TextArea rawJson = new TextArea();
 
+    private final StatusWebSocketClient eventClient = new StatusWebSocketClient();
+    private final TextField eventEndpoint =
+            new TextField("ws://127.0.0.1:8082/api/v1/events");
+    private final Button eventConnect = new Button("Connect");
+    private final Button eventDisconnect = new Button("Disconnect");
+    private final Label eventConnectionStatus = new Label("Disconnected");
+    private final Label eventType = valueLabel();
+    private final Label eventOccurredAt = valueLabel();
+    private final Label eventTimingNodeId = valueLabel();
+    private final Label eventTimingNodeLifecycle = valueLabel();
+    private final TextArea eventLog = new TextArea();
+
     private final RemoteShellClient shellClient = new RemoteShellClient();
     private final TextField shellHost = new TextField("127.0.0.1");
     private final TextField shellPort = new TextField("8023");
@@ -97,9 +109,11 @@ public final class TestClientFxApplication extends Application {
 
         Tab statusTab = new Tab("Status", statusContent);
         statusTab.setClosable(false);
+        Tab eventsTab = new Tab("Events", eventsPane());
+        eventsTab.setClosable(false);
         Tab terminalTab = new Tab("Terminal", terminalPane());
         terminalTab.setClosable(false);
-        TabPane tabs = new TabPane(statusTab, terminalTab);
+        TabPane tabs = new TabPane(statusTab, eventsTab, terminalTab);
 
         MenuItem about = new MenuItem("About");
         about.setOnAction(event -> showAbout(stage));
@@ -151,6 +165,40 @@ public final class TestClientFxApplication extends Application {
         addRow(grid, 0, "Timing node", timingNodeId);
         addRow(grid, 1, "Lifecycle", timingNodeLifecycle);
         return grid;
+    }
+
+    private VBox eventsPane() {
+        eventEndpoint.setPrefColumnCount(42);
+        eventDisconnect.setDisable(true);
+        HBox.setHgrow(eventEndpoint, Priority.ALWAYS);
+
+        HBox connection = new HBox(8,
+                new Label("WebSocket"),
+                eventEndpoint,
+                eventConnect,
+                eventDisconnect,
+                eventConnectionStatus);
+
+        GridPane values = grid();
+        addRow(values, 0, "Event type", eventType);
+        addRow(values, 1, "Occurred at", eventOccurredAt);
+        addRow(values, 2, "Timing node", eventTimingNodeId);
+        addRow(values, 3, "Lifecycle", eventTimingNodeLifecycle);
+
+        eventLog.setEditable(false);
+        eventLog.setWrapText(false);
+        eventLog.setPrefRowCount(18);
+        TitledPane logPane = new TitledPane("Received events (raw JSON)", eventLog);
+        logPane.setCollapsible(false);
+        VBox.setVgrow(logPane, Priority.ALWAYS);
+
+        eventConnect.setOnAction(event -> connectEvents());
+        eventDisconnect.setOnAction(event -> disconnectEvents());
+
+        VBox pane = new VBox(10, connection, values, logPane);
+        pane.setPadding(new Insets(12));
+        VBox.setVgrow(logPane, Priority.ALWAYS);
+        return pane;
     }
 
     private VBox terminalPane() {
@@ -216,6 +264,95 @@ public final class TestClientFxApplication extends Application {
                     }
                     rawJson.setText(result.rawJson());
                 });
+    }
+
+    private void connectEvents() {
+        URI uri;
+        try {
+            uri = URI.create(eventEndpoint.getText().trim());
+        } catch (IllegalArgumentException ex) {
+            eventConnectionStatus.setText("Invalid endpoint");
+            return;
+        }
+
+        eventConnect.setDisable(true);
+        eventEndpoint.setDisable(true);
+        eventConnectionStatus.setText("Connecting...");
+
+        try {
+            eventClient.connect(uri, new StatusWebSocketClient.Listener() {
+                @Override
+                public void onConnected() {
+                    Platform.runLater(() -> setEventConnected(true, "Connected"));
+                }
+
+                @Override
+                public void onEvent(StatusWebSocketClient.StatusEvent event) {
+                    Platform.runLater(() -> showEvent(event));
+                }
+
+                @Override
+                public void onClosed(int statusCode, String reason) {
+                    Platform.runLater(() ->
+                            setEventConnected(false, "Disconnected (" + statusCode + ")"));
+                }
+
+                @Override
+                public void onError(String message) {
+                    Platform.runLater(() -> {
+                        eventConnectionStatus.setText("Error: " + message);
+                        if (!eventClient.isConnected()) {
+                            setEventConnected(false, "Error: " + message);
+                        }
+                    });
+                }
+            }).whenComplete((ignored, error) -> {
+                if (error != null) {
+                    Platform.runLater(() -> {
+                        Throwable cause = error.getCause() == null ? error : error.getCause();
+                        setEventConnected(false, "Error: " + cause.getMessage());
+                    });
+                }
+            });
+        } catch (RuntimeException ex) {
+            setEventConnected(false, "Error: " + ex.getMessage());
+        }
+    }
+
+    private void disconnectEvents() {
+        eventConnectionStatus.setText("Disconnecting...");
+        eventClient.disconnect();
+        if (!eventClient.isConnected()) {
+            setEventConnected(false, "Disconnected");
+        }
+    }
+
+    private void showEvent(StatusWebSocketClient.StatusEvent event) {
+        eventType.setText(event.eventType());
+        eventOccurredAt.setText(event.occurredAt().toString());
+
+        if (event.status().timingNodes().isEmpty()) {
+            eventTimingNodeId.setText("-");
+            eventTimingNodeLifecycle.setText("-");
+        } else {
+            var node = event.status().timingNodes().get(0);
+            eventTimingNodeId.setText(node.timingNodeId());
+            eventTimingNodeLifecycle.setText(node.lifecycle());
+        }
+
+        if (!eventLog.getText().isEmpty()) {
+            eventLog.appendText(System.lineSeparator());
+        }
+        eventLog.appendText(event.rawJson());
+        eventLog.appendText(System.lineSeparator());
+        eventLog.positionCaret(eventLog.getLength());
+    }
+
+    private void setEventConnected(boolean connected, String status) {
+        eventConnect.setDisable(connected);
+        eventDisconnect.setDisable(!connected);
+        eventEndpoint.setDisable(connected);
+        eventConnectionStatus.setText(status);
     }
 
     private void connectShell() {
@@ -359,6 +496,7 @@ public final class TestClientFxApplication extends Application {
 
     @Override
     public void stop() {
+        eventClient.close();
         shellClient.close();
         requests.shutdownNow();
     }
