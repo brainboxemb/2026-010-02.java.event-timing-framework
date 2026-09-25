@@ -19,6 +19,31 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 public class RemoteShellServerTest {
+
+    @Test
+    public void acceptsFirstCommandBeforeClientReadsBanner() throws Exception {
+        RemoteShellServer server =
+                new RemoteShellServer("127.0.0.1", 0, commandHandler(), () -> { });
+        server.start();
+
+        try (Socket client = connect(server.boundPort())) {
+            Writer writer =
+                    new OutputStreamWriter(client.getOutputStream(), StandardCharsets.UTF_8);
+            writer.write("help\n");
+            writer.flush();
+
+            String response = readUntil(client.getInputStream(), "event-timing> ");
+            response += readUntil(client.getInputStream(), "event-timing> ");
+
+            assertTrue(response.contains("Remote terminal ready."));
+            assertTrue(response.contains("Commands:"));
+            assertTrue(response.contains("help     Show available commands"));
+            assertFalse(response.contains("Unknown command"));
+        } finally {
+            server.close();
+        }
+    }
+
     @Test
     public void reconnectsAfterDisconnectAndUsesSharedShutdownCommand() throws Exception {
         AtomicBoolean shutdown = new AtomicBoolean(false);
