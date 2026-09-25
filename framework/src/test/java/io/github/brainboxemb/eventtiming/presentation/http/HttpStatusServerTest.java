@@ -12,7 +12,6 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
-import java.time.Instant;
 
 import org.junit.Test;
 
@@ -37,8 +36,6 @@ public class HttpStatusServerTest {
 
             Response status = request(server.boundPort(), "GET", "/api/v1/status");
             assertEquals(200, status.status);
-            assertTrue(status.body.contains("\"state\":\"RUNNING\""));
-            assertTrue(status.body.contains("\"startedAt\":\"2026-09-25T13:00:00Z\""));
             assertTrue(status.body.contains("\"timingNodeId\":\"timing-node-01\""));
             assertTrue(status.body.contains("\"lifecycle\":\"CLOSED\""));
             assertTrue(status.body.contains("\"problems\":[]"));
@@ -100,8 +97,6 @@ public class HttpStatusServerTest {
                 "local",
                 false);
         ApplicationStatus status = new ApplicationStatus(
-                "RUNNING",
-                Instant.parse("2026-09-25T13:00:00Z"),
                 new TimingNodeId("timing-node-01"),
                 TimingNode.Lifecycle.CLOSED);
         return new CommandHandler(identity, () -> status);

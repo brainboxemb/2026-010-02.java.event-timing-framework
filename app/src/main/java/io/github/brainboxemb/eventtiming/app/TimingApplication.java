@@ -293,8 +293,6 @@ public final class TimingApplication implements AutoCloseable {
             CommandHandler commandHandler = new CommandHandler(
                     buildIdentity,
                     () -> new ApplicationStatus(
-                            lifecycle.state().name(),
-                            lifecycle.startedAt(),
                             timingNode.timingNodeId(),
                             timingNode.lifecycle()));
             return new TimingApplication(

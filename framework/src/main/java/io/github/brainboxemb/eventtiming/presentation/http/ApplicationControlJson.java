@@ -24,10 +24,6 @@ final class ApplicationControlJson {
         return "{"
                 + "\"apiVersion\":" + quote(identity.apiVersion()) + ","
                 + "\"build\":" + version(identity) + ","
-                + "\"application\":{"
-                + "\"state\":" + quote(status.applicationState()) + ","
-                + "\"startedAt\":" + quote(status.startedAt().toString())
-                + "},"
                 + "\"timingNodes\":[{"
                 + "\"timingNodeId\":" + quote(status.timingNodeId().value()) + ","
                 + "\"lifecycle\":" + quote(status.timingNodeLifecycle().name())

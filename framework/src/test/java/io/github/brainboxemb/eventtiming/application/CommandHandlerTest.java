@@ -4,8 +4,6 @@ import io.github.brainboxemb.eventtiming.domain.timing.TimingNode;
 import io.github.brainboxemb.eventtiming.domain.timing.TimingNodeId;
 import io.github.brainboxemb.eventtiming.infra.BuildIdentity;
 
-import java.time.Instant;
-
 import org.junit.Test;
 
 import static org.junit.Assert.assertSame;
@@ -41,8 +39,6 @@ public class CommandHandlerTest {
 
     private static ApplicationStatus status() {
         return new ApplicationStatus(
-                "RUNNING",
-                Instant.parse("2026-09-25T13:00:00Z"),
                 new TimingNodeId("timing-node-01"),
                 TimingNode.Lifecycle.CLOSED);
     }
