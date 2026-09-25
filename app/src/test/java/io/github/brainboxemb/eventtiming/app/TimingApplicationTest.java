@@ -21,27 +21,28 @@ public class TimingApplicationTest {
 
     @Test
     public void builderComposesConfiguredTimingNodeAndSharedBoundary() {
-        BuildIdentity identity = BuildIdentity.firstApiVersion(
-                "event-timing-app",
-                "test-version",
-                "abc123def456",
-                "feature/test",
-                "local",
-                false);
+        BuildIdentity identity = identity();
         TimingNode timingNode = new TimingNode(new TimingNodeId("timing-node-01"));
-
         TimingApplication application =
                 TimingApplication.builder(identity).timingNode(timingNode).build();
 
         assertSame(identity, application.buildIdentity());
         assertSame(timingNode, application.timingNode());
-        assertEquals("timing-node-01", application.timingNode().timingNodeId().value());
         assertSame(identity, application.commandHandler().version());
-        assertEquals("NEW", application.commandHandler().status().applicationState());
-        assertEquals(
-                "timing-node-01",
-                application.commandHandler().status().timingNodeId().value());
         assertEquals(TimingApplicationLifecycle.State.NEW, application.state());
+
+        application.start();
+        try {
+            assertEquals("RUNNING", application.commandHandler().status().applicationState());
+            assertEquals(
+                    "timing-node-01",
+                    application.commandHandler().status().timingNodeId().value());
+            assertEquals(
+                    TimingNode.Lifecycle.CLOSED,
+                    application.commandHandler().status().timingNodeLifecycle());
+        } finally {
+            application.close();
+        }
     }
 
     @Test
@@ -53,26 +54,19 @@ public class TimingApplicationTest {
                         + "presentation:\n"
                         + "  remoteShell:\n"
                         + "    bindAddress: 127.0.0.1\n"
-                        + "    port: 8023\n")
+                        + "    port: 8023\n"
+                        + "  http:\n"
+                        + "    bindAddress: 127.0.0.1\n"
+                        + "    port: 8081\n")
                         .getBytes(StandardCharsets.UTF_8));
-        BuildIdentity identity = BuildIdentity.firstApiVersion(
-                "event-timing-app",
-                "test-version",
-                "abc123def456",
-                "feature/test",
-                "local",
-                false);
 
-        TimingApplication application = TimingApplication.configured(identity, config.toPath());
+        TimingApplication application = TimingApplication.configured(identity(), config.toPath());
 
-        assertSame(identity, application.buildIdentity());
         assertEquals("configured-node", application.timingNode().timingNodeId().value());
-        assertEquals(
-                "configured-node",
-                application.commandHandler().status().timingNodeId().value());
         assertEquals("127.0.0.1", application.remoteShellConfig().bindAddress());
         assertEquals(8023, application.remoteShellConfig().port());
-        assertEquals(TimingApplicationLifecycle.State.NEW, application.state());
+        assertEquals("127.0.0.1", application.httpConfig().bindAddress());
+        assertEquals(8081, application.httpConfig().port());
     }
 
     @Test(expected = IllegalArgumentException.class)
@@ -82,28 +76,24 @@ public class TimingApplicationTest {
 
     @Test(expected = IllegalStateException.class)
     public void builderRejectsMissingTimingNode() {
-        BuildIdentity identity = BuildIdentity.firstApiVersion(
-                "event-timing-app",
-                "test-version",
-                "abc123def456",
-                "feature/test",
-                "local",
-                false);
-
-        TimingApplication.builder(identity).build();
+        TimingApplication.builder(identity()).build();
     }
 
     @Test
     public void formatsStableSmokeOutput() {
-        BuildIdentity identity = BuildIdentity.firstApiVersion(
+        assertEquals(
+                "event-timing-app lifecycle OK version=test-version state=STOPPED",
+                TimingApplication.smokeOutput(
+                        identity(), TimingApplicationLifecycle.State.STOPPED));
+    }
+
+    private static BuildIdentity identity() {
+        return BuildIdentity.firstApiVersion(
                 "event-timing-app",
                 "test-version",
                 "abc123def456",
                 "feature/test",
                 "local",
                 false);
-        assertEquals(
-                "event-timing-app lifecycle OK version=test-version state=STOPPED",
-                TimingApplication.smokeOutput(identity, TimingApplicationLifecycle.State.STOPPED));
     }
 }
