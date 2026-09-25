@@ -39,8 +39,9 @@ public class LocalConsoleTest {
         assertTrue(text.contains("Source ref   : feature/test"));
         assertTrue(text.contains("Build origin : local"));
         assertTrue(text.contains("Source state : clean"));
-        assertTrue(text.contains("State       : RUNNING"));
-        assertTrue(text.contains("Timing node : timing-node-01"));
+        assertTrue(text.contains("Timing node"));
+        assertTrue(text.contains("Id : timing-node-01"));
+        assertFalse(text.contains("State       : RUNNING"));
         assertTrue(stopped.get());
     }
 
