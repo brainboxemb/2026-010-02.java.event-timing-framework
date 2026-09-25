@@ -54,7 +54,7 @@ public final class TestClientFxApplication extends Application {
 
     private final TextArea rawJson = new TextArea();
 
-    private final StatusWebSocketClient eventClient = new StatusWebSocketClient();
+    private final RemoteApiEventClient eventClient = new RemoteApiEventClient();
     private final TextField eventEndpoint =
             new TextField("ws://127.0.0.1:8082/api/v1/events");
     private final Button eventConnect = new Button("Connect");
@@ -280,14 +280,14 @@ public final class TestClientFxApplication extends Application {
         eventConnectionStatus.setText("Connecting...");
 
         try {
-            eventClient.connect(uri, new StatusWebSocketClient.Listener() {
+            eventClient.connect(uri, new RemoteApiEventClient.Listener() {
                 @Override
                 public void onConnected() {
                     Platform.runLater(() -> setEventConnected(true, "Connected"));
                 }
 
                 @Override
-                public void onEvent(StatusWebSocketClient.StatusEvent event) {
+                public void onEvent(RemoteApiEventClient.StatusEvent event) {
                     Platform.runLater(() -> showEvent(event));
                 }
 
@@ -327,7 +327,7 @@ public final class TestClientFxApplication extends Application {
         }
     }
 
-    private void showEvent(StatusWebSocketClient.StatusEvent event) {
+    private void showEvent(RemoteApiEventClient.StatusEvent event) {
         eventType.setText(event.eventType());
         eventOccurredAt.setText(event.occurredAt().toString());
 
@@ -432,11 +432,11 @@ public final class TestClientFxApplication extends Application {
         terminalStatus.setText(status);
     }
 
-    private ApplicationControlClient client() {
-        return new ApplicationControlClient(URI.create(endpoint.getText().trim()));
+    private RemoteApiClient client() {
+        return new RemoteApiClient(URI.create(endpoint.getText().trim()));
     }
 
-    private void showBuild(ApplicationControlClient.BuildInfo build) {
+    private void showBuild(RemoteApiClient.BuildInfo build) {
         application.setText(build.application());
         version.setText(build.version());
         revision.setText(build.revision());

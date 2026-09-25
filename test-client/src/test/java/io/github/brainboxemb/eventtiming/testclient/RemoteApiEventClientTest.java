@@ -7,7 +7,7 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-class StatusWebSocketClientTest {
+class RemoteApiEventClientTest {
     @Test
     void parsesCompleteIf03StatusEvent() throws Exception {
         String json = "{"
@@ -33,7 +33,7 @@ class StatusWebSocketClientTest {
                 + "}"
                 + "}";
 
-        var event = StatusWebSocketClient.parseEvent(json);
+        var event = RemoteApiEventClient.parseEvent(json);
 
         assertEquals("STATUS_SNAPSHOT", event.eventType());
         assertEquals(Instant.parse("2026-09-25T15:00:00Z"), event.occurredAt());
@@ -45,7 +45,7 @@ class StatusWebSocketClientTest {
 
     @Test
     void rejectsNonWebSocketEndpoint() {
-        StatusWebSocketClient client = new StatusWebSocketClient();
+        RemoteApiEventClient client = new RemoteApiEventClient();
         try {
             assertThrows(
                     IllegalArgumentException.class,
@@ -57,13 +57,13 @@ class StatusWebSocketClientTest {
         }
     }
 
-    private static final class NoOpListener implements StatusWebSocketClient.Listener {
+    private static final class NoOpListener implements RemoteApiEventClient.Listener {
         @Override
         public void onConnected() {
         }
 
         @Override
-        public void onEvent(StatusWebSocketClient.StatusEvent event) {
+        public void onEvent(RemoteApiEventClient.StatusEvent event) {
         }
 
         @Override
