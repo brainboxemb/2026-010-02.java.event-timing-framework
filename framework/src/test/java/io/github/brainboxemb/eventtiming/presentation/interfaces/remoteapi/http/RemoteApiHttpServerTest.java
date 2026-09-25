@@ -1,4 +1,4 @@
-package io.github.brainboxemb.eventtiming.presentation.http;
+package io.github.brainboxemb.eventtiming.presentation.interfaces.remoteapi.http;
 
 import io.github.brainboxemb.eventtiming.application.ApplicationStatus;
 import io.github.brainboxemb.eventtiming.application.CommandHandler;
@@ -18,10 +18,10 @@ import org.junit.Test;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
-public class HttpStatusServerTest {
+public class RemoteApiHttpServerTest {
     @Test
     public void exposesVersionAndStatusOverRealHttp() throws Exception {
-        HttpStatusServer server = new HttpStatusServer("127.0.0.1", 0, commandHandler());
+        RemoteApiHttpServer server = new RemoteApiHttpServer("127.0.0.1", 0, commandHandler());
         server.start();
 
         try {
@@ -46,7 +46,7 @@ public class HttpStatusServerTest {
 
     @Test
     public void returnsJsonErrorsForUnknownPathAndUnsupportedMethod() throws Exception {
-        HttpStatusServer server = new HttpStatusServer("127.0.0.1", 0, commandHandler());
+        RemoteApiHttpServer server = new RemoteApiHttpServer("127.0.0.1", 0, commandHandler());
         server.start();
 
         try {
@@ -75,7 +75,7 @@ public class HttpStatusServerTest {
                 new CommandHandler(identity, () -> {
                     throw new IllegalStateException("test failure");
                 });
-        HttpStatusServer server = new HttpStatusServer("127.0.0.1", 0, failing);
+        RemoteApiHttpServer server = new RemoteApiHttpServer("127.0.0.1", 0, failing);
         server.start();
 
         try {

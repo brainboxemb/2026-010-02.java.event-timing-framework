@@ -13,16 +13,17 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Independent IF-03 HTTP client.
+ * Independent IF-03 Remote API HTTP client.
  *
  * <p>This project deliberately has no dependency on SI-01 implementation classes.</p>
  */
-public final class ApplicationControlClient {
+public final class RemoteApiClient {
+    private static final ObjectMapper JSON = new ObjectMapper();
+
     private final URI endpoint;
     private final HttpClient httpClient;
-    private final ObjectMapper objectMapper;
 
-    public ApplicationControlClient(URI endpoint) {
+    public RemoteApiClient(URI endpoint) {
         if (endpoint == null || endpoint.getScheme() == null || endpoint.getHost() == null) {
             throw new IllegalArgumentException("endpoint must be an absolute HTTP URI");
         }
@@ -34,18 +35,20 @@ public final class ApplicationControlClient {
         this.httpClient = HttpClient.newBuilder()
                 .connectTimeout(Duration.ofSeconds(3))
                 .build();
-        this.objectMapper = new ObjectMapper();
     }
 
     public VersionResult getVersion() throws IOException, InterruptedException {
         String rawJson = get("/api/v1/version");
-        JsonNode root = objectMapper.readTree(rawJson);
+        JsonNode root = JSON.readTree(rawJson);
         return new VersionResult(readBuild(root), rawJson);
     }
 
     public StatusResult getStatus() throws IOException, InterruptedException {
-        String rawJson = get("/api/v1/status");
-        JsonNode root = objectMapper.readTree(rawJson);
+        return parseStatus(get("/api/v1/status"));
+    }
+
+    static StatusResult parseStatus(String rawJson) throws IOException {
+        JsonNode root = JSON.readTree(rawJson);
         List<TimingNodeInfo> timingNodes = new ArrayList<>();
         for (JsonNode node : required(root, "timingNodes")) {
             timingNodes.add(new TimingNodeInfo(
@@ -85,7 +88,7 @@ public final class ApplicationControlClient {
                 requiredText(root, "apiVersion"));
     }
 
-    private static JsonNode required(JsonNode root, String field) {
+    static JsonNode required(JsonNode root, String field) {
         JsonNode value = root.get(field);
         if (value == null || value.isNull()) {
             throw new IllegalArgumentException("Missing IF-03 field: " + field);
@@ -93,7 +96,7 @@ public final class ApplicationControlClient {
         return value;
     }
 
-    private static String requiredText(JsonNode root, String field) {
+    static String requiredText(JsonNode root, String field) {
         JsonNode value = required(root, field);
         if (!value.isTextual()) {
             throw new IllegalArgumentException("IF-03 field is not text: " + field);

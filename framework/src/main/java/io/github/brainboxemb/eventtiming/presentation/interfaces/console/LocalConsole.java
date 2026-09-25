@@ -1,7 +1,7 @@
-package io.github.brainboxemb.eventtiming.presentation.console;
+package io.github.brainboxemb.eventtiming.presentation.interfaces.console;
 
 import io.github.brainboxemb.eventtiming.application.CommandHandler;
-import io.github.brainboxemb.eventtiming.presentation.terminal.TerminalSession;
+import io.github.brainboxemb.eventtiming.presentation.common.terminal.TerminalSession;
 
 import java.io.IOException;
 import java.io.Reader;

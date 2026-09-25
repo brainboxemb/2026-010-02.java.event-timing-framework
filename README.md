@@ -33,9 +33,12 @@ io.github.brainboxemb.eventtiming.application.CommandHandler
 io.github.brainboxemb.eventtiming.domain.timing.TimingNode
 io.github.brainboxemb.eventtiming.domain.timing.TimingNodeId
 io.github.brainboxemb.eventtiming.infra.BuildIdentity
-io.github.brainboxemb.eventtiming.presentation.console.LocalConsole
-io.github.brainboxemb.eventtiming.presentation.terminal.TerminalSession
-io.github.brainboxemb.eventtiming.presentation.shell.RemoteShellServer
+io.github.brainboxemb.eventtiming.presentation.interfaces.console.LocalConsole
+io.github.brainboxemb.eventtiming.presentation.interfaces.shell.RemoteShellServer
+io.github.brainboxemb.eventtiming.presentation.interfaces.remoteapi.http.RemoteApiHttpServer
+io.github.brainboxemb.eventtiming.presentation.interfaces.remoteapi.websocket.RemoteApiWebSocketServer
+io.github.brainboxemb.eventtiming.presentation.interfaces.remoteapi.messages.RemoteApiMessageWriter
+io.github.brainboxemb.eventtiming.presentation.common.terminal.TerminalSession
 ```
 
 `application` owns the shared client-facing request boundary. `infra` owns build/runtime
@@ -81,7 +84,7 @@ The working design is coordinated in the meta repository, especially `docs/31-01
 ### Current Step-3 application
 
 The executable uses one external YAML file for the single TimingNode currently composed by the
-application. A05 adds the first real presentation listener configuration:
+application. Step 3 now configures the implemented presentation listeners explicitly:
 
 ```yaml
 timingNodeId: timing-node-01
@@ -90,21 +93,35 @@ presentation:
   remoteShell:
     bindAddress: 127.0.0.1
     port: 8023
-  http:
-    bindAddress: 127.0.0.1
-    port: 8081
+  remoteApi:
+    http:
+      bindAddress: 127.0.0.1
+      port: 8081
+    webSocket:
+      bindAddress: 127.0.0.1
+      port: 8082
 ```
 
 The remote shell is a small line-oriented TCP development/service endpoint. It is **not** an SSH
-or Telnet protocol implementation. A06 also exposes IF-03 over HTTP/JSON on the configured HTTP
-listener:
+or Telnet protocol implementation. IF-03 is the general **Remote API**; A06/A07 implement its first
+HTTP version/status and WebSocket event slice:
 
 ```text
-GET /api/v1/version
-GET /api/v1/status
+GET /api/v1/version                         http://127.0.0.1:8081
+GET /api/v1/status                          http://127.0.0.1:8081
+WS  /api/v1/events                          ws://127.0.0.1:8082
 ```
 
-The committed development example keeps both network presentation listeners loopback-only;
+The WebSocket adapter sends a complete `STATUS_SNAPSHOT` immediately after connect/reconnect.
+`STATUS_CHANGED` is reserved for real authoritative status changes; the current Step-3
+TimingNode remains `CLOSED`, so no synthetic change is generated merely to exercise the
+transport.
+
+Remote API HTTP and WebSocket are grouped under `presentation.remoteApi` because they are two
+transports of the same functional interface. A future browser/iPad `presentation.web` interface
+may have its own HTTP/WebSocket endpoints without sharing the Remote API namespace.
+
+The committed development example keeps all network presentation listeners loopback-only;
 binding to another interface must be a deliberate configuration change.
 
 A synthetic development example is kept at `config/application.yml`. After building, start the
@@ -123,7 +140,7 @@ The local console and A05 remote terminal use the same command session:
 ```text
 help      show available commands
 version   show application/build version
-status    show current application state and TimingNodeId
+status    show current TimingNode identity and lifecycle
 quit      stop the application cleanly
 exit      alias for quit
 ```
@@ -136,9 +153,9 @@ The temporary no-argument startup remains only for the existing artifact smoke c
 TimingNodes, further presentation endpoints, platform/profile overlays and I/O configuration are
 added only when their SIP activities provide a real consumer.
 
-### A06 JavaFX test client
+### Step-3 JavaFX test client
 
-`test-client/` is a standalone Java 17 / JavaFX development tool for manually inspecting IF-03.
+`test-client/` is a standalone Java 17 / JavaFX development tool for manually inspecting the IF-03 Remote API.
 It is deliberately not part of the Java-8 SI-01 Maven reactor and has no dependency on
 `event-timing-framework` or `event-timing-app`.
 
@@ -148,10 +165,12 @@ With JDK 17 selected:
 .\mvnw.cmd -f test-client\pom.xml javafx:run
 ```
 
-The client defaults to `http://127.0.0.1:8081` and provides **Get Version** and **Get Status**
-actions with both parsed fields and the raw JSON response. Its **Terminal** tab also connects
-directly to the A05 development shell, defaulting to `127.0.0.1:8023`, so manual shell
-verification does not require a separate PuTTY session. See `test-client/README.md`.
+The **Status** tab defaults to `http://127.0.0.1:8081` and provides **Get Version** and
+**Get Status** with parsed fields plus raw JSON. The A07 **Events** tab defaults to
+`ws://127.0.0.1:8082/api/v1/events` and displays the connection state, latest parsed event and
+raw event stream. The **Terminal** tab connects directly to the A05 development shell on
+`127.0.0.1:8023`, so manual shell verification does not require a separate PuTTY session.
+See `test-client/README.md`.
 
 
 ## Local checkout and project tooling

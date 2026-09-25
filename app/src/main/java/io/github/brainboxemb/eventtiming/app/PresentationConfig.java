@@ -1,20 +1,20 @@
 package io.github.brainboxemb.eventtiming.app;
 
-/** Effective presentation configuration for currently implemented adapters. */
+/** Effective presentation configuration for currently implemented interfaces. */
 final class PresentationConfig {
     private final RemoteShellConfig remoteShell;
-    private final HttpConfig http;
+    private final RemoteApiConfig remoteApi;
 
-    PresentationConfig(RemoteShellConfig remoteShell, HttpConfig http) {
+    PresentationConfig(RemoteShellConfig remoteShell, RemoteApiConfig remoteApi) {
         this.remoteShell = remoteShell;
-        this.http = http;
+        this.remoteApi = remoteApi;
     }
 
     RemoteShellConfig remoteShell() {
         return remoteShell;
     }
 
-    HttpConfig http() {
-        return http;
+    RemoteApiConfig remoteApi() {
+        return remoteApi;
     }
 }

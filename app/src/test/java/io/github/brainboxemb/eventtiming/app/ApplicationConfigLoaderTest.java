@@ -21,7 +21,7 @@ public class ApplicationConfigLoaderTest {
 
         assertEquals("timing-node-01", config.timingNodeId().value());
         assertNull(config.presentation().remoteShell());
-        assertNull(config.presentation().http());
+        assertNull(config.presentation().remoteApi());
     }
 
     @Test
@@ -32,14 +32,22 @@ public class ApplicationConfigLoaderTest {
                         + "  remoteShell:\n"
                         + "    bindAddress: 127.0.0.1\n"
                         + "    port: 8023\n"
-                        + "  http:\n"
-                        + "    bindAddress: 127.0.0.1\n"
-                        + "    port: 8081\n");
+                        + "  remoteApi:\n"
+                        + "    http:\n"
+                        + "      bindAddress: 127.0.0.1\n"
+                        + "      port: 8081\n"
+                        + "    webSocket:\n"
+                        + "      bindAddress: 127.0.0.1\n"
+                        + "      port: 8082\n");
 
         assertEquals("127.0.0.1", config.presentation().remoteShell().bindAddress());
         assertEquals(8023, config.presentation().remoteShell().port());
-        assertEquals("127.0.0.1", config.presentation().http().bindAddress());
-        assertEquals(8081, config.presentation().http().port());
+        assertEquals("127.0.0.1", config.presentation().remoteApi().http().bindAddress());
+        assertEquals(8081, config.presentation().remoteApi().http().port());
+        assertEquals(
+                "127.0.0.1",
+                config.presentation().remoteApi().webSocket().bindAddress());
+        assertEquals(8082, config.presentation().remoteApi().webSocket().port());
     }
 
     @Test(expected = IllegalArgumentException.class)
@@ -62,10 +70,11 @@ public class ApplicationConfigLoaderTest {
         load(
                 "timingNodeId: timing-node-01\n"
                         + "presentation:\n"
-                        + "  http:\n"
-                        + "    bindAddress: 127.0.0.1\n"
-                        + "    port: 8081\n"
-                        + "    protocol: https\n");
+                        + "  remoteApi:\n"
+                        + "    http:\n"
+                        + "      bindAddress: 127.0.0.1\n"
+                        + "      port: 8081\n"
+                        + "      protocol: https\n");
     }
 
     @Test(expected = IllegalArgumentException.class)
@@ -73,8 +82,9 @@ public class ApplicationConfigLoaderTest {
         load(
                 "timingNodeId: timing-node-01\n"
                         + "presentation:\n"
-                        + "  http:\n"
-                        + "    port: 8081\n");
+                        + "  remoteApi:\n"
+                        + "    http:\n"
+                        + "      port: 8081\n");
     }
 
     @Test(expected = IllegalArgumentException.class)
@@ -82,9 +92,18 @@ public class ApplicationConfigLoaderTest {
         load(
                 "timingNodeId: timing-node-01\n"
                         + "presentation:\n"
-                        + "  http:\n"
-                        + "    bindAddress: 127.0.0.1\n"
-                        + "    port: 70000\n");
+                        + "  remoteApi:\n"
+                        + "    http:\n"
+                        + "      bindAddress: 127.0.0.1\n"
+                        + "      port: 70000\n");
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void rejectsEmptyRemoteApi() throws Exception {
+        load(
+                "timingNodeId: timing-node-01\n"
+                        + "presentation:\n"
+                        + "  remoteApi: {}\n");
     }
 
     private ApplicationConfig load(String yaml) throws Exception {

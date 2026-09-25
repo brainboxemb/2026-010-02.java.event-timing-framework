@@ -1,4 +1,4 @@
-package io.github.brainboxemb.eventtiming.presentation.terminal;
+package io.github.brainboxemb.eventtiming.presentation.common.terminal;
 
 import io.github.brainboxemb.eventtiming.application.ApplicationStatus;
 import io.github.brainboxemb.eventtiming.application.CommandHandler;

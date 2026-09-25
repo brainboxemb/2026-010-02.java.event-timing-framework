@@ -54,9 +54,13 @@ public class TimingApplicationTest {
                         + "  remoteShell:\n"
                         + "    bindAddress: 127.0.0.1\n"
                         + "    port: 8023\n"
-                        + "  http:\n"
-                        + "    bindAddress: 127.0.0.1\n"
-                        + "    port: 8081\n")
+                        + "  remoteApi:\n"
+                        + "    http:\n"
+                        + "      bindAddress: 127.0.0.1\n"
+                        + "      port: 8081\n"
+                        + "    webSocket:\n"
+                        + "      bindAddress: 127.0.0.1\n"
+                        + "      port: 8082\n")
                         .getBytes(StandardCharsets.UTF_8));
 
         TimingApplication application = TimingApplication.configured(identity(), config.toPath());
@@ -64,8 +68,12 @@ public class TimingApplicationTest {
         assertEquals("configured-node", application.timingNode().timingNodeId().value());
         assertEquals("127.0.0.1", application.remoteShellConfig().bindAddress());
         assertEquals(8023, application.remoteShellConfig().port());
-        assertEquals("127.0.0.1", application.httpConfig().bindAddress());
-        assertEquals(8081, application.httpConfig().port());
+        assertEquals("127.0.0.1", application.remoteApiConfig().http().bindAddress());
+        assertEquals(8081, application.remoteApiConfig().http().port());
+        assertEquals(
+                "127.0.0.1",
+                application.remoteApiConfig().webSocket().bindAddress());
+        assertEquals(8082, application.remoteApiConfig().webSocket().port());
     }
 
     @Test(expected = IllegalArgumentException.class)

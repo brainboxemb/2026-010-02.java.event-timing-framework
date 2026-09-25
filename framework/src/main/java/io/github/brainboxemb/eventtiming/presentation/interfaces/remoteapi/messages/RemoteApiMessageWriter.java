@@ -1,14 +1,14 @@
-package io.github.brainboxemb.eventtiming.presentation.http;
+package io.github.brainboxemb.eventtiming.presentation.interfaces.remoteapi.messages;
 
 import io.github.brainboxemb.eventtiming.application.ApplicationStatus;
 import io.github.brainboxemb.eventtiming.infra.BuildIdentity;
 
 /** Explicit JSON mapping for the IF-03 first-executable contract. */
-final class ApplicationControlJson {
-    private ApplicationControlJson() {
+public final class RemoteApiMessageWriter {
+    private RemoteApiMessageWriter() {
     }
 
-    static String version(BuildIdentity identity) {
+    public static String version(BuildIdentity identity) {
         return "{"
                 + "\"application\":" + quote(identity.application()) + ","
                 + "\"version\":" + quote(identity.version()) + ","
@@ -20,7 +20,7 @@ final class ApplicationControlJson {
                 + "}";
     }
 
-    static String status(BuildIdentity identity, ApplicationStatus status) {
+    public static String status(BuildIdentity identity, ApplicationStatus status) {
         return "{"
                 + "\"apiVersion\":" + quote(identity.apiVersion()) + ","
                 + "\"build\":" + version(identity) + ","
@@ -32,7 +32,32 @@ final class ApplicationControlJson {
                 + "}";
     }
 
-    static String error(String code, String message) {
+    public static String statusEvent(
+            String eventType,
+            java.time.Instant occurredAt,
+            BuildIdentity identity,
+            ApplicationStatus status) {
+        if (eventType == null || eventType.trim().isEmpty()) {
+            throw new IllegalArgumentException("eventType must not be blank");
+        }
+        if (occurredAt == null) {
+            throw new IllegalArgumentException("occurredAt must not be null");
+        }
+        if (identity == null) {
+            throw new IllegalArgumentException("identity must not be null");
+        }
+        if (status == null) {
+            throw new IllegalArgumentException("status must not be null");
+        }
+        return "{"
+                + "\"apiVersion\":" + quote(identity.apiVersion()) + ","
+                + "\"eventType\":" + quote(eventType) + ","
+                + "\"occurredAt\":" + quote(occurredAt.toString()) + ","
+                + "\"payload\":" + status(identity, status)
+                + "}";
+    }
+
+    public static String error(String code, String message) {
         return "{"
                 + "\"apiVersion\":\"1\","
                 + "\"error\":{"
