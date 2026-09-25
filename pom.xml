@@ -27,6 +27,7 @@
     <maven.compiler.plugin.version>3.13.0</maven.compiler.plugin.version>
     <maven.surefire.plugin.version>3.2.5</maven.surefire.plugin.version>
     <maven.shade.plugin.version>3.6.0</maven.shade.plugin.version>
+    <exec.maven.plugin.version>3.6.4</exec.maven.plugin.version>
     <!--
       Intentionally pinned to the Java-8-compatible plugin line. It supplies Git/build
       provenance for BuildIdentity; it is not upgraded independently of the Java baseline.
@@ -82,6 +83,11 @@
           <groupId>pl.project13.maven</groupId>
           <artifactId>git-commit-id-plugin</artifactId>
           <version>${git.commit.id.plugin.version}</version>
+        </plugin>
+        <plugin>
+          <groupId>org.codehaus.mojo</groupId>
+          <artifactId>exec-maven-plugin</artifactId>
+          <version>${exec.maven.plugin.version}</version>
         </plugin>
       </plugins>
     </pluginManagement>
