@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Organise presentation code by functional interface: IF-03 becomes the general Remote API with HTTP/WebSocket/messages below `presentation.interfaces.remoteapi`, console and shell remain separate interfaces, shared terminal behaviour moves to `presentation.common`, and configuration nests the two Remote API transports under `presentation.remoteApi`.
+
 - Add the Step-3 A07 IF-03 WebSocket event stream on a separate loopback-configured Java-WebSocket 1.6.0 listener with bounded inbound frames, snapshot-on-connect/reconnect, real-change-only `STATUS_CHANGED` broadcasting, and a Java 17 Events inspector in the standalone JavaFX test client.
 
 - Start Step-3 A06 with loopback-configured IF-03 HTTP/JSON `/api/v1/version` and `/api/v1/status` resources, real HTTP adapter tests, TimingNode-focused shared status without a redundant application lifecycle block, and a standalone Java 17/JavaFX test client with versioned window title, Help/About build identity, manual version/status inspection and a built-in black remote-shell terminal.
