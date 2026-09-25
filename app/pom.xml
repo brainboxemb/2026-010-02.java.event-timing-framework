@@ -62,11 +62,10 @@
           <failOnUnableToExtractRepoInfo>true</failOnUnableToExtractRepoInfo>
           <!-- Request git.commit.id.full rather than the plugin's default flat git.commit.id key. -->
           <commitIdGenerationMode>full</commitIdGenerationMode>
-          <dateFormat>yyyy-MM-dd'T'HH:mm:ssXXX</dateFormat>
-          <dateFormatTimeZone>UTC</dateFormatTimeZone>
           <includeOnlyProperties>
-            <includeOnlyProperty>^git.build.time$</includeOnlyProperty>
+            <includeOnlyProperty>^git.branch$</includeOnlyProperty>
             <includeOnlyProperty>^git.commit.id.full$</includeOnlyProperty>
+            <includeOnlyProperty>^git.dirty$</includeOnlyProperty>
           </includeOnlyProperties>
         </configuration>
       </plugin>
