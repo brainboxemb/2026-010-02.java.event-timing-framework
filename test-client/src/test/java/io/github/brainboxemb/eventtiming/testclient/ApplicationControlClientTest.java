@@ -49,10 +49,6 @@ public class ApplicationControlClientTest {
                         + "\"dirty\":false,"
                         + "\"apiVersion\":\"1\""
                         + "},"
-                        + "\"application\":{"
-                        + "\"state\":\"RUNNING\","
-                        + "\"startedAt\":\"2026-09-25T13:00:00Z\""
-                        + "},"
                         + "\"timingNodes\":[{"
                         + "\"timingNodeId\":\"timing-node-01\","
                         + "\"lifecycle\":\"CLOSED\""
@@ -71,7 +67,6 @@ public class ApplicationControlClientTest {
         assertFalse(version.build().dirty());
 
         var status = client.getStatus();
-        assertEquals("RUNNING", status.applicationState());
         assertEquals("timing-node-01", status.timingNodes().get(0).timingNodeId());
         assertEquals("CLOSED", status.timingNodes().get(0).lifecycle());
         assertEquals("abc123", status.build().revision());

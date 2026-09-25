@@ -38,7 +38,12 @@ Use:
 - **Get Version** for `GET /api/v1/version`;
 - **Get Status** for `GET /api/v1/status`.
 
-The UI shows selected parsed fields and the complete raw JSON response.
+The **Status** tab shows selected parsed fields and the complete raw JSON response.
+
+The **Terminal** tab is a small built-in client for the A05 line-oriented remote shell.
+It defaults to `127.0.0.1:8023`, has explicit Connect/Disconnect controls and uses a
+black monospace terminal area. This is raw UTF-8 TCP for the project's development
+shell; it is intentionally not an SSH/Telnet terminal emulator.
 
 ## Verify
 

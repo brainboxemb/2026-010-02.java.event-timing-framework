@@ -9,6 +9,8 @@ import javafx.scene.control.Label;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.scene.control.TitledPane;
+import javafx.scene.control.Tab;
+import javafx.scene.control.TabPane;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
@@ -42,12 +44,20 @@ public final class TestClientFxApplication extends Application {
     private final Label sourceState = valueLabel();
     private final Label apiVersion = valueLabel();
 
-    private final Label applicationState = valueLabel();
-    private final Label startedAt = valueLabel();
     private final Label timingNodeId = valueLabel();
     private final Label timingNodeLifecycle = valueLabel();
 
     private final TextArea rawJson = new TextArea();
+
+    private final RemoteShellClient shellClient = new RemoteShellClient();
+    private final TextField shellHost = new TextField("127.0.0.1");
+    private final TextField shellPort = new TextField("8023");
+    private final Button shellConnect = new Button("Connect");
+    private final Button shellDisconnect = new Button("Disconnect");
+    private final TextArea terminal = new TextArea();
+    private final TextField terminalInput = new TextField();
+    private final Button terminalSend = new Button("Send");
+    private final Label terminalStatus = new Label("Disconnected");
 
     @Override
     public void start(Stage stage) {
@@ -76,13 +86,19 @@ public final class TestClientFxApplication extends Application {
         rawPane.setCollapsible(false);
         VBox.setVgrow(rawPane, Priority.ALWAYS);
 
-        VBox center = new VBox(10, versionPane, statusPane, rawPane);
-        center.setPadding(new Insets(0, 12, 12, 12));
+        VBox statusContent = new VBox(10, versionPane, statusPane, rawPane);
+        statusContent.setPadding(new Insets(0, 12, 12, 12));
         VBox.setVgrow(rawPane, Priority.ALWAYS);
+
+        Tab statusTab = new Tab("Status", statusContent);
+        statusTab.setClosable(false);
+        Tab terminalTab = new Tab("Terminal", terminalPane());
+        terminalTab.setClosable(false);
+        TabPane tabs = new TabPane(statusTab, terminalTab);
 
         BorderPane root = new BorderPane();
         root.setTop(controls);
-        root.setCenter(center);
+        root.setCenter(tabs);
         root.setBottom(feedback);
         BorderPane.setMargin(feedback, new Insets(0, 12, 12, 12));
 
@@ -105,11 +121,48 @@ public final class TestClientFxApplication extends Application {
 
     private GridPane statusGrid() {
         GridPane grid = grid();
-        addRow(grid, 0, "Application state", applicationState);
-        addRow(grid, 1, "Started at", startedAt);
-        addRow(grid, 2, "Timing node", timingNodeId);
-        addRow(grid, 3, "Lifecycle", timingNodeLifecycle);
+        addRow(grid, 0, "Timing node", timingNodeId);
+        addRow(grid, 1, "Lifecycle", timingNodeLifecycle);
         return grid;
+    }
+
+    private VBox terminalPane() {
+        shellHost.setPrefColumnCount(18);
+        shellPort.setPrefColumnCount(6);
+        shellDisconnect.setDisable(true);
+
+        HBox connection = new HBox(8,
+                new Label("Host"),
+                shellHost,
+                new Label("Port"),
+                shellPort,
+                shellConnect,
+                shellDisconnect,
+                terminalStatus);
+
+        terminal.setEditable(false);
+        terminal.setWrapText(false);
+        terminal.setStyle(
+                "-fx-control-inner-background: black;"
+                        + "-fx-text-fill: #e8e8e8;"
+                        + "-fx-font-family: 'Consolas';"
+                        + "-fx-font-size: 13px;");
+        VBox.setVgrow(terminal, Priority.ALWAYS);
+
+        terminalInput.setPromptText("command");
+        terminalInput.setDisable(true);
+        terminalSend.setDisable(true);
+        HBox.setHgrow(terminalInput, Priority.ALWAYS);
+        HBox input = new HBox(8, terminalInput, terminalSend);
+
+        shellConnect.setOnAction(event -> connectShell());
+        shellDisconnect.setOnAction(event -> shellClient.disconnect());
+        terminalSend.setOnAction(event -> sendShellCommand());
+        terminalInput.setOnAction(event -> sendShellCommand());
+
+        VBox pane = new VBox(8, connection, terminal, input);
+        pane.setPadding(new Insets(12));
+        return pane;
     }
 
     private void loadVersion() {
@@ -126,8 +179,6 @@ public final class TestClientFxApplication extends Application {
                 () -> client().getStatus(),
                 result -> {
                     showBuild(result.build());
-                    applicationState.setText(result.applicationState());
-                    startedAt.setText(result.startedAt().toString());
                     if (result.timingNodes().isEmpty()) {
                         timingNodeId.setText("-");
                         timingNodeLifecycle.setText("-");
@@ -138,6 +189,83 @@ public final class TestClientFxApplication extends Application {
                     }
                     rawJson.setText(result.rawJson());
                 });
+    }
+
+    private void connectShell() {
+        String host = shellHost.getText().trim();
+        int port;
+        try {
+            port = Integer.parseInt(shellPort.getText().trim());
+        } catch (NumberFormatException ex) {
+            terminalStatus.setText("Invalid port");
+            return;
+        }
+
+        shellConnect.setDisable(true);
+        shellHost.setDisable(true);
+        shellPort.setDisable(true);
+        terminalStatus.setText("Connecting...");
+
+        CompletableFuture
+                .runAsync(() -> {
+                    try {
+                        shellClient.connect(host, port, new RemoteShellClient.Listener() {
+                            @Override
+                            public void onText(String text) {
+                                Platform.runLater(() -> {
+                                    terminal.appendText(text);
+                                    terminal.positionCaret(terminal.getLength());
+                                });
+                            }
+
+                            @Override
+                            public void onDisconnected() {
+                                Platform.runLater(() -> setShellConnected(false, "Disconnected"));
+                            }
+
+                            @Override
+                            public void onError(String message) {
+                                Platform.runLater(() -> terminalStatus.setText("Error: " + message));
+                            }
+                        });
+                    } catch (Exception ex) {
+                        throw new CompletionException(ex);
+                    }
+                }, requests)
+                .whenComplete((ignored, error) -> Platform.runLater(() -> {
+                    if (error != null) {
+                        Throwable cause = error.getCause() == null ? error : error.getCause();
+                        setShellConnected(false, "Error: " + cause.getMessage());
+                    } else {
+                        setShellConnected(true, "Connected");
+                        terminalInput.requestFocus();
+                    }
+                }));
+    }
+
+    private void sendShellCommand() {
+        String command = terminalInput.getText();
+        if (command == null || command.trim().isEmpty()) {
+            return;
+        }
+        try {
+            terminal.appendText(command + System.lineSeparator());
+            terminal.positionCaret(terminal.getLength());
+            shellClient.send(command);
+            terminalInput.clear();
+        } catch (Exception ex) {
+            terminalStatus.setText("Error: " + ex.getMessage());
+        }
+    }
+
+    private void setShellConnected(boolean connected, String status) {
+        shellConnect.setDisable(connected);
+        shellDisconnect.setDisable(!connected);
+        shellHost.setDisable(connected);
+        shellPort.setDisable(connected);
+        terminalInput.setDisable(!connected);
+        terminalSend.setDisable(!connected);
+        terminalStatus.setText(status);
     }
 
     private ApplicationControlClient client() {
@@ -204,6 +332,7 @@ public final class TestClientFxApplication extends Application {
 
     @Override
     public void stop() {
+        shellClient.close();
         requests.shutdownNow();
     }
 

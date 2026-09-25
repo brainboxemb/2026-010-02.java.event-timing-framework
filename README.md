@@ -149,7 +149,9 @@ With JDK 17 selected:
 ```
 
 The client defaults to `http://127.0.0.1:8081` and provides **Get Version** and **Get Status**
-actions with both parsed fields and the raw JSON response. See `test-client/README.md`.
+actions with both parsed fields and the raw JSON response. Its **Terminal** tab also connects
+directly to the A05 development shell, defaulting to `127.0.0.1:8023`, so manual shell
+verification does not require a separate PuTTY session. See `test-client/README.md`.
 
 
 ## Local checkout and project tooling

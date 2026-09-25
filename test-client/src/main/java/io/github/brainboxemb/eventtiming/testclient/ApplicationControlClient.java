@@ -9,7 +9,6 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.time.Duration;
-import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -47,7 +46,6 @@ public final class ApplicationControlClient {
     public StatusResult getStatus() throws IOException, InterruptedException {
         String rawJson = get("/api/v1/status");
         JsonNode root = objectMapper.readTree(rawJson);
-        JsonNode application = required(root, "application");
         List<TimingNodeInfo> timingNodes = new ArrayList<>();
         for (JsonNode node : required(root, "timingNodes")) {
             timingNodes.add(new TimingNodeInfo(
@@ -56,8 +54,6 @@ public final class ApplicationControlClient {
         }
         return new StatusResult(
                 readBuild(required(root, "build")),
-                requiredText(application, "state"),
-                Instant.parse(requiredText(application, "startedAt")),
                 List.copyOf(timingNodes),
                 rawJson);
     }
@@ -123,8 +119,6 @@ public final class ApplicationControlClient {
 
     public record StatusResult(
             BuildInfo build,
-            String applicationState,
-            Instant startedAt,
             List<TimingNodeInfo> timingNodes,
             String rawJson) {
     }
