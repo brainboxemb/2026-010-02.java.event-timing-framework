@@ -65,6 +65,32 @@ public class HttpStatusServerTest {
         }
     }
 
+    @Test
+    public void returnsJson500ForUnexpectedApplicationFailure() throws Exception {
+        BuildIdentity identity = BuildIdentity.firstApiVersion(
+                "event-timing-app",
+                "test-version",
+                "abc123def456",
+                "feature/test",
+                "local",
+                false);
+        CommandHandler failing =
+                new CommandHandler(identity, () -> {
+                    throw new IllegalStateException("test failure");
+                });
+        HttpStatusServer server = new HttpStatusServer("127.0.0.1", 0, failing);
+        server.start();
+
+        try {
+            Response response = request(server.boundPort(), "GET", "/api/v1/status");
+            assertEquals(500, response.status);
+            assertTrue(response.body.contains("\"code\":\"INTERNAL_ERROR\""));
+            assertTrue(response.body.contains("\"apiVersion\":\"1\""));
+        } finally {
+            server.close();
+        }
+    }
+
     private static CommandHandler commandHandler() {
         BuildIdentity identity = BuildIdentity.firstApiVersion(
                 "event-timing-app",
