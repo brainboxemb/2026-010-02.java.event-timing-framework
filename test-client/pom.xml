@@ -61,7 +61,7 @@
         <artifactId>javafx-maven-plugin</artifactId>
         <version>${javafx.maven.plugin.version}</version>
         <configuration>
-          <mainClass>io.github.brainboxemb.eventtiming.testclient.TestClientApplication</mainClass>
+          <mainClass>io.github.brainboxemb.eventtiming.testclient.TestClientLauncher</mainClass>
         </configuration>
       </plugin>
     </plugins>

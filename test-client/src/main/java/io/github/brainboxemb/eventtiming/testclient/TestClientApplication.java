@@ -212,7 +212,4 @@ public final class TestClientApplication extends Application {
         T get() throws Exception;
     }
 
-    public static void main(String[] args) {
-        launch(args);
-    }
 }
