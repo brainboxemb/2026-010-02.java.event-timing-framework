@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Start Step-3 A06 with loopback-configured IF-03 HTTP/JSON `/api/v1/version` and `/api/v1/status` resources, real HTTP adapter tests, enriched shared status needed by the wire contract, and a standalone Java 21/JavaFX test client for manual version/status inspection.
+
 - Start Step-3 A05 with an optional loopback-capable line-oriented TCP remote terminal, explicit `presentation.remoteShell` bind/port configuration, and shared command-session behaviour with the local console; no SSH/Telnet protocol or second command model is introduced.
 
 - Replace wall-clock `buildTime` provenance with deterministic embedded `sourceRef`, `buildOrigin` and `dirty` fields alongside version/revision, so one JAR identifies its source/build context without CI run/user/timestamp sidecars.
