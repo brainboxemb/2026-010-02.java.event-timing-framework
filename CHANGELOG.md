@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Add the Step-3 A03 process lifetime: a configured application remains running until shutdown, waits without polling, and uses a JVM shutdown hook so Ctrl+C / normal OS shutdown closes the existing application lifecycle cleanly.
+
 - Start SIP Step-3 A02 with one external YAML configuration file: load and validate a single `TimingNodeId`, introduce the minimal reusable `TimingNodeId` / `TimingNode` domain objects, and compose that configured TimingNode without prebuilding presentation, overlay or I/O configuration models.
 
 - Align implementation terminology with the accepted architecture: future logical timing aggregates are `TimingNode` objects identified by `TimingNodeId`; update README scope/examples without introducing compatibility types before the first real Step-3 configuration slice.

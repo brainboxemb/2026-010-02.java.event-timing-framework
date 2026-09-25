@@ -5,14 +5,7 @@ import io.github.brainboxemb.eventtiming.infra.BuildIdentity;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/**
- * Minimal executable-application lifecycle for the Step-2 baseline.
- *
- * <p>This lifecycle deliberately belongs to the application composition rather than the reusable
- * framework. Later runtime services can be started/stopped from here without making the framework
- * itself one fixed executable product. See the SI-01 application architecture and
- * {@code docs/31-01-SDD-02-java-component-design.md} in the meta repository.</p>
- */
+/** Executable application lifecycle used by startup and graceful shutdown handling. */
 public final class TimingApplicationLifecycle implements AutoCloseable {
     public enum State {
         NEW,
@@ -48,11 +41,19 @@ public final class TimingApplicationLifecycle implements AutoCloseable {
             throw new IllegalStateException("Application can only stop from RUNNING; current state=" + state);
         }
         state = State.STOPPED;
+        notifyAll();
         LOG.info("Stopped {} with lifecycle state={}", buildIdentity.displayName(), state);
     }
 
     public synchronized State state() {
         return state;
+    }
+
+    /** Waits without polling until the application reaches {@link State#STOPPED}. */
+    public synchronized void awaitStopped() throws InterruptedException {
+        while (state != State.STOPPED) {
+            wait();
+        }
     }
 
     /**
@@ -66,6 +67,7 @@ public final class TimingApplicationLifecycle implements AutoCloseable {
             stop();
         } else if (state == State.NEW) {
             state = State.STOPPED;
+            notifyAll();
             LOG.info("Closed {} before start; lifecycle state={}", buildIdentity.displayName(), state);
         }
     }

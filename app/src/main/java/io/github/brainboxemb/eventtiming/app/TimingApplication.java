@@ -61,6 +61,10 @@ public final class TimingApplication implements AutoCloseable {
         return lifecycle.state();
     }
 
+    void awaitStopped() throws InterruptedException {
+        lifecycle.awaitStopped();
+    }
+
     @Override
     public void close() {
         lifecycle.close();
@@ -89,13 +93,30 @@ public final class TimingApplication implements AutoCloseable {
         } catch (IOException ex) {
             throw new IllegalStateException("Unable to load application configuration: " + args[0], ex);
         }
+
+        Runtime runtime = Runtime.getRuntime();
+        Thread shutdownHook = new Thread(application::close, "event-timing-shutdown");
+        runtime.addShutdownHook(shutdownHook);
+
         try {
             application.start();
+            application.awaitStopped();
+        } catch (InterruptedException ex) {
+            Thread.currentThread().interrupt();
         } finally {
             application.close();
+            removeShutdownHook(runtime, shutdownHook);
         }
 
         System.out.println(smokeOutput(application.buildIdentity(), application.state()));
+    }
+
+    private static void removeShutdownHook(Runtime runtime, Thread shutdownHook) {
+        try {
+            runtime.removeShutdownHook(shutdownHook);
+        } catch (IllegalStateException ignored) {
+            // JVM shutdown is already in progress.
+        }
     }
 
     static TimingApplication configured(BuildIdentity buildIdentity, Path configPath)

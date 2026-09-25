@@ -74,24 +74,30 @@ Those applications should reuse the same framework library and inject/select the
 
 The working design is coordinated in the meta repository, especially `docs/31-01-SDD-02-java-component-design.md`.
 
-### Current A02 configuration slice
+### Current Step-3 application
 
-A02 introduces one external YAML file for the single TimingNode currently composed by the executable.
-Only the identity has a real configuration consumer yet:
+The executable uses one external YAML file for the single TimingNode currently composed by the
+application. Only the identity has a real configuration consumer yet:
 
 ```yaml
 timingNodeId: timing-node-01
 ```
 
-A synthetic development example is kept at `config/application.yml`. After building, exercise the
-configuration path with:
+A synthetic development example is kept at `config/application.yml`. After building, start the
+configured application with:
 
 ```bash
 java -jar app/target/event-timing-app-<version>.jar config/application.yml
 ```
 
+The configured process stays running until the JVM receives a normal shutdown request. On a
+development terminal, **Ctrl+C** is the normal stop route on Windows and Linux; the JVM shutdown
+hook closes the application through the same lifecycle path used by tests. Interactive
+application commands such as `quit` belong to the later console/shell activity.
+
+The temporary no-argument startup remains only for the existing artifact smoke check.
 Presentation settings, multiple TimingNodes, platform/profile overlays and I/O configuration are
-not implemented by A02; they are added only when their SIP activities provide a real consumer.
+added only when their SIP activities provide a real consumer.
 
 ## Local checkout and project tooling
 
