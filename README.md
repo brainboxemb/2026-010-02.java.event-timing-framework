@@ -199,19 +199,23 @@ After a reactor build, run the executable application using the version from the
 java -jar app/target/event-timing-app-<version>.jar
 ```
 
-The executable loads its application/build identity from a Maven-filtered resource, starts its minimal lifecycle, reaches `RUNNING`, and then shuts down to `STOPPED`. The embedded identity deliberately separates the software version from the concrete build provenance:
+The executable loads its application/build identity from a Maven-filtered resource, starts its minimal lifecycle, reaches `RUNNING`, and then shuts down to `STOPPED`. The embedded identity deliberately separates software identity from deterministic source/build provenance:
 
 ```text
-application version   Maven ${project.version}, for example 0.2.0-SNAPSHOT during development or 0.1.0 for a release
-source revision       full Git commit captured at build time
-build timestamp       UTC/ISO-8601 wall-clock build time
+application    event-timing-app
+version        Maven ${project.version}
+revision       exact Git commit
+sourceRef      branch, tag or CI ref
+buildOrigin    local or github-actions
+dirty          true when uncommitted source changes were present
+apiVersion     IF-03 major version
 ```
 
-`pl.project13.maven:git-commit-id-plugin:4.9.10` supplies the Git revision and build time during the Maven `initialize` phase; normal resource filtering then packages only the values the runtime needs. The plugin version is intentionally pinned because it remains compatible with the Java 8 build baseline. The executable bootstrap reads those packaged values into its `BuildIdentity`; the framework value itself never knows about the resource file or a working Git checkout.
+`pl.project13.maven:git-commit-id-plugin:4.9.10` supplies the Git revision, local source ref and dirty-state during Maven `initialize`; GitHub Actions supplies the CI source ref/origin through stable environment context. Normal resource filtering packages only those values the runtime needs. The executable bootstrap reads them into `BuildIdentity`; the framework value itself never knows about the resource file or a working Git checkout.
+
+Wall-clock build time, CI run/build id and actor/user are deliberately **not** embedded. Repeating a build with the same version/revision/ref/origin/dirty inputs must not become a different artifact merely because it ran at another time or under another run id.
 
 A Git tag does **not** silently determine or override the application version. If the POM still contains a `-SNAPSHOT` version, building a commit tagged as a release still reports that snapshot version. A valid release deliberately aligns Maven version, CHANGELOG release section and Git tag.
-
-The wall-clock build timestamp is intentionally useful for distinguishing different snapshot binaries built from the same version line. If bit-for-bit reproducible release artifacts later become a requirement, the release process can instead adopt a fixed/commit-derived Maven `project.build.outputTimestamp` policy.
 
 Lifecycle diagnostics use the selected logging composition:
 
@@ -220,7 +224,7 @@ event-timing-framework  -> SLF4J API only; no logging provider selected
 event-timing-app        -> SLF4J API + slf4j-jdk14 -> java.util.logging
 ```
 
-`java.util.logging` writes the lifecycle INFO records through the runtime logging backend. Startup logging includes the concrete Git revision and build timestamp. The stable stdout smoke line used by CI intentionally remains independent of build-specific provenance:
+`java.util.logging` writes the lifecycle INFO records through the runtime logging backend. Startup logging includes the concrete Git revision, source ref, build origin and dirty-state. The stable stdout smoke line used by CI intentionally remains independent of build-specific provenance:
 
 ```text
 event-timing-app lifecycle OK version=<version> state=STOPPED
