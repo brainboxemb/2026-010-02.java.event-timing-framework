@@ -138,11 +138,11 @@ added only when their SIP activities provide a real consumer.
 
 ### A06 JavaFX test client
 
-`test-client/` is a standalone Java 21 / JavaFX development tool for manually inspecting IF-03.
+`test-client/` is a standalone Java 17 / JavaFX development tool for manually inspecting IF-03.
 It is deliberately not part of the Java-8 SI-01 Maven reactor and has no dependency on
 `event-timing-framework` or `event-timing-app`.
 
-With JDK 21 selected:
+With JDK 17 selected:
 
 ```powershell
 .\mvnw.cmd -f test-client\pom.xml javafx:run

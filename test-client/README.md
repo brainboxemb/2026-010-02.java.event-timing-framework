@@ -8,7 +8,7 @@ or `event-timing-app`.
 
 ## Baseline
 
-- Java 21
+- Java 17
 - JavaFX 21.0.10
 - Maven Wrapper from the repository root
 - Jackson 2.21.2 for independent JSON parsing
@@ -18,7 +18,7 @@ platform-specific native libraries are resolved as Maven dependencies.
 
 ## Run on Windows
 
-With `JAVA_HOME` pointing to a JDK 21 installation:
+With `JAVA_HOME` pointing to a JDK 17 installation:
 
 ```powershell
 .\mvnw.cmd -f test-client\pom.xml clean javafx:run
