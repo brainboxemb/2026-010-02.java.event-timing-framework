@@ -21,6 +21,8 @@
     <maven.surefire.plugin.version>3.2.5</maven.surefire.plugin.version>
     <javafx.maven.plugin.version>0.0.8</javafx.maven.plugin.version>
     <exec.maven.plugin.version>3.6.4</exec.maven.plugin.version>
+    <git.commit.id.plugin.version>4.9.10</git.commit.id.plugin.version>
+    <eventTiming.buildOrigin>local</eventTiming.buildOrigin>
   </properties>
 
   <dependencies>
@@ -43,7 +45,38 @@
   </dependencies>
 
   <build>
+    <resources>
+      <resource>
+        <directory>src/main/resources</directory>
+        <filtering>true</filtering>
+      </resource>
+    </resources>
     <plugins>
+      <plugin>
+        <groupId>pl.project13.maven</groupId>
+        <artifactId>git-commit-id-plugin</artifactId>
+        <version>${git.commit.id.plugin.version}</version>
+        <executions>
+          <execution>
+            <id>capture-test-client-build-provenance</id>
+            <phase>initialize</phase>
+            <goals>
+              <goal>revision</goal>
+            </goals>
+          </execution>
+        </executions>
+        <configuration>
+          <dotGitDirectory>${project.basedir}/../.git</dotGitDirectory>
+          <failOnNoGitDirectory>true</failOnNoGitDirectory>
+          <failOnUnableToExtractRepoInfo>true</failOnUnableToExtractRepoInfo>
+          <commitIdGenerationMode>full</commitIdGenerationMode>
+          <includeOnlyProperties>
+            <includeOnlyProperty>^git.branch$</includeOnlyProperty>
+            <includeOnlyProperty>^git.commit.id.full$</includeOnlyProperty>
+            <includeOnlyProperty>^git.dirty$</includeOnlyProperty>
+          </includeOnlyProperties>
+        </configuration>
+      </plugin>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-compiler-plugin</artifactId>

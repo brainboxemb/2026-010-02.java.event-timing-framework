@@ -38,6 +38,8 @@ Use:
 - **Get Version** for `GET /api/v1/version`;
 - **Get Status** for `GET /api/v1/status`.
 
+The window title includes the test-client software version. **Help → About** shows the test client's own build identity (version, revision, source ref, build origin and source state), independent of the SI-01 build information shown in the Status tab.
+
 The **Status** tab shows selected parsed fields and the complete raw JSON response.
 
 The **Terminal** tab is a small built-in client for the A05 line-oriented remote shell.

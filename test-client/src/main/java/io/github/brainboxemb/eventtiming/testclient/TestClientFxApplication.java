@@ -4,8 +4,12 @@ import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.geometry.Insets;
 import javafx.scene.Scene;
+import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+import javafx.scene.control.Menu;
+import javafx.scene.control.MenuBar;
+import javafx.scene.control.MenuItem;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.scene.control.TitledPane;
@@ -25,6 +29,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 public final class TestClientFxApplication extends Application {
+    private final TestClientBuildIdentity clientBuild = TestClientBuildIdentity.embedded();
     private final ExecutorService requests = Executors.newSingleThreadExecutor(runnable -> {
         Thread thread = new Thread(runnable, "event-timing-test-client-http");
         thread.setDaemon(true);
@@ -96,15 +101,37 @@ public final class TestClientFxApplication extends Application {
         terminalTab.setClosable(false);
         TabPane tabs = new TabPane(statusTab, terminalTab);
 
+        MenuItem about = new MenuItem("About");
+        about.setOnAction(event -> showAbout(stage));
+        Menu help = new Menu("Help");
+        help.getItems().add(about);
+        MenuBar menuBar = new MenuBar(help);
+
+        VBox top = new VBox(menuBar, controls);
+
         BorderPane root = new BorderPane();
-        root.setTop(controls);
+        root.setTop(top);
         root.setCenter(tabs);
         root.setBottom(feedback);
         BorderPane.setMargin(feedback, new Insets(0, 12, 12, 12));
 
-        stage.setTitle("Event Timing Test Client");
+        stage.setTitle(clientBuild.application() + " — " + clientBuild.version());
         stage.setScene(new Scene(root, 900, 700));
         stage.show();
+    }
+
+    private void showAbout(Stage owner) {
+        Alert about = new Alert(Alert.AlertType.INFORMATION);
+        about.initOwner(owner);
+        about.setTitle("About " + clientBuild.application());
+        about.setHeaderText(clientBuild.application() + " — " + clientBuild.version());
+        about.setContentText(
+                "Version      : " + clientBuild.version() + System.lineSeparator()
+                        + "Revision     : " + clientBuild.revision() + System.lineSeparator()
+                        + "Source ref   : " + clientBuild.sourceRef() + System.lineSeparator()
+                        + "Build origin : " + clientBuild.buildOrigin() + System.lineSeparator()
+                        + "Source state : " + (clientBuild.dirty() ? "modified" : "clean"));
+        about.showAndWait();
     }
 
     private GridPane versionGrid() {
