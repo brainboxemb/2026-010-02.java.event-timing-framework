@@ -1,6 +1,6 @@
 # Event Timing Test Client
 
-Small development/test UI for inspecting the public SI-01 IF-03 interface.
+Small development/test UI for inspecting the public SI-01 IF-03 Remote API.
 
 This is **not SI-02** and is not part of the Java-8/Pi runtime. It is a standalone
 desktop Maven project that deliberately has no dependency on `event-timing-framework`
@@ -62,5 +62,6 @@ shell; it is intentionally not an SSH/Telnet terminal emulator.
 .\mvnw.cmd -f test-client\pom.xml verify
 ```
 
-HTTP, WebSocket and remote-shell client logic remain outside the JavaFX event handlers so the
-development UI does not become the owner of protocol semantics.
+Remote API HTTP/WebSocket and remote-shell client logic remain outside the JavaFX event handlers so the
+development UI does not become the owner of protocol semantics. The Remote API client code is also
+independent of SI-01 implementation classes, matching the headless black-box client boundary.
