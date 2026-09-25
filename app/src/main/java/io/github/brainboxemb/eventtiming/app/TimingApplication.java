@@ -5,6 +5,7 @@ import io.github.brainboxemb.eventtiming.application.CommandHandler;
 import io.github.brainboxemb.eventtiming.domain.timing.TimingNode;
 import io.github.brainboxemb.eventtiming.infra.BuildIdentity;
 import io.github.brainboxemb.eventtiming.presentation.console.LocalConsole;
+import io.github.brainboxemb.eventtiming.presentation.http.HttpStatusServer;
 import io.github.brainboxemb.eventtiming.presentation.shell.RemoteShellServer;
 
 import java.io.IOException;
@@ -31,18 +32,21 @@ public final class TimingApplication implements AutoCloseable {
     private final CommandHandler commandHandler;
     private final TimingApplicationLifecycle lifecycle;
     private final RemoteShellConfig remoteShellConfig;
+    private final HttpConfig httpConfig;
 
     private TimingApplication(
             BuildIdentity buildIdentity,
             TimingNode timingNode,
             CommandHandler commandHandler,
             TimingApplicationLifecycle lifecycle,
-            RemoteShellConfig remoteShellConfig) {
+            RemoteShellConfig remoteShellConfig,
+            HttpConfig httpConfig) {
         this.buildIdentity = buildIdentity;
         this.timingNode = timingNode;
         this.commandHandler = commandHandler;
         this.lifecycle = lifecycle;
         this.remoteShellConfig = remoteShellConfig;
+        this.httpConfig = httpConfig;
     }
 
     public static Builder builder(BuildIdentity buildIdentity) {
@@ -67,6 +71,10 @@ public final class TimingApplication implements AutoCloseable {
 
     RemoteShellConfig remoteShellConfig() {
         return remoteShellConfig;
+    }
+
+    HttpConfig httpConfig() {
+        return httpConfig;
     }
 
     TimingApplicationLifecycle.State state() {
@@ -110,17 +118,22 @@ public final class TimingApplication implements AutoCloseable {
         Thread shutdownHook = new Thread(application::close, "event-timing-shutdown");
         runtime.addShutdownHook(shutdownHook);
 
+        HttpStatusServer http = null;
         RemoteShellServer remoteShell = null;
         try {
             application.start();
+            http = startHttp(application);
             remoteShell = startRemoteShell(application);
             startLocalConsole(application);
             application.awaitStopped();
         } catch (IOException ex) {
-            throw new IllegalStateException("Unable to start remote shell", ex);
+            throw new IllegalStateException("Unable to start presentation listener", ex);
         } catch (InterruptedException ex) {
             Thread.currentThread().interrupt();
         } finally {
+            if (http != null) {
+                http.close();
+            }
             if (remoteShell != null) {
                 remoteShell.close();
             }
@@ -129,6 +142,21 @@ public final class TimingApplication implements AutoCloseable {
         }
 
         System.out.println(smokeOutput(application.buildIdentity(), application.state()));
+    }
+
+    private static HttpStatusServer startHttp(TimingApplication application)
+            throws IOException {
+        HttpConfig config = application.httpConfig();
+        if (config == null) {
+            return null;
+        }
+
+        HttpStatusServer server = new HttpStatusServer(
+                config.bindAddress(),
+                config.port(),
+                application.commandHandler());
+        server.start();
+        return server;
     }
 
     private static RemoteShellServer startRemoteShell(TimingApplication application)
@@ -173,6 +201,7 @@ public final class TimingApplication implements AutoCloseable {
         return TimingApplication.builder(buildIdentity)
                 .timingNode(timingNode)
                 .remoteShellConfig(config.presentation().remoteShell())
+                .httpConfig(config.presentation().http())
                 .build();
     }
 
@@ -229,6 +258,7 @@ public final class TimingApplication implements AutoCloseable {
         private final BuildIdentity buildIdentity;
         private TimingNode timingNode;
         private RemoteShellConfig remoteShellConfig;
+        private HttpConfig httpConfig;
 
         private Builder(BuildIdentity buildIdentity) {
             if (buildIdentity == null) {
@@ -250,6 +280,11 @@ public final class TimingApplication implements AutoCloseable {
             return this;
         }
 
+        Builder httpConfig(HttpConfig httpConfig) {
+            this.httpConfig = httpConfig;
+            return this;
+        }
+
         public TimingApplication build() {
             if (timingNode == null) {
                 throw new IllegalStateException("timingNode must be configured before build");
@@ -259,13 +294,16 @@ public final class TimingApplication implements AutoCloseable {
                     buildIdentity,
                     () -> new ApplicationStatus(
                             lifecycle.state().name(),
-                            timingNode.timingNodeId()));
+                            lifecycle.startedAt(),
+                            timingNode.timingNodeId(),
+                            timingNode.lifecycle()));
             return new TimingApplication(
                     buildIdentity,
                     timingNode,
                     commandHandler,
                     lifecycle,
-                    remoteShellConfig);
+                    remoteShellConfig,
+                    httpConfig);
         }
     }
 }
