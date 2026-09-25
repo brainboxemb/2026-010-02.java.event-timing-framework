@@ -106,7 +106,10 @@ public final class LocalConsole implements Runnable {
         output.println(
                 "application=" + identity.application()
                         + " version=" + identity.version()
-                        + " revision=" + identity.revision());
+                        + " revision=" + identity.revision()
+                        + " sourceRef=" + identity.sourceRef()
+                        + " buildOrigin=" + identity.buildOrigin()
+                        + " dirty=" + identity.dirty());
     }
 
     private void showStatus() {
