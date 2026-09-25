@@ -27,20 +27,29 @@ With `JAVA_HOME` pointing to a JDK 17 installation:
 ```
 
 Start SI-01 separately from the normal Java-8 project/NetBeans run configuration.
-The default test-client endpoint is:
+The default development endpoints are:
 
 ```text
-http://127.0.0.1:8081
+HTTP       http://127.0.0.1:8081
+WebSocket  ws://127.0.0.1:8082/api/v1/events
+Shell      127.0.0.1:8023
 ```
 
 Use:
 
 - **Get Version** for `GET /api/v1/version`;
-- **Get Status** for `GET /api/v1/status`.
+- **Get Status** for `GET /api/v1/status`;
+- **Events → Connect** for `WS /api/v1/events`.
 
 The window title includes the test-client software version. **Help → About** shows the test client's own build identity (version, revision, source ref, build origin and source state), independent of the SI-01 build information shown in the Status tab.
 
 The **Status** tab shows selected parsed fields and the complete raw JSON response.
+
+The **Events** tab uses Java 17's built-in WebSocket client. It shows connection state,
+event type/time, the first TimingNode identity/lifecycle and every raw event. Connecting or
+reconnecting should immediately produce a complete `STATUS_SNAPSHOT`. The current Step-3
+application has no public status-changing command, so a normal manual session does not yet
+produce `STATUS_CHANGED`.
 
 The **Terminal** tab is a small built-in client for the A05 line-oriented remote shell.
 It defaults to `127.0.0.1:8023`, has explicit Connect/Disconnect controls and uses a
@@ -53,5 +62,5 @@ shell; it is intentionally not an SSH/Telnet terminal emulator.
 .\mvnw.cmd -f test-client\pom.xml verify
 ```
 
-A07 may extend this same client with WebSocket event inspection. Keep protocol/client
-logic outside the JavaFX event handlers so another UI shape can reuse it later.
+HTTP, WebSocket and remote-shell client logic remain outside the JavaFX event handlers so the
+development UI does not become the owner of protocol semantics.
