@@ -33,9 +33,12 @@ io.github.brainboxemb.eventtiming.application.CommandHandler
 io.github.brainboxemb.eventtiming.domain.timing.TimingNode
 io.github.brainboxemb.eventtiming.domain.timing.TimingNodeId
 io.github.brainboxemb.eventtiming.infra.BuildIdentity
-io.github.brainboxemb.eventtiming.presentation.console.LocalConsole
-io.github.brainboxemb.eventtiming.presentation.terminal.TerminalSession
-io.github.brainboxemb.eventtiming.presentation.shell.RemoteShellServer
+io.github.brainboxemb.eventtiming.presentation.interfaces.console.LocalConsole
+io.github.brainboxemb.eventtiming.presentation.interfaces.shell.RemoteShellServer
+io.github.brainboxemb.eventtiming.presentation.interfaces.remoteapi.http.RemoteApiHttpServer
+io.github.brainboxemb.eventtiming.presentation.interfaces.remoteapi.websocket.RemoteApiWebSocketServer
+io.github.brainboxemb.eventtiming.presentation.interfaces.remoteapi.messages.RemoteApiMessageWriter
+io.github.brainboxemb.eventtiming.presentation.common.terminal.TerminalSession
 ```
 
 `application` owns the shared client-facing request boundary. `infra` owns build/runtime
@@ -90,17 +93,18 @@ presentation:
   remoteShell:
     bindAddress: 127.0.0.1
     port: 8023
-  http:
-    bindAddress: 127.0.0.1
-    port: 8081
-  webSocket:
-    bindAddress: 127.0.0.1
-    port: 8082
+  remoteApi:
+    http:
+      bindAddress: 127.0.0.1
+      port: 8081
+    webSocket:
+      bindAddress: 127.0.0.1
+      port: 8082
 ```
 
 The remote shell is a small line-oriented TCP development/service endpoint. It is **not** an SSH
-or Telnet protocol implementation. A06 exposes IF-03 request/response over the configured HTTP
-listener, and A07 adds a separate WebSocket listener for live events:
+or Telnet protocol implementation. IF-03 is the general **Remote API**; A06/A07 implement its first
+HTTP version/status and WebSocket event slice:
 
 ```text
 GET /api/v1/version                         http://127.0.0.1:8081
@@ -112,6 +116,10 @@ The WebSocket adapter sends a complete `STATUS_SNAPSHOT` immediately after conne
 `STATUS_CHANGED` is reserved for real authoritative status changes; the current Step-3
 TimingNode remains `CLOSED`, so no synthetic change is generated merely to exercise the
 transport.
+
+Remote API HTTP and WebSocket are grouped under `presentation.remoteApi` because they are two
+transports of the same functional interface. A future browser/iPad `presentation.web` interface
+may have its own HTTP/WebSocket endpoints without sharing the Remote API namespace.
 
 The committed development example keeps all network presentation listeners loopback-only;
 binding to another interface must be a deliberate configuration change.
@@ -147,7 +155,7 @@ added only when their SIP activities provide a real consumer.
 
 ### Step-3 JavaFX test client
 
-`test-client/` is a standalone Java 17 / JavaFX development tool for manually inspecting IF-03.
+`test-client/` is a standalone Java 17 / JavaFX development tool for manually inspecting the IF-03 Remote API.
 It is deliberately not part of the Java-8 SI-01 Maven reactor and has no dependency on
 `event-timing-framework` or `event-timing-app`.
 
