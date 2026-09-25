@@ -28,4 +28,21 @@
             <goal>exec:java</goal>
         </goals>
     </action>
+    <action>
+        <actionName>debug</actionName>
+        <displayName>Debug Event Timing Application</displayName>
+        <packagings>
+            <packaging>pom</packaging>
+        </packagings>
+        <preAction>CUSTOM-prepare-run</preAction>
+        <basedir>app</basedir>
+        <recursive>false</recursive>
+        <goals>
+            <goal>process-classes</goal>
+            <goal>exec:java</goal>
+        </goals>
+        <properties>
+            <jpda.listen>maven</jpda.listen>
+        </properties>
+    </action>
 </actions>
