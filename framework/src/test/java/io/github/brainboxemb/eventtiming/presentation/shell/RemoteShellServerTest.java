@@ -69,8 +69,9 @@ public class RemoteShellServerTest {
 
                 String response = readToEnd(second.getInputStream());
                 assertTrue(response.contains("Version      : test-version"));
-                assertTrue(response.contains("State       : RUNNING"));
-                assertTrue(response.contains("Timing node : timing-node-01"));
+                assertTrue(response.contains("Timing node"));
+                assertTrue(response.contains("Id : timing-node-01"));
+                assertFalse(response.contains("State       : RUNNING"));
                 assertTrue(response.contains("Stopping application."));
             }
 
