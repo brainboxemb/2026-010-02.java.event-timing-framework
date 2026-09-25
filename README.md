@@ -157,7 +157,7 @@ module with `config/application.yml`. This ensures the app uses the sibling fram
 same checkout rather than an older local SNAPSHOT. The root POM remains build/aggregation metadata
 and is not made into an executable application.
 
-Use **Run Project**, then enter:
+Use **Run Project** (or **Debug Project** when debugging), then enter:
 
 ```text
 help
@@ -169,6 +169,8 @@ quit
 `help` must list every supported local command, `version` and `status` must return the shared
 application values, and `quit` must terminate the process through the normal graceful shutdown
 path.
+
+Run and Debug use the same configured application path; Debug only adds the NetBeans JPDA debugger.
 
 The command-line equivalent remains:
 
