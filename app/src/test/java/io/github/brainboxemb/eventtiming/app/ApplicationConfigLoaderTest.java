@@ -30,7 +30,7 @@ public class ApplicationConfigLoaderTest {
                 "timingNodeId: timing-node-01\n"
                         + "presentation:\n"
                         + "  remoteShell:\n"
-                        + "      bindAddress: 127.0.0.1\n"
+                        + "    bindAddress: 127.0.0.1\n"
                         + "    port: 8023\n"
                         + "  remoteApi:\n"
                         + "    http:\n"
@@ -70,7 +70,8 @@ public class ApplicationConfigLoaderTest {
         load(
                 "timingNodeId: timing-node-01\n"
                         + "presentation:\n"
-                        + "  remoteApi:\n" + "    http:\n"
+                        + "  remoteApi:\n"
+                        + "    http:\n"
                         + "      bindAddress: 127.0.0.1\n"
                         + "      port: 8081\n"
                         + "      protocol: https\n");
@@ -81,7 +82,8 @@ public class ApplicationConfigLoaderTest {
         load(
                 "timingNodeId: timing-node-01\n"
                         + "presentation:\n"
-                        + "  remoteApi:\n" + "    http:\n"
+                        + "  remoteApi:\n"
+                        + "    http:\n"
                         + "      port: 8081\n");
     }
 
@@ -90,9 +92,18 @@ public class ApplicationConfigLoaderTest {
         load(
                 "timingNodeId: timing-node-01\n"
                         + "presentation:\n"
-                        + "  remoteApi:\n" + "    http:\n"
+                        + "  remoteApi:\n"
+                        + "    http:\n"
                         + "      bindAddress: 127.0.0.1\n"
                         + "      port: 70000\n");
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void rejectsEmptyRemoteApi() throws Exception {
+        load(
+                "timingNodeId: timing-node-01\n"
+                        + "presentation:\n"
+                        + "  remoteApi: {}\n");
     }
 
     private ApplicationConfig load(String yaml) throws Exception {
