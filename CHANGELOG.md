@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+- Replace wall-clock `buildTime` provenance with deterministic embedded `sourceRef`, `buildOrigin` and `dirty` fields alongside version/revision, so one JAR identifies its source/build context without CI run/user/timestamp sidecars.
+
+- Add the Step-3 A04 local console/debug shell with `help`, `version`, `status`, `quit` and `exit`; expose the first real shared `ApplicationStatus` query through `CommandHandler` and document a clean-checkout Windows acceptance session.
+
 - Add the Step-3 A03 process lifetime: a configured application remains running until shutdown, waits without polling, and uses a JVM shutdown hook so Ctrl+C / normal OS shutdown closes the existing application lifecycle cleanly.
 
 - Start SIP Step-3 A02 with one external YAML configuration file: load and validate a single `TimingNodeId`, introduce the minimal reusable `TimingNodeId` / `TimingNode` domain objects, and compose that configured TimingNode without prebuilding presentation, overlay or I/O configuration models.

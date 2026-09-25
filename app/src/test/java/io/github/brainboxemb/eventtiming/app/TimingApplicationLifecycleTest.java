@@ -17,7 +17,9 @@ public class TimingApplicationLifecycleTest {
                 "event-timing-app",
                 "test-version",
                 "abc123def456",
-                "2026-09-13T06:00:00Z");
+                "feature/test",
+                "local",
+                false);
     }
 
     @Test

@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<actions>
+    <action>
+        <actionName>CUSTOM-prepare-run</actionName>
+        <displayName>Prepare application run</displayName>
+        <packagings>
+            <packaging>pom</packaging>
+        </packagings>
+        <goals>
+            <goal>install</goal>
+        </goals>
+        <properties>
+            <maven.test.skip>true</maven.test.skip>
+        </properties>
+    </action>
+
+    <action>
+        <actionName>run</actionName>
+        <displayName>Run Event Timing Application</displayName>
+        <packagings>
+            <packaging>pom</packaging>
+        </packagings>
+        <preAction>CUSTOM-prepare-run</preAction>
+        <basedir>app</basedir>
+        <recursive>false</recursive>
+        <goals>
+            <goal>process-classes</goal>
+            <goal>exec:java</goal>
+        </goals>
+    </action>
+    <action>
+        <actionName>debug</actionName>
+        <displayName>Debug Event Timing Application</displayName>
+        <packagings>
+            <packaging>pom</packaging>
+        </packagings>
+        <preAction>CUSTOM-prepare-run</preAction>
+        <basedir>app</basedir>
+        <recursive>false</recursive>
+        <goals>
+            <goal>process-classes</goal>
+            <goal>exec:java</goal>
+        </goals>
+        <properties>
+            <jpda.listen>maven</jpda.listen>
+        </properties>
+    </action>
+</actions>

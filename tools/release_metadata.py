@@ -10,7 +10,6 @@ only repository-local mechanical validation.
 """
 
 import argparse
-import datetime as dt
 import re
 import sys
 import zipfile
@@ -121,25 +120,26 @@ def verify_artifact(jar_path, expected_version, expected_revision):
     properties = _load_properties(raw)
     version = properties.get("application.version")
     revision = properties.get("build.revision")
-    timestamp = properties.get("build.timestamp")
+    source_ref = properties.get("build.sourceRef")
+    build_origin = properties.get("build.origin")
+    dirty = properties.get("build.dirty")
 
     if version != expected_version:
         raise ValueError("artifact version {} does not match expected {}".format(version, expected_version))
     if revision != expected_revision:
         raise ValueError("artifact revision {} does not match expected {}".format(revision, expected_revision))
-    if not timestamp:
-        raise ValueError("artifact build timestamp is missing")
-
-    try:
-        parsed = dt.datetime.fromisoformat(timestamp.replace("Z", "+00:00"))
-    except ValueError:
-        raise ValueError("artifact build timestamp is not ISO-8601: {}".format(timestamp))
-    if parsed.tzinfo is None or parsed.utcoffset() != dt.timedelta(0):
-        raise ValueError("artifact build timestamp is not UTC: {}".format(timestamp))
+    if not source_ref:
+        raise ValueError("artifact source ref is missing")
+    if not build_origin:
+        raise ValueError("artifact build origin is missing")
+    if dirty not in ("true", "false"):
+        raise ValueError("artifact dirty state is invalid: {}".format(dirty))
 
     print("version={}".format(version))
     print("revision={}".format(revision))
-    print("build_timestamp={}".format(timestamp))
+    print("source_ref={}".format(source_ref))
+    print("build_origin={}".format(build_origin))
+    print("dirty={}".format(dirty))
 
 
 def write_release_notes(repo_root, version, output):
