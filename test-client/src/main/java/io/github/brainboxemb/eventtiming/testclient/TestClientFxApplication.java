@@ -22,7 +22,7 @@ import java.util.concurrent.CompletionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-final class TestClientFxApplication extends Application {
+public final class TestClientFxApplication extends Application {
     private final ExecutorService requests = Executors.newSingleThreadExecutor(runnable -> {
         Thread thread = new Thread(runnable, "event-timing-test-client-http");
         thread.setDaemon(true);
