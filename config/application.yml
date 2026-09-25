@@ -1,2 +1,8 @@
-# A02 development configuration: exactly one logical TimingNode identity.
+# Step-3 development configuration: one logical TimingNode plus A05 remote terminal.
 timingNodeId: timing-node-01
+
+presentation:
+  remoteShell:
+    # Development/service baseline: explicit loopback-only listener.
+    bindAddress: 127.0.0.1
+    port: 8023
