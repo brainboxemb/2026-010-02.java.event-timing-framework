@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.time.Clock;
+import java.nio.ByteBuffer;
 import java.util.Collections;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
@@ -198,6 +199,15 @@ public final class WebSocketStatusServer implements AutoCloseable {
 
         @Override
         public void onMessage(WebSocket connection, String message) {
+            rejectClientMessage(connection);
+        }
+
+        @Override
+        public void onMessage(WebSocket connection, ByteBuffer message) {
+            rejectClientMessage(connection);
+        }
+
+        private void rejectClientMessage(WebSocket connection) {
             connection.close(
                     CloseFrame.POLICY_VALIDATION,
                     "IF-03 event stream is server-to-client only");
