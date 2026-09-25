@@ -4,6 +4,7 @@ import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpServer;
 
 import io.github.brainboxemb.eventtiming.application.CommandHandler;
+import io.github.brainboxemb.eventtiming.presentation.control.ApplicationControlJson;
 
 import java.io.IOException;
 import java.io.OutputStream;

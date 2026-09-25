@@ -1,7 +1,7 @@
 package io.github.brainboxemb.eventtiming.presentation.websocket;
 
 import io.github.brainboxemb.eventtiming.application.CommandHandler;
-import io.github.brainboxemb.eventtiming.presentation.http.ApplicationControlJson;
+import io.github.brainboxemb.eventtiming.presentation.control.ApplicationControlJson;
 
 import java.io.IOException;
 import java.net.InetAddress;

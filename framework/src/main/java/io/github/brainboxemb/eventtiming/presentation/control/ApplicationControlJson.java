@@ -1,4 +1,4 @@
-package io.github.brainboxemb.eventtiming.presentation.http;
+package io.github.brainboxemb.eventtiming.presentation.control;
 
 import io.github.brainboxemb.eventtiming.application.ApplicationStatus;
 import io.github.brainboxemb.eventtiming.infra.BuildIdentity;
@@ -8,7 +8,7 @@ public final class ApplicationControlJson {
     private ApplicationControlJson() {
     }
 
-    static String version(BuildIdentity identity) {
+    public static String version(BuildIdentity identity) {
         return "{"
                 + "\"application\":" + quote(identity.application()) + ","
                 + "\"version\":" + quote(identity.version()) + ","
@@ -20,7 +20,7 @@ public final class ApplicationControlJson {
                 + "}";
     }
 
-    static String status(BuildIdentity identity, ApplicationStatus status) {
+    public static String status(BuildIdentity identity, ApplicationStatus status) {
         return "{"
                 + "\"apiVersion\":" + quote(identity.apiVersion()) + ","
                 + "\"build\":" + version(identity) + ","
@@ -57,7 +57,7 @@ public final class ApplicationControlJson {
                 + "}";
     }
 
-    static String error(String code, String message) {
+    public static String error(String code, String message) {
         return "{"
                 + "\"apiVersion\":\"1\","
                 + "\"error\":{"
