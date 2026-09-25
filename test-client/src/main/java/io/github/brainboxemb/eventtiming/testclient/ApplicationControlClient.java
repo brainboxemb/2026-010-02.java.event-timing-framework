@@ -1,0 +1,131 @@
+package io.github.brainboxemb.eventtiming.testclient;
+
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import java.io.IOException;
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+import java.time.Duration;
+import java.time.Instant;
+import java.util.ArrayList;
+import java.util.List;
+
+/**
+ * Independent IF-03 HTTP client.
+ *
+ * <p>This project deliberately has no dependency on SI-01 implementation classes.</p>
+ */
+public final class ApplicationControlClient {
+    private final URI endpoint;
+    private final HttpClient httpClient;
+    private final ObjectMapper objectMapper;
+
+    public ApplicationControlClient(URI endpoint) {
+        if (endpoint == null || endpoint.getScheme() == null || endpoint.getHost() == null) {
+            throw new IllegalArgumentException("endpoint must be an absolute HTTP URI");
+        }
+        if (!"http".equalsIgnoreCase(endpoint.getScheme())
+                && !"https".equalsIgnoreCase(endpoint.getScheme())) {
+            throw new IllegalArgumentException("endpoint scheme must be http or https");
+        }
+        this.endpoint = endpoint;
+        this.httpClient = HttpClient.newBuilder()
+                .connectTimeout(Duration.ofSeconds(3))
+                .build();
+        this.objectMapper = new ObjectMapper();
+    }
+
+    public VersionResult getVersion() throws IOException, InterruptedException {
+        String rawJson = get("/api/v1/version");
+        JsonNode root = objectMapper.readTree(rawJson);
+        return new VersionResult(readBuild(root), rawJson);
+    }
+
+    public StatusResult getStatus() throws IOException, InterruptedException {
+        String rawJson = get("/api/v1/status");
+        JsonNode root = objectMapper.readTree(rawJson);
+        JsonNode application = required(root, "application");
+        List<TimingNodeInfo> timingNodes = new ArrayList<>();
+        for (JsonNode node : required(root, "timingNodes")) {
+            timingNodes.add(new TimingNodeInfo(
+                    requiredText(node, "timingNodeId"),
+                    requiredText(node, "lifecycle")));
+        }
+        return new StatusResult(
+                readBuild(required(root, "build")),
+                requiredText(application, "state"),
+                Instant.parse(requiredText(application, "startedAt")),
+                List.copyOf(timingNodes),
+                rawJson);
+    }
+
+    private String get(String path) throws IOException, InterruptedException {
+        URI uri = endpoint.resolve(path);
+        HttpRequest request = HttpRequest.newBuilder(uri)
+                .timeout(Duration.ofSeconds(5))
+                .header("Accept", "application/json")
+                .GET()
+                .build();
+        HttpResponse<String> response =
+                httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+        if (response.statusCode() != 200) {
+            throw new IOException(
+                    "HTTP " + response.statusCode() + " from " + uri + ": " + response.body());
+        }
+        return response.body();
+    }
+
+    private static BuildInfo readBuild(JsonNode root) {
+        return new BuildInfo(
+                requiredText(root, "application"),
+                requiredText(root, "version"),
+                requiredText(root, "revision"),
+                requiredText(root, "sourceRef"),
+                requiredText(root, "buildOrigin"),
+                required(root, "dirty").asBoolean(),
+                requiredText(root, "apiVersion"));
+    }
+
+    private static JsonNode required(JsonNode root, String field) {
+        JsonNode value = root.get(field);
+        if (value == null || value.isNull()) {
+            throw new IllegalArgumentException("Missing IF-03 field: " + field);
+        }
+        return value;
+    }
+
+    private static String requiredText(JsonNode root, String field) {
+        JsonNode value = required(root, field);
+        if (!value.isTextual()) {
+            throw new IllegalArgumentException("IF-03 field is not text: " + field);
+        }
+        return value.asText();
+    }
+
+    public record BuildInfo(
+            String application,
+            String version,
+            String revision,
+            String sourceRef,
+            String buildOrigin,
+            boolean dirty,
+            String apiVersion) {
+    }
+
+    public record VersionResult(BuildInfo build, String rawJson) {
+    }
+
+    public record TimingNodeInfo(String timingNodeId, String lifecycle) {
+    }
+
+    public record StatusResult(
+            BuildInfo build,
+            String applicationState,
+            Instant startedAt,
+            List<TimingNodeInfo> timingNodes,
+            String rawJson) {
+    }
+}
