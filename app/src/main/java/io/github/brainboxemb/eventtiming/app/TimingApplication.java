@@ -4,10 +4,10 @@ import io.github.brainboxemb.eventtiming.application.ApplicationStatus;
 import io.github.brainboxemb.eventtiming.application.CommandHandler;
 import io.github.brainboxemb.eventtiming.domain.timing.TimingNode;
 import io.github.brainboxemb.eventtiming.infra.BuildIdentity;
-import io.github.brainboxemb.eventtiming.presentation.console.LocalConsole;
-import io.github.brainboxemb.eventtiming.presentation.http.HttpStatusServer;
-import io.github.brainboxemb.eventtiming.presentation.shell.RemoteShellServer;
-import io.github.brainboxemb.eventtiming.presentation.websocket.WebSocketStatusServer;
+import io.github.brainboxemb.eventtiming.presentation.interfaces.console.LocalConsole;
+import io.github.brainboxemb.eventtiming.presentation.interfaces.remoteapi.http.RemoteApiHttpServer;
+import io.github.brainboxemb.eventtiming.presentation.interfaces.shell.RemoteShellServer;
+import io.github.brainboxemb.eventtiming.presentation.interfaces.remoteapi.websocket.RemoteApiWebSocketServer;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -33,8 +33,7 @@ public final class TimingApplication implements AutoCloseable {
     private final CommandHandler commandHandler;
     private final TimingApplicationLifecycle lifecycle;
     private final RemoteShellConfig remoteShellConfig;
-    private final HttpConfig httpConfig;
-    private final WebSocketConfig webSocketConfig;
+    private final RemoteApiConfig remoteApiConfig;
 
     private TimingApplication(
             BuildIdentity buildIdentity,
@@ -42,15 +41,13 @@ public final class TimingApplication implements AutoCloseable {
             CommandHandler commandHandler,
             TimingApplicationLifecycle lifecycle,
             RemoteShellConfig remoteShellConfig,
-            HttpConfig httpConfig,
-            WebSocketConfig webSocketConfig) {
+            RemoteApiConfig remoteApiConfig) {
         this.buildIdentity = buildIdentity;
         this.timingNode = timingNode;
         this.commandHandler = commandHandler;
         this.lifecycle = lifecycle;
         this.remoteShellConfig = remoteShellConfig;
-        this.httpConfig = httpConfig;
-        this.webSocketConfig = webSocketConfig;
+        this.remoteApiConfig = remoteApiConfig;
     }
 
     public static Builder builder(BuildIdentity buildIdentity) {
@@ -77,12 +74,8 @@ public final class TimingApplication implements AutoCloseable {
         return remoteShellConfig;
     }
 
-    HttpConfig httpConfig() {
-        return httpConfig;
-    }
-
-    WebSocketConfig webSocketConfig() {
-        return webSocketConfig;
+    RemoteApiConfig remoteApiConfig() {
+        return remoteApiConfig;
     }
 
     TimingApplicationLifecycle.State state() {
@@ -126,8 +119,8 @@ public final class TimingApplication implements AutoCloseable {
         Thread shutdownHook = new Thread(application::close, "event-timing-shutdown");
         runtime.addShutdownHook(shutdownHook);
 
-        HttpStatusServer http = null;
-        WebSocketStatusServer webSocket = null;
+        RemoteApiHttpServer http = null;
+        RemoteApiWebSocketServer webSocket = null;
         RemoteShellServer remoteShell = null;
         try {
             application.start();
@@ -157,14 +150,15 @@ public final class TimingApplication implements AutoCloseable {
         System.out.println(smokeOutput(application.buildIdentity(), application.state()));
     }
 
-    private static HttpStatusServer startHttp(TimingApplication application)
+    private static RemoteApiHttpServer startHttp(TimingApplication application)
             throws IOException {
-        HttpConfig config = application.httpConfig();
+        RemoteApiConfig remoteApi = application.remoteApiConfig();
+        RemoteApiHttpConfig config = remoteApi == null ? null : remoteApi.http();
         if (config == null) {
             return null;
         }
 
-        HttpStatusServer server = new HttpStatusServer(
+        RemoteApiHttpServer server = new RemoteApiHttpServer(
                 config.bindAddress(),
                 config.port(),
                 application.commandHandler());
@@ -172,14 +166,16 @@ public final class TimingApplication implements AutoCloseable {
         return server;
     }
 
-    private static WebSocketStatusServer startWebSocket(TimingApplication application)
+    private static RemoteApiWebSocketServer startWebSocket(TimingApplication application)
             throws IOException {
-        WebSocketConfig config = application.webSocketConfig();
+        RemoteApiConfig remoteApi = application.remoteApiConfig();
+        RemoteApiWebSocketConfig config =
+                remoteApi == null ? null : remoteApi.webSocket();
         if (config == null) {
             return null;
         }
 
-        WebSocketStatusServer server = new WebSocketStatusServer(
+        RemoteApiWebSocketServer server = new RemoteApiWebSocketServer(
                 config.bindAddress(),
                 config.port(),
                 application.commandHandler());
@@ -229,8 +225,7 @@ public final class TimingApplication implements AutoCloseable {
         return TimingApplication.builder(buildIdentity)
                 .timingNode(timingNode)
                 .remoteShellConfig(config.presentation().remoteShell())
-                .httpConfig(config.presentation().http())
-                .webSocketConfig(config.presentation().webSocket())
+                .remoteApiConfig(config.presentation().remoteApi())
                 .build();
     }
 
@@ -287,8 +282,7 @@ public final class TimingApplication implements AutoCloseable {
         private final BuildIdentity buildIdentity;
         private TimingNode timingNode;
         private RemoteShellConfig remoteShellConfig;
-        private HttpConfig httpConfig;
-        private WebSocketConfig webSocketConfig;
+        private RemoteApiConfig remoteApiConfig;
 
         private Builder(BuildIdentity buildIdentity) {
             if (buildIdentity == null) {
@@ -310,13 +304,8 @@ public final class TimingApplication implements AutoCloseable {
             return this;
         }
 
-        Builder httpConfig(HttpConfig httpConfig) {
-            this.httpConfig = httpConfig;
-            return this;
-        }
-
-        Builder webSocketConfig(WebSocketConfig webSocketConfig) {
-            this.webSocketConfig = webSocketConfig;
+        Builder remoteApiConfig(RemoteApiConfig remoteApiConfig) {
+            this.remoteApiConfig = remoteApiConfig;
             return this;
         }
 
@@ -336,8 +325,7 @@ public final class TimingApplication implements AutoCloseable {
                     commandHandler,
                     lifecycle,
                     remoteShellConfig,
-                    httpConfig,
-                    webSocketConfig);
+                    remoteApiConfig);
         }
     }
 }

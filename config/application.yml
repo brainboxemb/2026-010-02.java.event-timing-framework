@@ -1,4 +1,4 @@
-# Step-3 development configuration: one TimingNode plus presentation adapters.
+# Step-3 development configuration: one TimingNode plus presentation interfaces.
 timingNodeId: timing-node-01
 
 presentation:
@@ -6,11 +6,12 @@ presentation:
     # Development/service baseline: explicit loopback-only listener.
     bindAddress: 127.0.0.1
     port: 8023
-  http:
-    # IF-03 request/response development baseline: loopback-only.
-    bindAddress: 127.0.0.1
-    port: 8081
-  webSocket:
-    # IF-03 live event development baseline: separate loopback-only listener.
-    bindAddress: 127.0.0.1
-    port: 8082
+  remoteApi:
+    http:
+      # IF-03 request/response development baseline: loopback-only.
+      bindAddress: 127.0.0.1
+      port: 8081
+    webSocket:
+      # IF-03 live event development baseline: separate loopback-only listener.
+      bindAddress: 127.0.0.1
+      port: 8082
