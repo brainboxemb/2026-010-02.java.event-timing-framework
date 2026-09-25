@@ -1,7 +1,11 @@
 package io.github.brainboxemb.eventtiming.domain.timing;
 
-/** Logical timing unit with its own stable identity. */
+/** Logical timing unit with its own stable identity and lifecycle. */
 public final class TimingNode {
+    public enum Lifecycle {
+        CLOSED
+    }
+
     private final TimingNodeId timingNodeId;
 
     public TimingNode(TimingNodeId timingNodeId) {
@@ -13,5 +17,9 @@ public final class TimingNode {
 
     public TimingNodeId timingNodeId() {
         return timingNodeId;
+    }
+
+    public Lifecycle lifecycle() {
+        return Lifecycle.CLOSED;
     }
 }
