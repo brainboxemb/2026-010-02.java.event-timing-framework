@@ -29,8 +29,8 @@ Current real framework behaviour is deliberately small:
 
 ```text
 io.github.brainboxemb.eventtiming.application.CommandHandler
-io.github.brainboxemb.eventtiming.domain.TimingNode
-io.github.brainboxemb.eventtiming.domain.TimingNodeId
+io.github.brainboxemb.eventtiming.domain.timing.TimingNode
+io.github.brainboxemb.eventtiming.domain.timing.TimingNodeId
 io.github.brainboxemb.eventtiming.infra.BuildIdentity
 ```
 

@@ -1,11 +1,6 @@
-package io.github.brainboxemb.eventtiming.domain;
+package io.github.brainboxemb.eventtiming.domain.timing;
 
-/**
- * Minimal logical timing aggregate introduced by the Step-3 configuration slice.
- *
- * <p>Operational lifecycle and timing behaviour are added only when later SIP activities require
- * them. For A02 the real domain responsibility is stable identity.</p>
- */
+/** Logical timing unit with its own stable identity. */
 public final class TimingNode {
     private final TimingNodeId timingNodeId;
 

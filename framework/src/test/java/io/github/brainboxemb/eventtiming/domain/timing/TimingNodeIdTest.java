@@ -1,4 +1,4 @@
-package io.github.brainboxemb.eventtiming.domain;
+package io.github.brainboxemb.eventtiming.domain.timing;
 
 import org.junit.Test;
 

@@ -1,7 +1,7 @@
 package io.github.brainboxemb.eventtiming.app;
 
 import io.github.brainboxemb.eventtiming.application.CommandHandler;
-import io.github.brainboxemb.eventtiming.domain.TimingNode;
+import io.github.brainboxemb.eventtiming.domain.timing.TimingNode;
 import io.github.brainboxemb.eventtiming.infra.BuildIdentity;
 
 import java.io.IOException;
@@ -67,11 +67,9 @@ public final class TimingApplication implements AutoCloseable {
     }
 
     /**
-     * Runs the A02 configuration path when one config-file argument is supplied.
+     * Starts the application from the supplied configuration file.
      *
-     * <p>The no-argument path remains the Step-2 artifact smoke contract until A03 introduces the
-     * long-running process host. This keeps existing cross-platform build evidence stable without
-     * pretending that the smoke path is deployment configuration.</p>
+     * <p>The temporary no-argument startup is retained for the existing build smoke test.</p>
      */
     public static void main(String[] args) {
         BuildIdentity buildIdentity = embeddedBuildIdentity();

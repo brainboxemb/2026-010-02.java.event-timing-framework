@@ -1,7 +1,7 @@
 package io.github.brainboxemb.eventtiming.app;
 
-import io.github.brainboxemb.eventtiming.domain.TimingNode;
-import io.github.brainboxemb.eventtiming.domain.TimingNodeId;
+import io.github.brainboxemb.eventtiming.domain.timing.TimingNode;
+import io.github.brainboxemb.eventtiming.domain.timing.TimingNodeId;
 import io.github.brainboxemb.eventtiming.infra.BuildIdentity;
 
 import java.io.File;

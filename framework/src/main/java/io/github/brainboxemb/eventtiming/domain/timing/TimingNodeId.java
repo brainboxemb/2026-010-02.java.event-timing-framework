@@ -1,11 +1,6 @@
-package io.github.brainboxemb.eventtiming.domain;
+package io.github.brainboxemb.eventtiming.domain.timing;
 
-/**
- * Stable software identity of one {@link TimingNode}.
- *
- * <p>The identifier is deliberately independent of deployment location, antenna identity and
- * presentation endpoints.</p>
- */
+/** Stable software identity of one {@link TimingNode}. */
 public final class TimingNodeId {
     private final String value;
 
