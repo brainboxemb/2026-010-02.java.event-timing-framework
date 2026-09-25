@@ -6,7 +6,7 @@ Project-wide planning, requirements, architecture, interface design and verifica
 
 ## Current scope
 
-This repository is the public implementation repository for **SI-01 — Headless Timing Application**. The current Step-2 baseline establishes a reusable framework-library boundary, a first executable consumer, deterministic repository/build/test tooling, and a minimal explicit application lifecycle. It intentionally does not implement HTTP/WebSocket, RFID, CAN, display, backoffice or timing-domain behaviour yet.
+This repository is the public implementation repository for **SI-01 — Headless Timing Application**. SIP Step 2 is complete; Step 3 is active on the `0.2.2-SNAPSHOT` development line. The current implementation still contains only the small reusable framework/application baseline while Step 3 adds the first external configuration and TimingNode behaviour incrementally. HTTP/WebSocket, RFID, CAN, display and backoffice capability are introduced only when their Step-3/later slices require them.
 
 ## Artifact and package model
 
@@ -64,11 +64,11 @@ This keeps logical responsibilities inside the one framework artifact while real
 The framework is intended to support more than one executable composition. Examples that may later become separate applications include:
 
 ```text
-single-waypoint application compose exactly one Waypoint
-multi-waypoint application  compose and coordinate 1..N Waypoint objects
+single-TimingNode application compose exactly one TimingNode
+multi-TimingNode application  compose and coordinate 1..N TimingNode objects
 ```
 
-Those applications should reuse the same framework library and inject/select their own concrete components. They are not created during Step 2 merely to predict future structure.
+Those applications should reuse the same framework library and inject/select their own concrete components. New Step-3 configuration/domain types use `TimingNode` / `TimingNodeId` directly; the repository does not introduce legacy `Waypoint` / `UniqueID` compatibility names.
 
 The working design is coordinated in the meta repository, especially `docs/31-01-SDD-02-java-component-design.md`.
 
