@@ -73,7 +73,9 @@ public class LocalConsoleTest {
                 "event-timing-app",
                 "test-version",
                 "abc123def456",
-                "2026-09-25T10:00:00Z");
+                "feature/test",
+                "local",
+                false);
         return new CommandHandler(
                 identity,
                 () -> new ApplicationStatus("RUNNING", new TimingNodeId("timing-node-01")));
