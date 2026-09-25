@@ -103,13 +103,12 @@ public final class LocalConsole implements Runnable {
 
     private void showVersion() {
         BuildIdentity identity = commandHandler.version();
-        output.println(
-                "application=" + identity.application()
-                        + " version=" + identity.version()
-                        + " revision=" + identity.revision()
-                        + " sourceRef=" + identity.sourceRef()
-                        + " buildOrigin=" + identity.buildOrigin()
-                        + " dirty=" + identity.dirty());
+        output.println(identity.application());
+        output.println("  Version      : " + identity.version());
+        output.println("  Revision     : " + identity.revision());
+        output.println("  Source ref   : " + identity.sourceRef());
+        output.println("  Build origin : " + identity.buildOrigin());
+        output.println("  Source state : " + (identity.dirty() ? "modified" : "clean"));
     }
 
     private void showStatus() {
