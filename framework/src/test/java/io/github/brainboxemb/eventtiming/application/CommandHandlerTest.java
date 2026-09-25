@@ -44,6 +44,8 @@ public class CommandHandlerTest {
                 "event-timing-app",
                 "0.2.2-SNAPSHOT",
                 "revision-one",
-                "2026-09-24T18:00:00Z");
+                "feature/test",
+                "local",
+                false);
     }
 }
