@@ -143,17 +143,19 @@ cd 2026-010-02.java.event-timing-framework
 
 Use `update-repo.ps1` / `update-repo.sh` for a controlled dependency-alignment pass after changing refs in `project.yml`. The generic tool refuses to overwrite local changes inside a managed dependency.
 
-### A04 Windows acceptance check
+### A04 Windows / NetBeans acceptance check
 
-From a clean Windows checkout:
+From a clean Windows checkout, run `.\bootstrap.ps1` and open the repository root in NetBeans as
+the Maven project.
 
-```powershell
-.\bootstrap.ps1
-.\mvnw.cmd verify
-java -jar app\target\event-timing-app-0.2.2-SNAPSHOT.jar config\application.yml
-```
+On first open, NetBeans may perform a **priming build** to resolve the reactor/dependencies. That
+Maven preparation can compile and run tests; it is not the application Run action.
 
-Then enter:
+The repository contains `nbactions.xml` so **Run Project** on the root Maven project starts the
+executable `app/` module with `../config/application.yml`. The root POM remains build/aggregation
+metadata and is not made into an executable application.
+
+Use **Run Project**, then enter:
 
 ```text
 help
@@ -165,6 +167,13 @@ quit
 `help` must list every supported local command, `version` and `status` must return the shared
 application values, and `quit` must terminate the process through the normal graceful shutdown
 path.
+
+The command-line equivalent remains:
+
+```powershell
+.\mvnw.cmd verify
+java -jar app\target\event-timing-app-0.2.2-SNAPSHOT.jar config\application.yml
+```
 
 ## Toolchain baseline
 
