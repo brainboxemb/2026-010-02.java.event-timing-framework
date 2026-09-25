@@ -12,6 +12,7 @@ public class TimingNodeTest {
         TimingNode node = new TimingNode(id);
 
         assertSame(id, node.timingNodeId());
+        assertSame(TimingNode.Lifecycle.CLOSED, node.lifecycle());
     }
 
     @Test(expected = IllegalArgumentException.class)
