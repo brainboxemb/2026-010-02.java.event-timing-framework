@@ -5,6 +5,7 @@ import io.github.brainboxemb.eventtiming.application.CommandHandler;
 import io.github.brainboxemb.eventtiming.domain.timing.TimingNode;
 import io.github.brainboxemb.eventtiming.infra.BuildIdentity;
 import io.github.brainboxemb.eventtiming.presentation.console.LocalConsole;
+import io.github.brainboxemb.eventtiming.presentation.shell.RemoteShellServer;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -29,16 +30,19 @@ public final class TimingApplication implements AutoCloseable {
     private final TimingNode timingNode;
     private final CommandHandler commandHandler;
     private final TimingApplicationLifecycle lifecycle;
+    private final RemoteShellConfig remoteShellConfig;
 
     private TimingApplication(
             BuildIdentity buildIdentity,
             TimingNode timingNode,
             CommandHandler commandHandler,
-            TimingApplicationLifecycle lifecycle) {
+            TimingApplicationLifecycle lifecycle,
+            RemoteShellConfig remoteShellConfig) {
         this.buildIdentity = buildIdentity;
         this.timingNode = timingNode;
         this.commandHandler = commandHandler;
         this.lifecycle = lifecycle;
+        this.remoteShellConfig = remoteShellConfig;
     }
 
     public static Builder builder(BuildIdentity buildIdentity) {
@@ -59,6 +63,10 @@ public final class TimingApplication implements AutoCloseable {
 
     BuildIdentity buildIdentity() {
         return buildIdentity;
+    }
+
+    RemoteShellConfig remoteShellConfig() {
+        return remoteShellConfig;
     }
 
     TimingApplicationLifecycle.State state() {
@@ -102,18 +110,41 @@ public final class TimingApplication implements AutoCloseable {
         Thread shutdownHook = new Thread(application::close, "event-timing-shutdown");
         runtime.addShutdownHook(shutdownHook);
 
+        RemoteShellServer remoteShell = null;
         try {
             application.start();
+            remoteShell = startRemoteShell(application);
             startLocalConsole(application);
             application.awaitStopped();
+        } catch (IOException ex) {
+            throw new IllegalStateException("Unable to start remote shell", ex);
         } catch (InterruptedException ex) {
             Thread.currentThread().interrupt();
         } finally {
+            if (remoteShell != null) {
+                remoteShell.close();
+            }
             application.close();
             removeShutdownHook(runtime, shutdownHook);
         }
 
         System.out.println(smokeOutput(application.buildIdentity(), application.state()));
+    }
+
+    private static RemoteShellServer startRemoteShell(TimingApplication application)
+            throws IOException {
+        RemoteShellConfig config = application.remoteShellConfig();
+        if (config == null) {
+            return null;
+        }
+
+        RemoteShellServer server = new RemoteShellServer(
+                config.bindAddress(),
+                config.port(),
+                application.commandHandler(),
+                application::close);
+        server.start();
+        return server;
     }
 
     private static void startLocalConsole(TimingApplication application) {
@@ -139,7 +170,10 @@ public final class TimingApplication implements AutoCloseable {
             throws IOException {
         ApplicationConfig config = ApplicationConfigLoader.load(configPath);
         TimingNode timingNode = new TimingNode(config.timingNodeId());
-        return TimingApplication.builder(buildIdentity).timingNode(timingNode).build();
+        return TimingApplication.builder(buildIdentity)
+                .timingNode(timingNode)
+                .remoteShellConfig(config.presentation().remoteShell())
+                .build();
     }
 
     private static void runArtifactSmoke(BuildIdentity buildIdentity) {
@@ -194,6 +228,7 @@ public final class TimingApplication implements AutoCloseable {
     public static final class Builder {
         private final BuildIdentity buildIdentity;
         private TimingNode timingNode;
+        private RemoteShellConfig remoteShellConfig;
 
         private Builder(BuildIdentity buildIdentity) {
             if (buildIdentity == null) {
@@ -210,6 +245,11 @@ public final class TimingApplication implements AutoCloseable {
             return this;
         }
 
+        Builder remoteShellConfig(RemoteShellConfig remoteShellConfig) {
+            this.remoteShellConfig = remoteShellConfig;
+            return this;
+        }
+
         public TimingApplication build() {
             if (timingNode == null) {
                 throw new IllegalStateException("timingNode must be configured before build");
@@ -220,7 +260,12 @@ public final class TimingApplication implements AutoCloseable {
                     () -> new ApplicationStatus(
                             lifecycle.state().name(),
                             timingNode.timingNodeId()));
-            return new TimingApplication(buildIdentity, timingNode, commandHandler, lifecycle);
+            return new TimingApplication(
+                    buildIdentity,
+                    timingNode,
+                    commandHandler,
+                    lifecycle,
+                    remoteShellConfig);
         }
     }
 }
