@@ -25,7 +25,9 @@ public class TimingApplicationTest {
                 "event-timing-app",
                 "test-version",
                 "abc123def456",
-                "2026-09-13T06:00:00Z");
+                "feature/test",
+                "local",
+                false);
         TimingNode timingNode = new TimingNode(new TimingNodeId("timing-node-01"));
 
         TimingApplication application =
@@ -52,7 +54,9 @@ public class TimingApplicationTest {
                 "event-timing-app",
                 "test-version",
                 "abc123def456",
-                "2026-09-13T06:00:00Z");
+                "feature/test",
+                "local",
+                false);
 
         TimingApplication application = TimingApplication.configured(identity, config.toPath());
 
@@ -75,7 +79,9 @@ public class TimingApplicationTest {
                 "event-timing-app",
                 "test-version",
                 "abc123def456",
-                "2026-09-13T06:00:00Z");
+                "feature/test",
+                "local",
+                false);
 
         TimingApplication.builder(identity).build();
     }
@@ -86,7 +92,9 @@ public class TimingApplicationTest {
                 "event-timing-app",
                 "test-version",
                 "abc123def456",
-                "2026-09-13T06:00:00Z");
+                "feature/test",
+                "local",
+                false);
         assertEquals(
                 "event-timing-app lifecycle OK version=test-version state=STOPPED",
                 TimingApplication.smokeOutput(identity, TimingApplicationLifecycle.State.STOPPED));
