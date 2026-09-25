@@ -4,7 +4,7 @@ import io.github.brainboxemb.eventtiming.application.ApplicationStatus;
 import io.github.brainboxemb.eventtiming.infra.BuildIdentity;
 
 /** Explicit JSON mapping for the IF-03 first-executable contract. */
-final class ApplicationControlJson {
+public final class ApplicationControlJson {
     private ApplicationControlJson() {
     }
 
@@ -29,6 +29,31 @@ final class ApplicationControlJson {
                 + "\"lifecycle\":" + quote(status.timingNodeLifecycle().name())
                 + "}],"
                 + "\"problems\":[]"
+                + "}";
+    }
+
+    public static String statusEvent(
+            String eventType,
+            java.time.Instant occurredAt,
+            BuildIdentity identity,
+            ApplicationStatus status) {
+        if (eventType == null || eventType.trim().isEmpty()) {
+            throw new IllegalArgumentException("eventType must not be blank");
+        }
+        if (occurredAt == null) {
+            throw new IllegalArgumentException("occurredAt must not be null");
+        }
+        if (identity == null) {
+            throw new IllegalArgumentException("identity must not be null");
+        }
+        if (status == null) {
+            throw new IllegalArgumentException("status must not be null");
+        }
+        return "{"
+                + "\"apiVersion\":" + quote(identity.apiVersion()) + ","
+                + "\"eventType\":" + quote(eventType) + ","
+                + "\"occurredAt\":" + quote(occurredAt.toString()) + ","
+                + "\"payload\":" + status(identity, status)
                 + "}";
     }
 
