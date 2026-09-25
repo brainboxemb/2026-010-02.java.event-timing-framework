@@ -71,6 +71,20 @@ public final class HttpStatusServer implements AutoCloseable {
     }
 
     private void handle(HttpExchange exchange) throws IOException {
+        try {
+            route(exchange);
+        } catch (RuntimeException ex) {
+            LOG.warn("IF-03 request failed", ex);
+            sendJson(
+                    exchange,
+                    500,
+                    ApplicationControlJson.error(
+                            "INTERNAL_ERROR",
+                            "Unexpected interface failure"));
+        }
+    }
+
+    private void route(HttpExchange exchange) throws IOException {
         String path = exchange.getRequestURI().getPath();
         if (!"GET".equals(exchange.getRequestMethod())) {
             sendJson(
