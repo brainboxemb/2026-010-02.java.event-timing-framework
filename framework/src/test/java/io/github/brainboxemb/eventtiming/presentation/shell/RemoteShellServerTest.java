@@ -12,7 +12,6 @@ import java.io.Writer;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.nio.charset.StandardCharsets;
-import java.time.Instant;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.junit.Test;
@@ -122,8 +121,6 @@ public class RemoteShellServerTest {
         return new CommandHandler(
                 identity,
                 () -> new ApplicationStatus(
-                        "RUNNING",
-                        Instant.parse("2026-09-25T13:00:00Z"),
                         new TimingNodeId("timing-node-01"),
                         TimingNode.Lifecycle.CLOSED));
     }
