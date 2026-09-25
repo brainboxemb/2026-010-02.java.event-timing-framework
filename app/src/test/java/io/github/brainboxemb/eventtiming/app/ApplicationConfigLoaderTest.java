@@ -9,16 +9,31 @@ import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 
 public class ApplicationConfigLoaderTest {
     @Rule
     public TemporaryFolder temporaryFolder = new TemporaryFolder();
 
     @Test
-    public void loadsSingleTimingNodeId() throws Exception {
+    public void loadsSingleTimingNodeIdWithoutPresentation() throws Exception {
         ApplicationConfig config = load("timingNodeId: timing-node-01\n");
 
         assertEquals("timing-node-01", config.timingNodeId().value());
+        assertNull(config.presentation().remoteShell());
+    }
+
+    @Test
+    public void loadsRemoteShellPresentationConfig() throws Exception {
+        ApplicationConfig config = load(
+                "timingNodeId: timing-node-01\n"
+                        + "presentation:\n"
+                        + "  remoteShell:\n"
+                        + "    bindAddress: 127.0.0.1\n"
+                        + "    port: 8023\n");
+
+        assertEquals("127.0.0.1", config.presentation().remoteShell().bindAddress());
+        assertEquals(8023, config.presentation().remoteShell().port());
     }
 
     @Test(expected = IllegalArgumentException.class)
@@ -32,8 +47,38 @@ public class ApplicationConfigLoaderTest {
     }
 
     @Test(expected = IllegalArgumentException.class)
-    public void rejectsUnimplementedConfigurationFields() throws Exception {
-        load("timingNodeId: timing-node-01\npresentation: {}\n");
+    public void rejectsUnknownRootField() throws Exception {
+        load("timingNodeId: timing-node-01\nunknown: true\n");
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void rejectsUnknownRemoteShellField() throws Exception {
+        load(
+                "timingNodeId: timing-node-01\n"
+                        + "presentation:\n"
+                        + "  remoteShell:\n"
+                        + "    bindAddress: 127.0.0.1\n"
+                        + "    port: 8023\n"
+                        + "    protocol: ssh\n");
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void rejectsMissingRemoteShellBindAddress() throws Exception {
+        load(
+                "timingNodeId: timing-node-01\n"
+                        + "presentation:\n"
+                        + "  remoteShell:\n"
+                        + "    port: 8023\n");
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void rejectsInvalidRemoteShellPort() throws Exception {
+        load(
+                "timingNodeId: timing-node-01\n"
+                        + "presentation:\n"
+                        + "  remoteShell:\n"
+                        + "    bindAddress: 127.0.0.1\n"
+                        + "    port: 70000\n");
     }
 
     private ApplicationConfig load(String yaml) throws Exception {
