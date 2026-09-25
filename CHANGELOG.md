@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Start Step-3 A05 with an optional loopback-capable line-oriented TCP remote terminal, explicit `presentation.remoteShell` bind/port configuration, and shared command-session behaviour with the local console; no SSH/Telnet protocol or second command model is introduced.
+
 - Replace wall-clock `buildTime` provenance with deterministic embedded `sourceRef`, `buildOrigin` and `dirty` fields alongside version/revision, so one JAR identifies its source/build context without CI run/user/timestamp sidecars.
 
 - Add the Step-3 A04 local console/debug shell with `help`, `version`, `status`, `quit` and `exit`; expose the first real shared `ApplicationStatus` query through `CommandHandler` and document a clean-checkout Windows acceptance session.
