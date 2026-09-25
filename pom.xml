@@ -28,12 +28,30 @@
     <maven.surefire.plugin.version>3.2.5</maven.surefire.plugin.version>
     <maven.shade.plugin.version>3.6.0</maven.shade.plugin.version>
     <exec.maven.plugin.version>3.6.4</exec.maven.plugin.version>
+    <eventTiming.sourceRef>${git.branch}</eventTiming.sourceRef>
+    <eventTiming.buildOrigin>local</eventTiming.buildOrigin>
     <!--
       Intentionally pinned to the Java-8-compatible plugin line. It supplies Git/build
       provenance for BuildIdentity; it is not upgraded independently of the Java baseline.
     -->
     <git.commit.id.plugin.version>4.9.10</git.commit.id.plugin.version>
   </properties>
+
+  <profiles>
+    <profile>
+      <id>github-actions-provenance</id>
+      <activation>
+        <property>
+          <name>env.GITHUB_ACTIONS</name>
+          <value>true</value>
+        </property>
+      </activation>
+      <properties>
+        <eventTiming.sourceRef>${env.GITHUB_REF_NAME}</eventTiming.sourceRef>
+        <eventTiming.buildOrigin>github-actions</eventTiming.buildOrigin>
+      </properties>
+    </profile>
+  </profiles>
 
   <dependencyManagement>
     <dependencies>
