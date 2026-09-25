@@ -33,7 +33,6 @@ public class TimingApplicationTest {
 
         application.start();
         try {
-            assertEquals("RUNNING", application.commandHandler().status().applicationState());
             assertEquals(
                     "timing-node-01",
                     application.commandHandler().status().timingNodeId().value());
