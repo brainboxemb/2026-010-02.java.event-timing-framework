@@ -2,7 +2,7 @@
 
 ## Unreleased
 
-- Start Step-3 A06 with loopback-configured IF-03 HTTP/JSON `/api/v1/version` and `/api/v1/status` resources, real HTTP adapter tests, enriched shared status needed by the wire contract, and a standalone Java 21/JavaFX test client for manual version/status inspection.
+- Start Step-3 A06 with loopback-configured IF-03 HTTP/JSON `/api/v1/version` and `/api/v1/status` resources, real HTTP adapter tests, TimingNode-focused shared status without a redundant application lifecycle block, and a standalone Java 17/JavaFX test client with manual version/status inspection plus a built-in black remote-shell terminal.
 
 - Start Step-3 A05 with an optional loopback-capable line-oriented TCP remote terminal, explicit `presentation.remoteShell` bind/port configuration, and shared command-session behaviour with the local console; no SSH/Telnet protocol or second command model is introduced.
 
