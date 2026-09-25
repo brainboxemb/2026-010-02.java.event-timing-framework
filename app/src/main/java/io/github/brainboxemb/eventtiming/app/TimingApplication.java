@@ -171,7 +171,19 @@ public final class TimingApplication implements AutoCloseable {
                 properties.getProperty("application.name"),
                 properties.getProperty("application.version"),
                 properties.getProperty("build.revision"),
-                properties.getProperty("build.timestamp"));
+                properties.getProperty("build.sourceRef"),
+                properties.getProperty("build.origin"),
+                parseDirty(properties.getProperty("build.dirty")));
+    }
+
+    private static boolean parseDirty(String value) {
+        if ("true".equalsIgnoreCase(value)) {
+            return true;
+        }
+        if ("false".equalsIgnoreCase(value)) {
+            return false;
+        }
+        throw new IllegalStateException("Invalid embedded build.dirty value: " + value);
     }
 
     static String smokeOutput(BuildIdentity buildIdentity, TimingApplicationLifecycle.State state) {
