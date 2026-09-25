@@ -14,10 +14,9 @@ or `event-timing-app`.
 - Jackson 2.21.2 for independent JSON parsing
 
 The JavaFX Maven setup follows the normal OpenJFX Maven model: JavaFX modules and
-platform-specific native libraries are resolved as Maven dependencies. The executable
-entry point is `TestClientLauncher`, a plain Java class that starts
-`TestClientApplication`; this also allows IDEs to run the client without treating the
-JavaFX `Application` subclass itself as the JVM entry point.
+platform-specific native libraries are resolved as Maven dependencies. The executable entry point is `TestClientApplication`, a plain Java class. The actual
+JavaFX subclass is kept internal as `TestClientFxApplication`; this prevents the JVM
+or an IDE from treating the selected main class as a special JavaFX launcher target.
 
 ## Run on Windows
 

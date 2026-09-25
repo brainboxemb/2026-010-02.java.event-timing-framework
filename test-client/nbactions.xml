@@ -10,6 +10,9 @@
             <goal>process-classes</goal>
             <goal>exec:java</goal>
         </goals>
+        <properties>
+            <exec.mainClass>io.github.brainboxemb.eventtiming.testclient.TestClientApplication</exec.mainClass>
+        </properties>
     </action>
     <action>
         <actionName>debug</actionName>
@@ -22,6 +25,7 @@
             <goal>exec:java</goal>
         </goals>
         <properties>
+            <exec.mainClass>io.github.brainboxemb.eventtiming.testclient.TestClientApplication</exec.mainClass>
             <jpda.listen>maven</jpda.listen>
         </properties>
     </action>
