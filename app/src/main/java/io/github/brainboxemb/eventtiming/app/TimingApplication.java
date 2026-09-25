@@ -1,11 +1,15 @@
 package io.github.brainboxemb.eventtiming.app;
 
+import io.github.brainboxemb.eventtiming.application.ApplicationStatus;
 import io.github.brainboxemb.eventtiming.application.CommandHandler;
 import io.github.brainboxemb.eventtiming.domain.timing.TimingNode;
 import io.github.brainboxemb.eventtiming.infra.BuildIdentity;
+import io.github.brainboxemb.eventtiming.presentation.console.LocalConsole;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Properties;
@@ -100,6 +104,7 @@ public final class TimingApplication implements AutoCloseable {
 
         try {
             application.start();
+            startLocalConsole(application);
             application.awaitStopped();
         } catch (InterruptedException ex) {
             Thread.currentThread().interrupt();
@@ -109,6 +114,17 @@ public final class TimingApplication implements AutoCloseable {
         }
 
         System.out.println(smokeOutput(application.buildIdentity(), application.state()));
+    }
+
+    private static void startLocalConsole(TimingApplication application) {
+        LocalConsole console = new LocalConsole(
+                application.commandHandler(),
+                application::close,
+                new InputStreamReader(System.in),
+                new OutputStreamWriter(System.out));
+        Thread consoleThread = new Thread(console, "event-timing-console");
+        consoleThread.setDaemon(true);
+        consoleThread.start();
     }
 
     private static void removeShutdownHook(Runtime runtime, Thread shutdownHook) {
@@ -186,8 +202,12 @@ public final class TimingApplication implements AutoCloseable {
             if (timingNode == null) {
                 throw new IllegalStateException("timingNode must be configured before build");
             }
-            CommandHandler commandHandler = new CommandHandler(buildIdentity);
             TimingApplicationLifecycle lifecycle = new TimingApplicationLifecycle(buildIdentity);
+            CommandHandler commandHandler = new CommandHandler(
+                    buildIdentity,
+                    () -> new ApplicationStatus(
+                            lifecycle.state().name(),
+                            timingNode.timingNodeId()));
             return new TimingApplication(buildIdentity, timingNode, commandHandler, lifecycle);
         }
     }

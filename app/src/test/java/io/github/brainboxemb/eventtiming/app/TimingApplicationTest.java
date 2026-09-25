@@ -35,6 +35,10 @@ public class TimingApplicationTest {
         assertSame(timingNode, application.timingNode());
         assertEquals("timing-node-01", application.timingNode().timingNodeId().value());
         assertSame(identity, application.commandHandler().version());
+        assertEquals("NEW", application.commandHandler().status().applicationState());
+        assertEquals(
+                "timing-node-01",
+                application.commandHandler().status().timingNodeId().value());
         assertEquals(TimingApplicationLifecycle.State.NEW, application.state());
     }
 
@@ -54,6 +58,9 @@ public class TimingApplicationTest {
 
         assertSame(identity, application.buildIdentity());
         assertEquals("configured-node", application.timingNode().timingNodeId().value());
+        assertEquals(
+                "configured-node",
+                application.commandHandler().status().timingNodeId().value());
         assertEquals(TimingApplicationLifecycle.State.NEW, application.state());
     }
 

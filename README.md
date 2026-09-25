@@ -28,10 +28,12 @@ the architecture diagram.
 Current real framework behaviour is deliberately small:
 
 ```text
+io.github.brainboxemb.eventtiming.application.ApplicationStatus
 io.github.brainboxemb.eventtiming.application.CommandHandler
 io.github.brainboxemb.eventtiming.domain.timing.TimingNode
 io.github.brainboxemb.eventtiming.domain.timing.TimingNodeId
 io.github.brainboxemb.eventtiming.infra.BuildIdentity
+io.github.brainboxemb.eventtiming.presentation.console.LocalConsole
 ```
 
 `application` owns the shared client-facing request boundary. `infra` owns build/runtime
@@ -91,9 +93,18 @@ java -jar app/target/event-timing-app-<version>.jar config/application.yml
 ```
 
 The configured process stays running until the JVM receives a normal shutdown request. On a
-development terminal, **Ctrl+C** is the normal stop route on Windows and Linux; the JVM shutdown
-hook closes the application through the same lifecycle path used by tests. Interactive
-application commands such as `quit` belong to the later console/shell activity.
+development terminal, **Ctrl+C** remains a normal stop route on Windows and Linux; the JVM shutdown
+hook closes the application through the same lifecycle path used by tests.
+
+The local console is available while the configured application is running:
+
+```text
+help      show available commands
+version   show application/build version
+status    show current application state and TimingNodeId
+quit      stop the application cleanly
+exit      alias for quit
+```
 
 The temporary no-argument startup remains only for the existing artifact smoke check.
 Presentation settings, multiple TimingNodes, platform/profile overlays and I/O configuration are
@@ -131,6 +142,29 @@ cd 2026-010-02.java.event-timing-framework
 ```
 
 Use `update-repo.ps1` / `update-repo.sh` for a controlled dependency-alignment pass after changing refs in `project.yml`. The generic tool refuses to overwrite local changes inside a managed dependency.
+
+### A04 Windows acceptance check
+
+From a clean Windows checkout:
+
+```powershell
+.\bootstrap.ps1
+.\mvnw.cmd verify
+java -jar app\target\event-timing-app-0.2.2-SNAPSHOT.jar config\application.yml
+```
+
+Then enter:
+
+```text
+help
+version
+status
+quit
+```
+
+`help` must list every supported local command, `version` and `status` must return the shared
+application values, and `quit` must terminate the process through the normal graceful shutdown
+path.
 
 ## Toolchain baseline
 

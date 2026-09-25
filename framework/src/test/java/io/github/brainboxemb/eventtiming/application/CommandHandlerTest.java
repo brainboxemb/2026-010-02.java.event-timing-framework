@@ -1,5 +1,6 @@
 package io.github.brainboxemb.eventtiming.application;
 
+import io.github.brainboxemb.eventtiming.domain.timing.TimingNodeId;
 import io.github.brainboxemb.eventtiming.infra.BuildIdentity;
 
 import org.junit.Test;
@@ -9,19 +10,40 @@ import static org.junit.Assert.assertSame;
 public class CommandHandlerTest {
     @Test
     public void versionReturnsAuthoritativeBuildIdentity() {
-        BuildIdentity identity = BuildIdentity.firstApiVersion(
-                "event-timing-app",
-                "0.2.0-SNAPSHOT",
-                "revision-one",
-                "2026-09-24T18:00:00Z");
+        BuildIdentity identity = identity();
+        ApplicationStatus status =
+                new ApplicationStatus("RUNNING", new TimingNodeId("timing-node-01"));
 
-        CommandHandler handler = new CommandHandler(identity);
+        CommandHandler handler = new CommandHandler(identity, () -> status);
 
         assertSame(identity, handler.version());
     }
 
+    @Test
+    public void statusReturnsCurrentSharedStatus() {
+        ApplicationStatus status =
+                new ApplicationStatus("RUNNING", new TimingNodeId("timing-node-01"));
+        CommandHandler handler = new CommandHandler(identity(), () -> status);
+
+        assertSame(status, handler.status());
+    }
+
     @Test(expected = IllegalArgumentException.class)
     public void rejectsMissingBuildIdentity() {
-        new CommandHandler(null);
+        new CommandHandler(null, () -> new ApplicationStatus(
+                "RUNNING", new TimingNodeId("timing-node-01")));
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void rejectsMissingStatusSupplier() {
+        new CommandHandler(identity(), null);
+    }
+
+    private static BuildIdentity identity() {
+        return BuildIdentity.firstApiVersion(
+                "event-timing-app",
+                "0.2.2-SNAPSHOT",
+                "revision-one",
+                "2026-09-24T18:00:00Z");
     }
 }
