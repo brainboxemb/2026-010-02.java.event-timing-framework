@@ -1,5 +1,6 @@
 package io.github.brainboxemb.eventtiming.app;
 
+import io.github.brainboxemb.eventtiming.app.bootstrap.EmbeddedBuildIdentityLoader;
 import io.github.brainboxemb.eventtiming.infra.BuildIdentity;
 
 import org.junit.Test;
@@ -12,7 +13,7 @@ import static org.junit.Assert.assertTrue;
 public class BuildIdentityTest {
     @Test
     public void loadsFilteredBuildIdentityIntoApplication() {
-        BuildIdentity identity = TimingApplication.embeddedBuildIdentity();
+        BuildIdentity identity = EmbeddedBuildIdentityLoader.load();
         String expectedProjectVersion = System.getProperty("eventTiming.expectedProjectVersion");
 
         assertNotNull("Maven must expose the project version to the test JVM", expectedProjectVersion);

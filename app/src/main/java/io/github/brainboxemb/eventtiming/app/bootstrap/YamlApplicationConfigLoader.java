@@ -1,6 +1,12 @@
 package io.github.brainboxemb.eventtiming.app.bootstrap;
 
 import io.github.brainboxemb.eventtiming.domain.timing.TimingNodeId;
+import io.github.brainboxemb.eventtiming.infra.bootstrap.ApplicationConfig;
+import io.github.brainboxemb.eventtiming.infra.bootstrap.PresentationConfig;
+import io.github.brainboxemb.eventtiming.infra.bootstrap.RemoteApiConfig;
+import io.github.brainboxemb.eventtiming.infra.bootstrap.RemoteApiHttpConfig;
+import io.github.brainboxemb.eventtiming.infra.bootstrap.RemoteApiWebSocketConfig;
+import io.github.brainboxemb.eventtiming.infra.bootstrap.RemoteShellConfig;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -14,8 +20,8 @@ import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.constructor.SafeConstructor;
 import org.yaml.snakeyaml.error.YAMLException;
 
-/** Loads and validates the currently implemented application bootstrap configuration. */
-final class ApplicationConfigLoader {
+/** Maps the default executable YAML format into the framework bootstrap configuration model. */
+public final class YamlApplicationConfigLoader {
     private static final String TIMING_NODE_ID = "timingNodeId";
     private static final String PRESENTATION = "presentation";
     private static final String REMOTE_SHELL = "remoteShell";
@@ -25,10 +31,10 @@ final class ApplicationConfigLoader {
     private static final String BIND_ADDRESS = "bindAddress";
     private static final String PORT = "port";
 
-    private ApplicationConfigLoader() {
+    private YamlApplicationConfigLoader() {
     }
 
-    static ApplicationConfig load(Path path) throws IOException {
+    public static ApplicationConfig load(Path path) throws IOException {
         if (path == null) {
             throw new IllegalArgumentException("config path must not be null");
         }

@@ -1,11 +1,11 @@
-package io.github.brainboxemb.eventtiming.app.bootstrap;
+package io.github.brainboxemb.eventtiming.infra.bootstrap;
 
 /** Effective configuration for the IF-03 Remote API HTTP listener. */
-final class RemoteApiHttpConfig {
+public final class RemoteApiHttpConfig {
     private final String bindAddress;
     private final int port;
 
-    RemoteApiHttpConfig(String bindAddress, int port) {
+    public RemoteApiHttpConfig(String bindAddress, int port) {
         if (bindAddress == null || bindAddress.trim().isEmpty()) {
             throw new IllegalArgumentException(
                     "remoteApi.http bindAddress must not be blank");
@@ -18,11 +18,11 @@ final class RemoteApiHttpConfig {
         this.port = port;
     }
 
-    String bindAddress() {
+    public String bindAddress() {
         return bindAddress;
     }
 
-    int port() {
+    public int port() {
         return port;
     }
 }

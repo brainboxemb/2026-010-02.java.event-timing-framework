@@ -33,6 +33,10 @@ io.github.brainboxemb.eventtiming.application.CommandHandler
 io.github.brainboxemb.eventtiming.domain.timing.TimingNode
 io.github.brainboxemb.eventtiming.domain.timing.TimingNodeId
 io.github.brainboxemb.eventtiming.infra.BuildIdentity
+io.github.brainboxemb.eventtiming.infra.bootstrap.ApplicationBootstrap
+io.github.brainboxemb.eventtiming.infra.bootstrap.ApplicationConfig
+io.github.brainboxemb.eventtiming.runtime.TimingApplication
+io.github.brainboxemb.eventtiming.runtime.TimingApplicationLifecycle
 io.github.brainboxemb.eventtiming.presentation.interfaces.console.LocalConsole
 io.github.brainboxemb.eventtiming.presentation.interfaces.shell.RemoteShellServer
 io.github.brainboxemb.eventtiming.presentation.interfaces.remoteapi.RemoteApiHttpServer
@@ -47,27 +51,38 @@ and `platform` are introduced only when real classes require those boundaries.
 Empty `*Layer` marker classes and pre-modelled future status objects are deliberately not kept as
 architecture evidence.
 
-The executable keeps its runtime objects visible at the package root and groups
-startup/configuration support under bootstrap:
+The reusable framework owns the runtime and cross-cutting bootstrap model:
+
+```text
+io.github.brainboxemb.eventtiming/
+  runtime/
+    TimingApplication
+    TimingApplicationLifecycle
+  infra/
+    bootstrap/
+      ApplicationBootstrap
+      ApplicationConfig
+      PresentationConfig
+      RemoteShellConfig
+      RemoteApiConfig
+      RemoteApiHttpConfig
+      RemoteApiWebSocketConfig
+```
+
+The executable artifact is a thin launcher/input adapter:
 
 ```text
 io.github.brainboxemb.eventtiming.app/
-  TimingApplication
-  TimingApplicationLifecycle
+  TimingApplicationMain
   bootstrap/
-    ApplicationBootstrap
-    ApplicationConfig
-    ApplicationConfigLoader
-    PresentationConfig
-    RemoteShellConfig
-    RemoteApiConfig
-    RemoteApiHttpConfig
-    RemoteApiWebSocketConfig
+    YamlApplicationConfigLoader
+    EmbeddedBuildIdentityLoader
 ```
 
-`ApplicationBootstrap` owns external configuration load/validation, concrete
-composition and presentation/startup wiring; it is not a normal runtime layer.
-The application has a deliberately minimal `NEW -> RUNNING -> STOPPED` executable lifecycle and
+`ApplicationBootstrap` consumes the validated framework configuration model and
+owns concrete composition plus presentation/startup wiring. YAML parsing and the
+filtered build-resource mapping remain executable concerns, so SnakeYAML does not
+become a framework dependency. The application has a deliberately minimal `NEW -> RUNNING -> STOPPED` executable lifecycle and
 now composes the first shared client boundary, `CommandHandler`, for the authoritative version
 query. Future timing-domain capability is added only when its use case is implemented.
 

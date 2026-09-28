@@ -1,11 +1,11 @@
-package io.github.brainboxemb.eventtiming.app.bootstrap;
+package io.github.brainboxemb.eventtiming.infra.bootstrap;
 
 /** Effective configuration for the IF-03 Remote API WebSocket listener. */
-final class RemoteApiWebSocketConfig {
+public final class RemoteApiWebSocketConfig {
     private final String bindAddress;
     private final int port;
 
-    RemoteApiWebSocketConfig(String bindAddress, int port) {
+    public RemoteApiWebSocketConfig(String bindAddress, int port) {
         if (bindAddress == null || bindAddress.trim().isEmpty()) {
             throw new IllegalArgumentException(
                     "remoteApi.webSocket bindAddress must not be blank");
@@ -18,11 +18,11 @@ final class RemoteApiWebSocketConfig {
         this.port = port;
     }
 
-    String bindAddress() {
+    public String bindAddress() {
         return bindAddress;
     }
 
-    int port() {
+    public int port() {
         return port;
     }
 }

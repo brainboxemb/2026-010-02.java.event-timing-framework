@@ -1,4 +1,4 @@
-package io.github.brainboxemb.eventtiming.app;
+package io.github.brainboxemb.eventtiming.runtime;
 
 import io.github.brainboxemb.eventtiming.infra.BuildIdentity;
 

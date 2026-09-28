@@ -1,31 +1,29 @@
-package io.github.brainboxemb.eventtiming.app.bootstrap;
+package io.github.brainboxemb.eventtiming.infra.bootstrap;
 
-import io.github.brainboxemb.eventtiming.app.TimingApplication;
 import io.github.brainboxemb.eventtiming.domain.timing.TimingNode;
 import io.github.brainboxemb.eventtiming.infra.BuildIdentity;
 import io.github.brainboxemb.eventtiming.presentation.interfaces.console.LocalConsole;
 import io.github.brainboxemb.eventtiming.presentation.interfaces.remoteapi.RemoteApiHttpServer;
 import io.github.brainboxemb.eventtiming.presentation.interfaces.remoteapi.RemoteApiWebSocketServer;
 import io.github.brainboxemb.eventtiming.presentation.interfaces.shell.RemoteShellServer;
+import io.github.brainboxemb.eventtiming.runtime.TimingApplication;
 
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
-import java.nio.file.Path;
 
 /**
- * Cross-cutting executable bootstrap: configuration, composition and startup wiring.
+ * Cross-cutting framework bootstrap: composition and startup wiring.
  *
- * <p>Bootstrap constructs the runtime and concrete presentation endpoints. It is not a normal
- * runtime layer; presentation/application/domain interactions do not route through it after
- * composition.</p>
+ * <p>The bootstrap consumes an already parsed and validated ApplicationConfig. Concrete file
+ * formats are executable input adapters and are deliberately not dependencies of the framework.</p>
  */
 public final class ApplicationBootstrap {
     private ApplicationBootstrap() {
     }
 
-    public static void run(BuildIdentity buildIdentity, Path configPath) throws IOException {
-        ApplicationConfig config = ApplicationConfigLoader.load(configPath);
+    public static void run(BuildIdentity buildIdentity, ApplicationConfig config)
+            throws IOException {
         TimingApplication application = compose(buildIdentity, config);
 
         Runtime runtime = Runtime.getRuntime();

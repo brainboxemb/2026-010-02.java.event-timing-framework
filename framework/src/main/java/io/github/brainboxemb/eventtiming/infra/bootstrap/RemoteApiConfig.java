@@ -1,11 +1,11 @@
-package io.github.brainboxemb.eventtiming.app.bootstrap;
+package io.github.brainboxemb.eventtiming.infra.bootstrap;
 
 /** Effective configuration for the IF-03 Remote API presentation interface. */
-final class RemoteApiConfig {
+public final class RemoteApiConfig {
     private final RemoteApiHttpConfig http;
     private final RemoteApiWebSocketConfig webSocket;
 
-    RemoteApiConfig(RemoteApiHttpConfig http, RemoteApiWebSocketConfig webSocket) {
+    public RemoteApiConfig(RemoteApiHttpConfig http, RemoteApiWebSocketConfig webSocket) {
         if (http == null && webSocket == null) {
             throw new IllegalArgumentException(
                     "remoteApi must configure at least one transport");
@@ -14,11 +14,11 @@ final class RemoteApiConfig {
         this.webSocket = webSocket;
     }
 
-    RemoteApiHttpConfig http() {
+    public RemoteApiHttpConfig http() {
         return http;
     }
 
-    RemoteApiWebSocketConfig webSocket() {
+    public RemoteApiWebSocketConfig webSocket() {
         return webSocket;
     }
 }

@@ -1,13 +1,13 @@
-package io.github.brainboxemb.eventtiming.app.bootstrap;
+package io.github.brainboxemb.eventtiming.infra.bootstrap;
 
 import io.github.brainboxemb.eventtiming.domain.timing.TimingNodeId;
 
-/** Effective deployment configuration after parsing and validation. */
-final class ApplicationConfig {
+/** Effective deployment configuration consumed by the framework bootstrap. */
+public final class ApplicationConfig {
     private final TimingNodeId timingNodeId;
     private final PresentationConfig presentation;
 
-    ApplicationConfig(TimingNodeId timingNodeId, PresentationConfig presentation) {
+    public ApplicationConfig(TimingNodeId timingNodeId, PresentationConfig presentation) {
         if (timingNodeId == null) {
             throw new IllegalArgumentException("timingNodeId must not be null");
         }
@@ -18,11 +18,11 @@ final class ApplicationConfig {
         this.presentation = presentation;
     }
 
-    TimingNodeId timingNodeId() {
+    public TimingNodeId timingNodeId() {
         return timingNodeId;
     }
 
-    PresentationConfig presentation() {
+    public PresentationConfig presentation() {
         return presentation;
     }
 }

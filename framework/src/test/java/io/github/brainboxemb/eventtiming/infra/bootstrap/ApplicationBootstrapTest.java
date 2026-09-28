@@ -1,8 +1,8 @@
-package io.github.brainboxemb.eventtiming.app.bootstrap;
+package io.github.brainboxemb.eventtiming.infra.bootstrap;
 
-import io.github.brainboxemb.eventtiming.app.TimingApplication;
 import io.github.brainboxemb.eventtiming.domain.timing.TimingNodeId;
 import io.github.brainboxemb.eventtiming.infra.BuildIdentity;
+import io.github.brainboxemb.eventtiming.runtime.TimingApplication;
 
 import org.junit.Test;
 

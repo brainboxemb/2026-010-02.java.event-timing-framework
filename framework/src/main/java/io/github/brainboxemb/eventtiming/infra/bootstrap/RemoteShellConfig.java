@@ -1,11 +1,11 @@
-package io.github.brainboxemb.eventtiming.app.bootstrap;
+package io.github.brainboxemb.eventtiming.infra.bootstrap;
 
 /** Effective configuration for the A05 remote shell listener. */
-final class RemoteShellConfig {
+public final class RemoteShellConfig {
     private final String bindAddress;
     private final int port;
 
-    RemoteShellConfig(String bindAddress, int port) {
+    public RemoteShellConfig(String bindAddress, int port) {
         if (bindAddress == null || bindAddress.trim().isEmpty()) {
             throw new IllegalArgumentException("remote shell bindAddress must not be blank");
         }
@@ -16,11 +16,11 @@ final class RemoteShellConfig {
         this.port = port;
     }
 
-    String bindAddress() {
+    public String bindAddress() {
         return bindAddress;
     }
 
-    int port() {
+    public int port() {
         return port;
     }
 }

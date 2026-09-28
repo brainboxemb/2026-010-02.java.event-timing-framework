@@ -2,7 +2,7 @@
 
 ## Unreleased
 
-- Organise source packages for component readability: keep the primary IF-03 HTTP/WebSocket/message classes directly at `presentation.interfaces.remoteapi`, keep console and shell as separate interfaces, and introduce `app.bootstrap.ApplicationBootstrap` so configuration, composition and startup wiring no longer crowd `TimingApplication` or the executable package root.
+- Organise source packages and artifact ownership around the architecture: keep primary IF-03 classes at `presentation.interfaces.remoteapi`, move `TimingApplication` runtime plus `infra.bootstrap.ApplicationBootstrap` and the effective configuration model into the reusable framework, and reduce `event-timing-app` to `TimingApplicationMain` plus concrete YAML/build-resource loaders.
 
 - Add the Step-3 A07 IF-03 WebSocket event stream on a separate loopback-configured Java-WebSocket 1.6.0 listener with bounded inbound frames, snapshot-on-connect/reconnect, real-change-only `STATUS_CHANGED` broadcasting, and a Java 17 Events inspector in the standalone JavaFX test client.
 

@@ -1,5 +1,7 @@
 package io.github.brainboxemb.eventtiming.app.bootstrap;
 
+import io.github.brainboxemb.eventtiming.infra.bootstrap.ApplicationConfig;
+
 import java.io.File;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -11,7 +13,7 @@ import org.junit.rules.TemporaryFolder;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 
-public class ApplicationConfigLoaderTest {
+public class YamlApplicationConfigLoaderTest {
     @Rule
     public TemporaryFolder temporaryFolder = new TemporaryFolder();
 
@@ -109,6 +111,6 @@ public class ApplicationConfigLoaderTest {
     private ApplicationConfig load(String yaml) throws Exception {
         File file = temporaryFolder.newFile("application.yml");
         Files.write(file.toPath(), yaml.getBytes(StandardCharsets.UTF_8));
-        return ApplicationConfigLoader.load(file.toPath());
+        return YamlApplicationConfigLoader.load(file.toPath());
     }
 }
