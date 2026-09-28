@@ -34,7 +34,7 @@ io.github.brainboxemb.eventtiming.domain.timing.TimingNode
 io.github.brainboxemb.eventtiming.domain.timing.TimingNodeId
 io.github.brainboxemb.eventtiming.infra.BuildIdentity
 io.github.brainboxemb.eventtiming.infra.bootstrap.ApplicationBootstrap
-io.github.brainboxemb.eventtiming.infra.bootstrap.ApplicationConfig
+io.github.brainboxemb.eventtiming.infra.bootstrap.config.ApplicationConfig
 io.github.brainboxemb.eventtiming.runtime.TimingApplication
 io.github.brainboxemb.eventtiming.runtime.TimingApplicationLifecycle
 io.github.brainboxemb.eventtiming.presentation.interfaces.console.LocalConsole
