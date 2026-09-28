@@ -1,11 +1,9 @@
-package io.github.brainboxemb.eventtiming.presentation.interfaces.remoteapi.http;
+package io.github.brainboxemb.eventtiming.presentation.interfaces.remoteapi;
 
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpServer;
 
 import io.github.brainboxemb.eventtiming.application.CommandHandler;
-import io.github.brainboxemb.eventtiming.presentation.interfaces.remoteapi.messages.RemoteApiMessageWriter;
-
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.InetAddress;

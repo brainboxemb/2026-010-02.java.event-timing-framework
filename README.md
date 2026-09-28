@@ -35,9 +35,9 @@ io.github.brainboxemb.eventtiming.domain.timing.TimingNodeId
 io.github.brainboxemb.eventtiming.infra.BuildIdentity
 io.github.brainboxemb.eventtiming.presentation.interfaces.console.LocalConsole
 io.github.brainboxemb.eventtiming.presentation.interfaces.shell.RemoteShellServer
-io.github.brainboxemb.eventtiming.presentation.interfaces.remoteapi.http.RemoteApiHttpServer
-io.github.brainboxemb.eventtiming.presentation.interfaces.remoteapi.websocket.RemoteApiWebSocketServer
-io.github.brainboxemb.eventtiming.presentation.interfaces.remoteapi.messages.RemoteApiMessageWriter
+io.github.brainboxemb.eventtiming.presentation.interfaces.remoteapi.RemoteApiHttpServer
+io.github.brainboxemb.eventtiming.presentation.interfaces.remoteapi.RemoteApiWebSocketServer
+io.github.brainboxemb.eventtiming.presentation.interfaces.remoteapi.RemoteApiMessageWriter
 io.github.brainboxemb.eventtiming.presentation.common.terminal.TerminalSession
 ```
 
@@ -47,12 +47,26 @@ and `platform` are introduced only when real classes require those boundaries.
 Empty `*Layer` marker classes and pre-modelled future status objects are deliberately not kept as
 architecture evidence.
 
-The executable lives separately under:
+The executable keeps its runtime objects visible at the package root and groups
+startup/configuration support under bootstrap:
 
 ```text
-io.github.brainboxemb.eventtiming.app
+io.github.brainboxemb.eventtiming.app/
+  TimingApplication
+  TimingApplicationLifecycle
+  bootstrap/
+    ApplicationBootstrap
+    ApplicationConfig
+    ApplicationConfigLoader
+    PresentationConfig
+    RemoteShellConfig
+    RemoteApiConfig
+    RemoteApiHttpConfig
+    RemoteApiWebSocketConfig
 ```
 
+`ApplicationBootstrap` owns external configuration load/validation, concrete
+composition and presentation/startup wiring; it is not a normal runtime layer.
 The application has a deliberately minimal `NEW -> RUNNING -> STOPPED` executable lifecycle and
 now composes the first shared client boundary, `CommandHandler`, for the authoritative version
 query. Future timing-domain capability is added only when its use case is implemented.

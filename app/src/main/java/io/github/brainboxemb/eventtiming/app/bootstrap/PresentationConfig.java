@@ -1,4 +1,4 @@
-package io.github.brainboxemb.eventtiming.app;
+package io.github.brainboxemb.eventtiming.app.bootstrap;
 
 /** Effective presentation configuration for currently implemented interfaces. */
 final class PresentationConfig {

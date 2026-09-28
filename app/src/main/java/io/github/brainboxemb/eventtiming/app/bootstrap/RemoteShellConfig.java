@@ -1,4 +1,4 @@
-package io.github.brainboxemb.eventtiming.app;
+package io.github.brainboxemb.eventtiming.app.bootstrap;
 
 /** Effective configuration for the A05 remote shell listener. */
 final class RemoteShellConfig {

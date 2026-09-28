@@ -1,8 +1,6 @@
-package io.github.brainboxemb.eventtiming.presentation.interfaces.remoteapi.websocket;
+package io.github.brainboxemb.eventtiming.presentation.interfaces.remoteapi;
 
 import io.github.brainboxemb.eventtiming.application.CommandHandler;
-import io.github.brainboxemb.eventtiming.presentation.interfaces.remoteapi.messages.RemoteApiMessageWriter;
-
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;

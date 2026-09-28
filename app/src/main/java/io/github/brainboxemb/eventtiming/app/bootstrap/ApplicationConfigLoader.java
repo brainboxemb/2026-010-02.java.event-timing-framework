@@ -1,4 +1,4 @@
-package io.github.brainboxemb.eventtiming.app;
+package io.github.brainboxemb.eventtiming.app.bootstrap;
 
 import io.github.brainboxemb.eventtiming.domain.timing.TimingNodeId;
 
@@ -14,7 +14,7 @@ import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.constructor.SafeConstructor;
 import org.yaml.snakeyaml.error.YAMLException;
 
-/** Loads and validates the currently implemented application configuration. */
+/** Loads and validates the currently implemented application bootstrap configuration. */
 final class ApplicationConfigLoader {
     private static final String TIMING_NODE_ID = "timingNodeId";
     private static final String PRESENTATION = "presentation";

@@ -1,4 +1,4 @@
-package io.github.brainboxemb.eventtiming.presentation.interfaces.remoteapi.websocket;
+package io.github.brainboxemb.eventtiming.presentation.interfaces.remoteapi;
 
 import io.github.brainboxemb.eventtiming.application.ApplicationStatus;
 import io.github.brainboxemb.eventtiming.application.CommandHandler;

@@ -1,29 +1,21 @@
 package io.github.brainboxemb.eventtiming.app;
 
+import io.github.brainboxemb.eventtiming.app.bootstrap.ApplicationBootstrap;
 import io.github.brainboxemb.eventtiming.application.ApplicationStatus;
 import io.github.brainboxemb.eventtiming.application.CommandHandler;
 import io.github.brainboxemb.eventtiming.domain.timing.TimingNode;
 import io.github.brainboxemb.eventtiming.infra.BuildIdentity;
-import io.github.brainboxemb.eventtiming.presentation.interfaces.console.LocalConsole;
-import io.github.brainboxemb.eventtiming.presentation.interfaces.remoteapi.http.RemoteApiHttpServer;
-import io.github.brainboxemb.eventtiming.presentation.interfaces.shell.RemoteShellServer;
-import io.github.brainboxemb.eventtiming.presentation.interfaces.remoteapi.websocket.RemoteApiWebSocketServer;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
-import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Properties;
 
 /**
- * Executable composition root for the current SI-01 application baseline.
+ * Executable runtime object for the current SI-01 application baseline.
  *
- * <p>The class performs composition/lifecycle work and exposes the shared application boundary
- * needed by presentation adapters. Timing-domain behaviour belongs in the reusable framework;
- * later transports and I/O integrations are wired here rather than represented by layer-marker
- * objects.</p>
+ * <p>Startup configuration, concrete composition and presentation listener wiring belong to
+ * {@link ApplicationBootstrap}. Timing-domain behaviour belongs in the reusable framework.</p>
  */
 public final class TimingApplication implements AutoCloseable {
     private static final String BUILD_IDENTITY_RESOURCE = "/event-timing-build.properties";
@@ -32,22 +24,16 @@ public final class TimingApplication implements AutoCloseable {
     private final TimingNode timingNode;
     private final CommandHandler commandHandler;
     private final TimingApplicationLifecycle lifecycle;
-    private final RemoteShellConfig remoteShellConfig;
-    private final RemoteApiConfig remoteApiConfig;
 
     private TimingApplication(
             BuildIdentity buildIdentity,
             TimingNode timingNode,
             CommandHandler commandHandler,
-            TimingApplicationLifecycle lifecycle,
-            RemoteShellConfig remoteShellConfig,
-            RemoteApiConfig remoteApiConfig) {
+            TimingApplicationLifecycle lifecycle) {
         this.buildIdentity = buildIdentity;
         this.timingNode = timingNode;
         this.commandHandler = commandHandler;
         this.lifecycle = lifecycle;
-        this.remoteShellConfig = remoteShellConfig;
-        this.remoteApiConfig = remoteApiConfig;
     }
 
     public static Builder builder(BuildIdentity buildIdentity) {
@@ -70,20 +56,17 @@ public final class TimingApplication implements AutoCloseable {
         return buildIdentity;
     }
 
-    RemoteShellConfig remoteShellConfig() {
-        return remoteShellConfig;
-    }
-
-    RemoteApiConfig remoteApiConfig() {
-        return remoteApiConfig;
-    }
-
     TimingApplicationLifecycle.State state() {
         return lifecycle.state();
     }
 
-    void awaitStopped() throws InterruptedException {
+    public void awaitStopped() throws InterruptedException {
         lifecycle.awaitStopped();
+    }
+
+    /** Stable executable smoke/status line used after bootstrap shutdown. */
+    public String smokeOutput() {
+        return smokeOutput(buildIdentity, lifecycle.state());
     }
 
     @Override
@@ -108,125 +91,13 @@ public final class TimingApplication implements AutoCloseable {
                     "Usage: java -jar event-timing-app-<version>.jar <application.yml>");
         }
 
-        TimingApplication application;
         try {
-            application = configured(buildIdentity, Paths.get(args[0]));
+            ApplicationBootstrap.run(buildIdentity, Paths.get(args[0]));
         } catch (IOException ex) {
-            throw new IllegalStateException("Unable to load application configuration: " + args[0], ex);
+            throw new IllegalStateException(
+                    "Unable to bootstrap application from configuration: " + args[0],
+                    ex);
         }
-
-        Runtime runtime = Runtime.getRuntime();
-        Thread shutdownHook = new Thread(application::close, "event-timing-shutdown");
-        runtime.addShutdownHook(shutdownHook);
-
-        RemoteApiHttpServer http = null;
-        RemoteApiWebSocketServer webSocket = null;
-        RemoteShellServer remoteShell = null;
-        try {
-            application.start();
-            http = startHttp(application);
-            webSocket = startWebSocket(application);
-            remoteShell = startRemoteShell(application);
-            startLocalConsole(application);
-            application.awaitStopped();
-        } catch (IOException ex) {
-            throw new IllegalStateException("Unable to start presentation listener", ex);
-        } catch (InterruptedException ex) {
-            Thread.currentThread().interrupt();
-        } finally {
-            if (webSocket != null) {
-                webSocket.close();
-            }
-            if (http != null) {
-                http.close();
-            }
-            if (remoteShell != null) {
-                remoteShell.close();
-            }
-            application.close();
-            removeShutdownHook(runtime, shutdownHook);
-        }
-
-        System.out.println(smokeOutput(application.buildIdentity(), application.state()));
-    }
-
-    private static RemoteApiHttpServer startHttp(TimingApplication application)
-            throws IOException {
-        RemoteApiConfig remoteApi = application.remoteApiConfig();
-        RemoteApiHttpConfig config = remoteApi == null ? null : remoteApi.http();
-        if (config == null) {
-            return null;
-        }
-
-        RemoteApiHttpServer server = new RemoteApiHttpServer(
-                config.bindAddress(),
-                config.port(),
-                application.commandHandler());
-        server.start();
-        return server;
-    }
-
-    private static RemoteApiWebSocketServer startWebSocket(TimingApplication application)
-            throws IOException {
-        RemoteApiConfig remoteApi = application.remoteApiConfig();
-        RemoteApiWebSocketConfig config =
-                remoteApi == null ? null : remoteApi.webSocket();
-        if (config == null) {
-            return null;
-        }
-
-        RemoteApiWebSocketServer server = new RemoteApiWebSocketServer(
-                config.bindAddress(),
-                config.port(),
-                application.commandHandler());
-        server.start();
-        return server;
-    }
-
-    private static RemoteShellServer startRemoteShell(TimingApplication application)
-            throws IOException {
-        RemoteShellConfig config = application.remoteShellConfig();
-        if (config == null) {
-            return null;
-        }
-
-        RemoteShellServer server = new RemoteShellServer(
-                config.bindAddress(),
-                config.port(),
-                application.commandHandler(),
-                application::close);
-        server.start();
-        return server;
-    }
-
-    private static void startLocalConsole(TimingApplication application) {
-        LocalConsole console = new LocalConsole(
-                application.commandHandler(),
-                application::close,
-                new InputStreamReader(System.in),
-                new OutputStreamWriter(System.out));
-        Thread consoleThread = new Thread(console, "event-timing-console");
-        consoleThread.setDaemon(true);
-        consoleThread.start();
-    }
-
-    private static void removeShutdownHook(Runtime runtime, Thread shutdownHook) {
-        try {
-            runtime.removeShutdownHook(shutdownHook);
-        } catch (IllegalStateException ignored) {
-            // JVM shutdown is already in progress.
-        }
-    }
-
-    static TimingApplication configured(BuildIdentity buildIdentity, Path configPath)
-            throws IOException {
-        ApplicationConfig config = ApplicationConfigLoader.load(configPath);
-        TimingNode timingNode = new TimingNode(config.timingNodeId());
-        return TimingApplication.builder(buildIdentity)
-                .timingNode(timingNode)
-                .remoteShellConfig(config.presentation().remoteShell())
-                .remoteApiConfig(config.presentation().remoteApi())
-                .build();
     }
 
     private static void runArtifactSmoke(BuildIdentity buildIdentity) {
@@ -277,12 +148,10 @@ public final class TimingApplication implements AutoCloseable {
         return "event-timing-app lifecycle OK version=" + buildIdentity.version() + " state=" + state;
     }
 
-    /** Small composition builder that creates only objects required by the current executable. */
+    /** Small runtime builder that creates only objects required by the current executable. */
     public static final class Builder {
         private final BuildIdentity buildIdentity;
         private TimingNode timingNode;
-        private RemoteShellConfig remoteShellConfig;
-        private RemoteApiConfig remoteApiConfig;
 
         private Builder(BuildIdentity buildIdentity) {
             if (buildIdentity == null) {
@@ -296,16 +165,6 @@ public final class TimingApplication implements AutoCloseable {
                 throw new IllegalArgumentException("timingNode must not be null");
             }
             this.timingNode = timingNode;
-            return this;
-        }
-
-        Builder remoteShellConfig(RemoteShellConfig remoteShellConfig) {
-            this.remoteShellConfig = remoteShellConfig;
-            return this;
-        }
-
-        Builder remoteApiConfig(RemoteApiConfig remoteApiConfig) {
-            this.remoteApiConfig = remoteApiConfig;
             return this;
         }
 
@@ -323,9 +182,7 @@ public final class TimingApplication implements AutoCloseable {
                     buildIdentity,
                     timingNode,
                     commandHandler,
-                    lifecycle,
-                    remoteShellConfig,
-                    remoteApiConfig);
+                    lifecycle);
         }
     }
 }

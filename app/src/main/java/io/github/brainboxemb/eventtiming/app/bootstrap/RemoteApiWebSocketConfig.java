@@ -1,4 +1,4 @@
-package io.github.brainboxemb.eventtiming.app;
+package io.github.brainboxemb.eventtiming.app.bootstrap;
 
 /** Effective configuration for the IF-03 Remote API WebSocket listener. */
 final class RemoteApiWebSocketConfig {

@@ -4,21 +4,12 @@ import io.github.brainboxemb.eventtiming.domain.timing.TimingNode;
 import io.github.brainboxemb.eventtiming.domain.timing.TimingNodeId;
 import io.github.brainboxemb.eventtiming.infra.BuildIdentity;
 
-import java.io.File;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertSame;
 
 public class TimingApplicationTest {
-    @Rule
-    public TemporaryFolder temporaryFolder = new TemporaryFolder();
-
     @Test
     public void builderComposesConfiguredTimingNodeAndSharedBoundary() {
         BuildIdentity identity = identity();
@@ -42,38 +33,6 @@ public class TimingApplicationTest {
         } finally {
             application.close();
         }
-    }
-
-    @Test
-    public void loadsConfigurationIntoApplicationComposition() throws Exception {
-        File config = temporaryFolder.newFile("application.yml");
-        Files.write(
-                config.toPath(),
-                ("timingNodeId: configured-node\n"
-                        + "presentation:\n"
-                        + "  remoteShell:\n"
-                        + "    bindAddress: 127.0.0.1\n"
-                        + "    port: 8023\n"
-                        + "  remoteApi:\n"
-                        + "    http:\n"
-                        + "      bindAddress: 127.0.0.1\n"
-                        + "      port: 8081\n"
-                        + "    webSocket:\n"
-                        + "      bindAddress: 127.0.0.1\n"
-                        + "      port: 8082\n")
-                        .getBytes(StandardCharsets.UTF_8));
-
-        TimingApplication application = TimingApplication.configured(identity(), config.toPath());
-
-        assertEquals("configured-node", application.timingNode().timingNodeId().value());
-        assertEquals("127.0.0.1", application.remoteShellConfig().bindAddress());
-        assertEquals(8023, application.remoteShellConfig().port());
-        assertEquals("127.0.0.1", application.remoteApiConfig().http().bindAddress());
-        assertEquals(8081, application.remoteApiConfig().http().port());
-        assertEquals(
-                "127.0.0.1",
-                application.remoteApiConfig().webSocket().bindAddress());
-        assertEquals(8082, application.remoteApiConfig().webSocket().port());
     }
 
     @Test(expected = IllegalArgumentException.class)

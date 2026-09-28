@@ -1,4 +1,4 @@
-package io.github.brainboxemb.eventtiming.app;
+package io.github.brainboxemb.eventtiming.app.bootstrap;
 
 import io.github.brainboxemb.eventtiming.domain.timing.TimingNodeId;
 
