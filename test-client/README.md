@@ -33,13 +33,15 @@ The default development endpoints are:
 HTTP       http://127.0.0.1:8081
 WebSocket  ws://127.0.0.1:8082/api/v1/events
 Shell      127.0.0.1:8023
+Live logs  127.0.0.1:8030
 ```
 
 Use:
 
 - **Get Version** for `GET /api/v1/version`;
 - **Get Status** for `GET /api/v1/status`;
-- **Events → Connect** for `WS /api/v1/events`.
+- **Events → Connect** for `WS /api/v1/events`;
+- **Logs → Connect** for the A08 live diagnostics socket.
 
 The window title includes the test-client software version. **Help → About** shows the test client's own build identity (version, revision, source ref, build origin and source state), independent of the SI-01 build information shown in the Status tab.
 
@@ -50,6 +52,12 @@ event type/time, the first TimingNode identity/lifecycle and every raw event. Co
 reconnecting should immediately produce a complete `STATUS_SNAPSHOT`. The current Step-3
 application has no public status-changing command, so a normal manual session does not yet
 produce `STATUS_CHANGED`.
+
+The **Logs** tab is an engineering-only A08 live diagnostics client. SI-01 remains the
+listener and this tool initiates the TCP connection. New runtime log records are shown
+live; the selected global runtime level can be queried/changed temporarily. That override
+is process state only and is not written back to `application.yml`. The live stream is
+separate from IF-03 status/events and does not provide retained history.
 
 The **Terminal** tab is a small built-in client for the A05 line-oriented remote shell.
 It defaults to `127.0.0.1:8023`, has explicit Connect/Disconnect controls and uses a
@@ -62,6 +70,6 @@ shell; it is intentionally not an SSH/Telnet terminal emulator.
 .\mvnw.cmd -f test-client\pom.xml verify
 ```
 
-Remote API HTTP/WebSocket and remote-shell client logic remain outside the JavaFX event handlers so the
+Remote API HTTP/WebSocket, live-log and remote-shell client logic remain outside the JavaFX event handlers so the
 development UI does not become the owner of protocol semantics. The Remote API client code is also
 independent of SI-01 implementation classes, matching the headless black-box client boundary.
