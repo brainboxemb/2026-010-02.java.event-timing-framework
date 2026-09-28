@@ -1,12 +1,12 @@
 package io.github.brainboxemb.eventtiming.app.bootstrap;
 
 import io.github.brainboxemb.eventtiming.domain.timing.TimingNodeId;
-import io.github.brainboxemb.eventtiming.infra.bootstrap.ApplicationConfig;
-import io.github.brainboxemb.eventtiming.infra.bootstrap.PresentationConfig;
-import io.github.brainboxemb.eventtiming.infra.bootstrap.RemoteApiConfig;
-import io.github.brainboxemb.eventtiming.infra.bootstrap.RemoteApiHttpConfig;
-import io.github.brainboxemb.eventtiming.infra.bootstrap.RemoteApiWebSocketConfig;
-import io.github.brainboxemb.eventtiming.infra.bootstrap.RemoteShellConfig;
+import io.github.brainboxemb.eventtiming.infra.bootstrap.config.ApplicationConfig;
+import io.github.brainboxemb.eventtiming.infra.bootstrap.config.PresentationConfig;
+import io.github.brainboxemb.eventtiming.infra.bootstrap.config.RemoteApiConfig;
+import io.github.brainboxemb.eventtiming.infra.bootstrap.config.RemoteApiHttpConfig;
+import io.github.brainboxemb.eventtiming.infra.bootstrap.config.RemoteApiWebSocketConfig;
+import io.github.brainboxemb.eventtiming.infra.bootstrap.config.RemoteShellConfig;
 
 import java.io.IOException;
 import java.io.InputStream;

@@ -1,6 +1,8 @@
 package io.github.brainboxemb.eventtiming.infra.bootstrap;
 
 import io.github.brainboxemb.eventtiming.domain.timing.TimingNodeId;
+import io.github.brainboxemb.eventtiming.infra.bootstrap.config.ApplicationConfig;
+import io.github.brainboxemb.eventtiming.infra.bootstrap.config.PresentationConfig;
 import io.github.brainboxemb.eventtiming.infra.BuildIdentity;
 import io.github.brainboxemb.eventtiming.runtime.TimingApplication;
 

@@ -61,12 +61,13 @@ io.github.brainboxemb.eventtiming/
   infra/
     bootstrap/
       ApplicationBootstrap
-      ApplicationConfig
-      PresentationConfig
-      RemoteShellConfig
-      RemoteApiConfig
-      RemoteApiHttpConfig
-      RemoteApiWebSocketConfig
+      config/
+        ApplicationConfig
+        PresentationConfig
+        RemoteShellConfig
+        RemoteApiConfig
+        RemoteApiHttpConfig
+        RemoteApiWebSocketConfig
 ```
 
 The executable artifact is a thin launcher/input adapter:

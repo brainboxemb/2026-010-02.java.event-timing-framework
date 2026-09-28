@@ -1,4 +1,4 @@
-package io.github.brainboxemb.eventtiming.infra.bootstrap;
+package io.github.brainboxemb.eventtiming.infra.bootstrap.config;
 
 /** Effective configuration for the IF-03 Remote API HTTP listener. */
 public final class RemoteApiHttpConfig {

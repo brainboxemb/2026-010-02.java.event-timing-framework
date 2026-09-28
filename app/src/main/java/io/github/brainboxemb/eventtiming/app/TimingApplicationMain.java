@@ -4,7 +4,7 @@ import io.github.brainboxemb.eventtiming.app.bootstrap.EmbeddedBuildIdentityLoad
 import io.github.brainboxemb.eventtiming.app.bootstrap.YamlApplicationConfigLoader;
 import io.github.brainboxemb.eventtiming.infra.BuildIdentity;
 import io.github.brainboxemb.eventtiming.infra.bootstrap.ApplicationBootstrap;
-import io.github.brainboxemb.eventtiming.infra.bootstrap.ApplicationConfig;
+import io.github.brainboxemb.eventtiming.infra.bootstrap.config.ApplicationConfig;
 import io.github.brainboxemb.eventtiming.runtime.TimingApplication;
 import io.github.brainboxemb.eventtiming.runtime.TimingApplicationLifecycle;
 
