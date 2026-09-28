@@ -69,7 +69,7 @@ public final class TimingApplication implements AutoCloseable {
     public static String smokeOutput(
             BuildIdentity buildIdentity,
             TimingApplicationLifecycle.State state) {
-        return "event-timing-app lifecycle OK version=" + buildIdentity.version() + " state=" + state;
+        return buildIdentity.application() + " lifecycle OK version=" + buildIdentity.version() + " state=" + state;
     }
 
     /** Small runtime builder that creates only objects required by the current framework runtime. */
