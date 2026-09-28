@@ -2,6 +2,7 @@ package io.github.brainboxemb.eventtiming.app;
 
 import io.github.brainboxemb.eventtiming.app.bootstrap.EmbeddedBuildIdentityLoader;
 import io.github.brainboxemb.eventtiming.app.bootstrap.YamlApplicationConfigLoader;
+import io.github.brainboxemb.eventtiming.app.logging.RuntimeLogging;
 import io.github.brainboxemb.eventtiming.infra.BuildIdentity;
 import io.github.brainboxemb.eventtiming.infra.bootstrap.ApplicationBootstrap;
 import io.github.brainboxemb.eventtiming.infra.bootstrap.config.ApplicationConfig;
@@ -31,7 +32,17 @@ public final class TimingApplicationMain {
         try {
             ApplicationConfig config =
                     YamlApplicationConfigLoader.load(Paths.get(args[0]));
-            ApplicationBootstrap.run(buildIdentity, config);
+            RuntimeLogging runtimeLogging = null;
+            try {
+                if (config.logging() != null) {
+                    runtimeLogging = RuntimeLogging.start(config.logging());
+                }
+                ApplicationBootstrap.run(buildIdentity, config);
+            } finally {
+                if (runtimeLogging != null) {
+                    runtimeLogging.close();
+                }
+            }
         } catch (IOException ex) {
             throw new IllegalStateException(
                     "Unable to bootstrap application from configuration: " + args[0],

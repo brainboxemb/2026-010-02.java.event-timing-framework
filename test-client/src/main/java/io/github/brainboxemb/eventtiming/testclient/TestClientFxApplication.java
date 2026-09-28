@@ -6,6 +6,7 @@ import javafx.geometry.Insets;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
+import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.Menu;
 import javafx.scene.control.MenuBar;
@@ -67,6 +68,16 @@ public final class TestClientFxApplication extends Application {
     private final TextArea eventLog = new TextArea();
 
     private final RemoteShellClient shellClient = new RemoteShellClient();
+
+    private final LiveLogClient liveLogClient = new LiveLogClient();
+    private final TextField logHost = new TextField("127.0.0.1");
+    private final TextField logPort = new TextField("8030");
+    private final Button logConnect = new Button("Connect");
+    private final Button logDisconnect = new Button("Disconnect");
+    private final ComboBox<String> logLevel = new ComboBox<>();
+    private final Button applyLogLevel = new Button("Apply level");
+    private final Label logStatus = new Label("Disconnected");
+    private final TextArea liveLogs = new TextArea();
     private final TextField shellHost = new TextField("127.0.0.1");
     private final TextField shellPort = new TextField("8023");
     private final Button shellConnect = new Button("Connect");
@@ -113,7 +124,9 @@ public final class TestClientFxApplication extends Application {
         eventsTab.setClosable(false);
         Tab terminalTab = new Tab("Terminal", terminalPane());
         terminalTab.setClosable(false);
-        TabPane tabs = new TabPane(statusTab, eventsTab, terminalTab);
+        Tab logsTab = new Tab("Logs", logsPane());
+        logsTab.setClosable(false);
+        TabPane tabs = new TabPane(statusTab, eventsTab, terminalTab, logsTab);
 
         MenuItem about = new MenuItem("About");
         about.setOnAction(event -> showAbout(stage));
@@ -240,6 +253,46 @@ public final class TestClientFxApplication extends Application {
         return pane;
     }
 
+    private VBox logsPane() {
+        logHost.setPrefColumnCount(18);
+        logPort.setPrefColumnCount(6);
+        logDisconnect.setDisable(true);
+        applyLogLevel.setDisable(true);
+        logLevel.getItems().setAll("TRACE", "DEBUG", "INFO", "WARN", "ERROR");
+        logLevel.setValue("INFO");
+
+        HBox connection = new HBox(8,
+                new Label("Host"),
+                logHost,
+                new Label("Port"),
+                logPort,
+                logConnect,
+                logDisconnect,
+                logStatus);
+
+        HBox level = new HBox(8,
+                new Label("Runtime level"),
+                logLevel,
+                applyLogLevel);
+
+        liveLogs.setEditable(false);
+        liveLogs.setWrapText(false);
+        liveLogs.setStyle(
+                "-fx-control-inner-background: black;"
+                        + "-fx-text-fill: #e8e8e8;"
+                        + "-fx-font-family: 'Consolas';"
+                        + "-fx-font-size: 12px;");
+        VBox.setVgrow(liveLogs, Priority.ALWAYS);
+
+        logConnect.setOnAction(event -> connectLogs());
+        logDisconnect.setOnAction(event -> liveLogClient.disconnect());
+        applyLogLevel.setOnAction(event -> applyLogLevel());
+
+        VBox pane = new VBox(8, connection, level, liveLogs);
+        pane.setPadding(new Insets(12));
+        return pane;
+    }
+
     private void loadVersion() {
         runRequest(
                 () -> client().getVersion(),
@@ -353,6 +406,98 @@ public final class TestClientFxApplication extends Application {
         eventDisconnect.setDisable(!connected);
         eventEndpoint.setDisable(connected);
         eventConnectionStatus.setText(status);
+    }
+
+    private void connectLogs() {
+        String host = logHost.getText().trim();
+        int port;
+        try {
+            port = Integer.parseInt(logPort.getText().trim());
+        } catch (NumberFormatException ex) {
+            logStatus.setText("Invalid port");
+            return;
+        }
+
+        logConnect.setDisable(true);
+        logHost.setDisable(true);
+        logPort.setDisable(true);
+        logStatus.setText("Connecting...");
+
+        CompletableFuture
+                .runAsync(() -> {
+                    try {
+                        liveLogClient.connect(host, port, new LiveLogClient.Listener() {
+                            @Override
+                            public void onConnected() {
+                                Platform.runLater(() -> setLogConnected(true, "Connected"));
+                            }
+
+                            @Override
+                            public void onLog(LiveLogClient.LogEntry entry) {
+                                Platform.runLater(() -> appendLog(entry));
+                            }
+
+                            @Override
+                            public void onLevel(String level) {
+                                Platform.runLater(() -> logLevel.setValue(level));
+                            }
+
+                            @Override
+                            public void onDisconnected() {
+                                Platform.runLater(() -> setLogConnected(false, "Disconnected"));
+                            }
+
+                            @Override
+                            public void onError(String message) {
+                                Platform.runLater(() -> logStatus.setText("Error: " + message));
+                            }
+                        });
+                        liveLogClient.requestLevel();
+                    } catch (Exception ex) {
+                        throw new CompletionException(ex);
+                    }
+                }, requests)
+                .whenComplete((ignored, error) -> Platform.runLater(() -> {
+                    if (error != null) {
+                        Throwable cause = error.getCause() == null ? error : error.getCause();
+                        setLogConnected(false, "Error: " + cause.getMessage());
+                    }
+                }));
+    }
+
+    private void applyLogLevel() {
+        try {
+            liveLogClient.setLevel(logLevel.getValue());
+            logStatus.setText("Applying " + logLevel.getValue() + "...");
+        } catch (Exception ex) {
+            logStatus.setText("Error: " + ex.getMessage());
+        }
+    }
+
+    private void appendLog(LiveLogClient.LogEntry entry) {
+        liveLogs.appendText(
+                entry.occurredAt()
+                        + " "
+                        + entry.level()
+                        + " "
+                        + entry.logger()
+                        + " - "
+                        + entry.message()
+                        + System.lineSeparator());
+        if (entry.thrown() != null) {
+            liveLogs.appendText("  " + entry.thrown() + System.lineSeparator());
+        }
+        liveLogs.positionCaret(liveLogs.getLength());
+    }
+
+    private void setLogConnected(boolean connected, String status) {
+        logConnect.setDisable(connected);
+        logDisconnect.setDisable(!connected);
+        logHost.setDisable(connected);
+        logPort.setDisable(connected);
+        logLevel.setDisable(!connected);
+        applyLogLevel.setDisable(!connected);
+        logStatus.setText(status);
     }
 
     private void connectShell() {
@@ -498,6 +643,7 @@ public final class TestClientFxApplication extends Application {
     public void stop() {
         eventClient.close();
         shellClient.close();
+        liveLogClient.close();
         requests.shutdownNow();
     }
 

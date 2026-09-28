@@ -132,6 +132,28 @@ presentation:
       port: 8082
 ```
 
+A08 also configures cross-cutting runtime logging independently from presentation/status:
+
+```yaml
+logging:
+  level: INFO
+  file:
+    path: logs/event-timing.log
+    rotateBytes: 1048576
+    retainedFiles: 5
+  live:
+    bindAddress: 127.0.0.1
+    port: 8030
+```
+
+The framework still logs only through SLF4J. The executable maps the semantic startup level to
+`slf4j-jdk14 -> java.util.logging`, keeps the existing console output, writes retained rotating
+file logs and optionally exposes a dedicated best-effort live-log TCP listener. The JavaFX
+engineering client initiates the live connection; its **Logs** tab can inspect new records and
+temporarily change the process-wide log level. A runtime level change is not persisted to YAML and
+restart restores the configured level. The live diagnostics stream is separate from IF-03
+`/api/v1/events`.
+
 The remote shell is a small line-oriented TCP development/service endpoint. It is **not** an SSH
 or Telnet protocol implementation. IF-03 is the general **Remote API**; A06/A07 implement its first
 HTTP version/status and WebSocket event slice:
