@@ -51,7 +51,7 @@ final class CompactLogFormatter extends Formatter {
         return line.toString();
     }
 
-    private static String source(LogRecord record) {
+    static String source(LogRecord record) {
         String className = record.getSourceClassName();
         String methodName = record.getSourceMethodName();
         if (className == null || className.trim().isEmpty()) {
