@@ -6,7 +6,7 @@ Project-wide planning, requirements, architecture, interface design and verifica
 
 ## Current scope
 
-This repository is the public implementation repository for **SI-01 — Headless Timing Application**. `v0.2.2` is the SIP Step-3 application/Remote API foundation release line. The baseline provides external YAML configuration, long-running process lifecycle, shared local/remote terminal semantics, IF-03 HTTP/WebSocket version and status, runtime logging/live diagnostics, and automated separate-process system verification. Timing-domain behaviour plus RFID, CAN, display and backoffice integrations remain later-step work.
+This repository is the public implementation repository for **SI-01 — Headless Timing Application**. `v0.2.2` is the accepted SIP Step-3 application/Remote API foundation baseline; normal development continues on `0.2.3-SNAPSHOT` while Step 4 begins. The baseline provides external YAML configuration, long-running process lifecycle, shared local/remote terminal semantics, IF-03 HTTP/WebSocket version and status, runtime logging/live diagnostics, and automated separate-process system verification. Timing-domain behaviour plus RFID, CAN, display and backoffice integrations remain later-step work.
 
 ## Artifact and package model
 
@@ -323,7 +323,7 @@ The command-line equivalent remains:
 
 ```powershell
 .\mvnw.cmd verify
-java -jar app\target\event-timing-app-0.2.2.jar config\application.yml
+java -jar app\target\event-timing-app-0.2.3-SNAPSHOT.jar config\application.yml
 ```
 
 ## Toolchain baseline

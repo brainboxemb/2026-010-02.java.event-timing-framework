@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Resume normal development on `0.2.3-SNAPSHOT` after the accepted `v0.2.2` Step-3 release; this mechanical successor does not pre-decide the eventual Step-4 release number.
+
 ## 0.2.2 — 2026-09-29
 
 - Add a verification-only `system-test` reactor module for automated VC-ST1-001 black-box process testing: launch the packaged app JAR, verify HTTP version/status and WebSocket snapshot/reconnect behaviour, shut down via the remote terminal, and keep the verifier free of framework/app Java dependencies.
