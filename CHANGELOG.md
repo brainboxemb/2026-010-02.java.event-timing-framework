@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Simplify the primary Remote API class names inside `presentation.interfaces.remoteapi` to `HttpEndpoint`, `WebSocketEndpoint` and `MessageWriter`; package structure and IF-03 behaviour are unchanged.
+
 - Add Step-3 A08 runtime logging on the existing SLF4J/JUL boundary: executable-owned `infra.logging.Logging` and separate `LoggingServer`, configurable semantic startup level, timestamp-named rotating retained text files with non-overwriting collision handling for unsynchronised Pi clocks plus the same compact console/live representation, an optional client-initiated best-effort live diagnostics socket, temporary runtime-global level control, and a JavaFX Logs tab without mixing diagnostic records into IF-03 status/events.
 
 - Organise source packages and artifact ownership around the architecture: keep primary IF-03 classes at `presentation.interfaces.remoteapi`, move `TimingApplication` runtime plus `infra.bootstrap.ApplicationBootstrap` and the effective configuration model into the reusable framework, and reduce `event-timing-app` to `TimingApplicationMain` plus concrete YAML/build-resource loaders.

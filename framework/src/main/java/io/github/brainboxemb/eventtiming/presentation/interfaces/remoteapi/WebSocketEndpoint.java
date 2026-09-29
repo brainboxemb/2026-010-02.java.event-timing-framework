@@ -22,10 +22,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /** WebSocket transport for IF-03 Remote API events. */
-public final class RemoteApiWebSocketServer implements AutoCloseable {
+public final class WebSocketEndpoint implements AutoCloseable {
     public static final String EVENTS_PATH = "/api/v1/events";
 
-    private static final Logger LOG = LoggerFactory.getLogger(RemoteApiWebSocketServer.class);
+    private static final Logger LOG = LoggerFactory.getLogger(WebSocketEndpoint.class);
     private static final int MAX_INBOUND_FRAME_BYTES = 64 * 1024;
     private static final long START_TIMEOUT_MILLIS = 3000L;
 
@@ -36,14 +36,14 @@ public final class RemoteApiWebSocketServer implements AutoCloseable {
 
     private Server server;
 
-    public RemoteApiWebSocketServer(
+    public WebSocketEndpoint(
             String bindAddress,
             int port,
             CommandHandler commandHandler) {
         this(bindAddress, port, commandHandler, Clock.systemUTC());
     }
 
-    RemoteApiWebSocketServer(
+    WebSocketEndpoint(
             String bindAddress,
             int port,
             CommandHandler commandHandler,
@@ -117,7 +117,7 @@ public final class RemoteApiWebSocketServer implements AutoCloseable {
     }
 
     private String eventJson(String eventType) {
-        return RemoteApiMessageWriter.statusEvent(
+        return MessageWriter.statusEvent(
                 eventType,
                 clock.instant(),
                 commandHandler.version(),

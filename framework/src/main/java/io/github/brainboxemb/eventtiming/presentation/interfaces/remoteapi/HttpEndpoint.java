@@ -16,8 +16,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /** HTTP/JSON transport for the IF-03 Remote API. */
-public final class RemoteApiHttpServer implements AutoCloseable {
-    private static final Logger LOG = LoggerFactory.getLogger(RemoteApiHttpServer.class);
+public final class HttpEndpoint implements AutoCloseable {
+    private static final Logger LOG = LoggerFactory.getLogger(HttpEndpoint.class);
 
     private final String bindAddress;
     private final int port;
@@ -26,7 +26,7 @@ public final class RemoteApiHttpServer implements AutoCloseable {
     private HttpServer server;
     private ExecutorService executor;
 
-    public RemoteApiHttpServer(String bindAddress, int port, CommandHandler commandHandler) {
+    public HttpEndpoint(String bindAddress, int port, CommandHandler commandHandler) {
         if (bindAddress == null || bindAddress.trim().isEmpty()) {
             throw new IllegalArgumentException("bindAddress must not be blank");
         }
@@ -77,7 +77,7 @@ public final class RemoteApiHttpServer implements AutoCloseable {
             sendJson(
                     exchange,
                     500,
-                    RemoteApiMessageWriter.error(
+                    MessageWriter.error(
                             "INTERNAL_ERROR",
                             "Unexpected interface failure"));
         }
@@ -89,21 +89,21 @@ public final class RemoteApiHttpServer implements AutoCloseable {
             sendJson(
                     exchange,
                     405,
-                    RemoteApiMessageWriter.error(
+                    MessageWriter.error(
                             "METHOD_NOT_ALLOWED",
                             "Only GET is supported for this resource"));
             return;
         }
 
         if ("/api/v1/version".equals(path)) {
-            sendJson(exchange, 200, RemoteApiMessageWriter.version(commandHandler.version()));
+            sendJson(exchange, 200, MessageWriter.version(commandHandler.version()));
             return;
         }
         if ("/api/v1/status".equals(path)) {
             sendJson(
                     exchange,
                     200,
-                    RemoteApiMessageWriter.status(
+                    MessageWriter.status(
                             commandHandler.version(),
                             commandHandler.status()));
             return;
@@ -112,7 +112,7 @@ public final class RemoteApiHttpServer implements AutoCloseable {
         sendJson(
                 exchange,
                 404,
-                RemoteApiMessageWriter.error("NOT_FOUND", "Unknown IF-03 resource"));
+                MessageWriter.error("NOT_FOUND", "Unknown IF-03 resource"));
     }
 
     private static void sendJson(HttpExchange exchange, int status, String json)

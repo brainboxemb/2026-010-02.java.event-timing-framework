@@ -39,9 +39,9 @@ io.github.brainboxemb.eventtiming.runtime.TimingApplication
 io.github.brainboxemb.eventtiming.runtime.TimingApplicationLifecycle
 io.github.brainboxemb.eventtiming.presentation.interfaces.console.LocalConsole
 io.github.brainboxemb.eventtiming.presentation.interfaces.shell.RemoteShellServer
-io.github.brainboxemb.eventtiming.presentation.interfaces.remoteapi.RemoteApiHttpServer
-io.github.brainboxemb.eventtiming.presentation.interfaces.remoteapi.RemoteApiWebSocketServer
-io.github.brainboxemb.eventtiming.presentation.interfaces.remoteapi.RemoteApiMessageWriter
+io.github.brainboxemb.eventtiming.presentation.interfaces.remoteapi.HttpEndpoint
+io.github.brainboxemb.eventtiming.presentation.interfaces.remoteapi.WebSocketEndpoint
+io.github.brainboxemb.eventtiming.presentation.interfaces.remoteapi.MessageWriter
 io.github.brainboxemb.eventtiming.presentation.common.terminal.TerminalSession
 ```
 

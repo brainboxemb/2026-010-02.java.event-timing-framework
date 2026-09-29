@@ -18,10 +18,10 @@ import org.junit.Test;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
-public class RemoteApiHttpServerTest {
+public class HttpEndpointTest {
     @Test
     public void exposesVersionAndStatusOverRealHttp() throws Exception {
-        RemoteApiHttpServer server = new RemoteApiHttpServer("127.0.0.1", 0, commandHandler());
+        HttpEndpoint server = new HttpEndpoint("127.0.0.1", 0, commandHandler());
         server.start();
 
         try {
@@ -46,7 +46,7 @@ public class RemoteApiHttpServerTest {
 
     @Test
     public void returnsJsonErrorsForUnknownPathAndUnsupportedMethod() throws Exception {
-        RemoteApiHttpServer server = new RemoteApiHttpServer("127.0.0.1", 0, commandHandler());
+        HttpEndpoint server = new HttpEndpoint("127.0.0.1", 0, commandHandler());
         server.start();
 
         try {
@@ -75,7 +75,7 @@ public class RemoteApiHttpServerTest {
                 new CommandHandler(identity, () -> {
                     throw new IllegalStateException("test failure");
                 });
-        RemoteApiHttpServer server = new RemoteApiHttpServer("127.0.0.1", 0, failing);
+        HttpEndpoint server = new HttpEndpoint("127.0.0.1", 0, failing);
         server.start();
 
         try {

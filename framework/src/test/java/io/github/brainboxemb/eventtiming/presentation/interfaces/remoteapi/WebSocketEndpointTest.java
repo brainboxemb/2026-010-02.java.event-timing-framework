@@ -21,11 +21,11 @@ import org.junit.Test;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
-public class RemoteApiWebSocketServerTest {
+public class WebSocketEndpointTest {
     @Test
     public void sendsCompleteSnapshotOnConnectAndReconnect() throws Exception {
         AtomicReference<ApplicationStatus> status = new AtomicReference<>(status("timing-node-01"));
-        RemoteApiWebSocketServer server = server(status);
+        WebSocketEndpoint server = server(status);
         server.start();
 
         try {
@@ -42,7 +42,7 @@ public class RemoteApiWebSocketServerTest {
     @Test
     public void broadcastsCompleteStatusChangedEvent() throws Exception {
         AtomicReference<ApplicationStatus> status = new AtomicReference<>(status("timing-node-01"));
-        RemoteApiWebSocketServer server = server(status);
+        WebSocketEndpoint server = server(status);
         server.start();
         TestClient client = connect(server.boundPort());
 
@@ -62,7 +62,7 @@ public class RemoteApiWebSocketServerTest {
         }
     }
 
-    private static RemoteApiWebSocketServer server(
+    private static WebSocketEndpoint server(
             AtomicReference<ApplicationStatus> status) {
         BuildIdentity identity = BuildIdentity.firstApiVersion(
                 "event-timing-app",
@@ -72,7 +72,7 @@ public class RemoteApiWebSocketServerTest {
                 "local",
                 false);
         CommandHandler handler = new CommandHandler(identity, status::get);
-        return new RemoteApiWebSocketServer(
+        return new WebSocketEndpoint(
                 "127.0.0.1",
                 0,
                 handler,
@@ -98,7 +98,7 @@ public class RemoteApiWebSocketServerTest {
 
     private static TestClient connect(int port) throws Exception {
         TestClient client = new TestClient(
-                new URI("ws://127.0.0.1:" + port + RemoteApiWebSocketServer.EVENTS_PATH));
+                new URI("ws://127.0.0.1:" + port + WebSocketEndpoint.EVENTS_PATH));
         assertTrue(client.connectBlocking(2, TimeUnit.SECONDS));
         return client;
     }
