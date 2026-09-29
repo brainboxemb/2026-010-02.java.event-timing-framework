@@ -5,22 +5,19 @@ import io.github.brainboxemb.eventtiming.infra.bootstrap.config.LoggingFileConfi
 import io.github.brainboxemb.eventtiming.infra.bootstrap.config.LoggingLiveConfig;
 
 import java.io.IOException;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.IdentityHashMap;
 import java.util.Map;
-import java.util.logging.FileHandler;
 import java.util.logging.Handler;
 import java.util.logging.Logger;
-import java.util.logging.SimpleFormatter;
 
 /** Concrete JUL logging composition selected by the default executable application. */
 public final class RuntimeLogging implements AutoCloseable {
     private final Logger rootLogger;
     private final java.util.logging.Level previousRootLevel;
     private final Map<Handler, java.util.logging.Level> previousHandlerLevels;
-    private final FileHandler fileHandler;
+    private final TimestampedFileLogHandler fileHandler;
     private final DiagnosticLogServer liveServer;
     private final LiveLogHandler liveHandler;
     private final LoggingControl control;
@@ -29,7 +26,7 @@ public final class RuntimeLogging implements AutoCloseable {
             Logger rootLogger,
             java.util.logging.Level previousRootLevel,
             Map<Handler, java.util.logging.Level> previousHandlerLevels,
-            FileHandler fileHandler,
+            TimestampedFileLogHandler fileHandler,
             DiagnosticLogServer liveServer,
             LiveLogHandler liveHandler,
             LoggingControl control) {
@@ -56,26 +53,18 @@ public final class RuntimeLogging implements AutoCloseable {
             handler.setLevel(java.util.logging.Level.ALL);
         }
 
-        FileHandler fileHandler = null;
+        TimestampedFileLogHandler fileHandler = null;
         DiagnosticLogServer liveServer = null;
         LiveLogHandler liveHandler = null;
         try {
             LoggingControl control = new LoggingControl(root, config.level());
 
             LoggingFileConfig file = config.file();
-            Path path = Paths.get(file.path()).toAbsolutePath().normalize();
-            Path parent = path.getParent();
-            if (parent != null) {
-                Files.createDirectories(parent);
-            }
-
-            fileHandler = new FileHandler(
-                    path.toString(),
+            Path directory = Paths.get(file.path()).toAbsolutePath().normalize();
+            fileHandler = new TimestampedFileLogHandler(
+                    directory,
                     file.rotateBytes(),
-                    file.retainedFiles(),
-                    true);
-            fileHandler.setFormatter(new SimpleFormatter());
-            fileHandler.setLevel(java.util.logging.Level.ALL);
+                    file.retainedFiles());
             root.addHandler(fileHandler);
 
             LoggingLiveConfig live = config.live();

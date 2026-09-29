@@ -60,7 +60,7 @@ public class YamlApplicationConfigLoaderTest {
                         + "logging:\n"
                         + "  level: DEBUG\n"
                         + "  file:\n"
-                        + "    path: logs/event-timing.log\n"
+                        + "    path: logs\n"
                         + "    rotateBytes: 1048576\n"
                         + "    retainedFiles: 5\n"
                         + "  live:\n"
@@ -70,7 +70,7 @@ public class YamlApplicationConfigLoaderTest {
         assertEquals(
                 io.github.brainboxemb.eventtiming.infra.bootstrap.config.LoggingConfig.Level.DEBUG,
                 config.logging().level());
-        assertEquals("logs/event-timing.log", config.logging().file().path());
+        assertEquals("logs", config.logging().file().path());
         assertEquals(1048576, config.logging().file().rotateBytes());
         assertEquals(5, config.logging().file().retainedFiles());
         assertEquals("127.0.0.1", config.logging().live().bindAddress());
@@ -84,7 +84,7 @@ public class YamlApplicationConfigLoaderTest {
                         + "logging:\n"
                         + "  level: VERBOSE\n"
                         + "  file:\n"
-                        + "    path: logs/event-timing.log\n"
+                        + "    path: logs\n"
                         + "    rotateBytes: 1024\n"
                         + "    retainedFiles: 2\n");
     }

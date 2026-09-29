@@ -12,6 +12,10 @@ import java.io.OutputStreamWriter;
 import java.net.Socket;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.util.Arrays;
+import java.util.Comparator;
+import java.util.logging.Level;
+import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 
 import org.junit.Rule;
@@ -27,10 +31,10 @@ public class RuntimeLoggingTest {
 
     @Test
     public void writesFileStreamsLiveAndChangesRuntimeLevel() throws Exception {
-        File log = new File(temporaryFolder.getRoot(), "event-timing.log");
+        File logDirectory = temporaryFolder.newFolder("logs");
         LoggingConfig config = new LoggingConfig(
                 LoggingConfig.Level.INFO,
-                new LoggingFileConfig(log.getAbsolutePath(), 4096, 1),
+                new LoggingFileConfig(logDirectory.getAbsolutePath(), 4096, 1),
                 new LoggingLiveConfig("127.0.0.1", 0));
 
         try (RuntimeLogging runtime = RuntimeLogging.start(config);
@@ -56,17 +60,21 @@ public class RuntimeLoggingTest {
             assertTrue(readUntil(reader, "A08 debug message").contains("A08 debug message"));
         }
 
-        String fileText = new String(Files.readAllBytes(log.toPath()), StandardCharsets.UTF_8);
-        assertTrue(fileText.contains("A08 live message"));
-        assertTrue(fileText.contains("A08 debug message"));
+        File[] retained = timestampedLogs(logDirectory);
+        assertEquals(1, retained.length);
+        assertTrue(retained[0].getName().matches("\\d{8}-\\d{6}\\.txt"));
+        String fileText =
+                new String(Files.readAllBytes(retained[0].toPath()), StandardCharsets.UTF_8);
+        assertTrue(fileText.contains(" - [INFO] - A08 live message - ["));
+        assertTrue(fileText.contains(" - [DEBUG] - A08 debug message - ["));
     }
 
     @Test
     public void rotatesWithinConfiguredRetention() throws Exception {
-        File log = new File(temporaryFolder.getRoot(), "rotating.log");
+        File logDirectory = temporaryFolder.newFolder("rotating");
         LoggingConfig config = new LoggingConfig(
                 LoggingConfig.Level.INFO,
-                new LoggingFileConfig(log.getAbsolutePath(), 512, 2),
+                new LoggingFileConfig(logDirectory.getAbsolutePath(), 512, 2),
                 null);
 
         try (RuntimeLogging ignored = RuntimeLogging.start(config)) {
@@ -76,10 +84,40 @@ public class RuntimeLoggingTest {
             }
         }
 
-        File[] generations = temporaryFolder.getRoot().listFiles(
-                (dir, name) -> name.startsWith("rotating.log"));
-        assertTrue(generations != null && generations.length >= 1);
+        File[] generations = timestampedLogs(logDirectory);
+        assertTrue(generations.length >= 1);
         assertTrue("retention exceeded: " + generations.length, generations.length <= 2);
+        for (File generation : generations) {
+            assertTrue(generation.getName().matches(
+                    "\\d{8}-\\d{6}(?:-\\d{2,})?\\.txt"));
+        }
+    }
+
+    @Test
+    public void formatsRetainedRecordLikeExistingOperatorLogs() {
+        LogRecord record = new LogRecord(Level.INFO, "WebServer started");
+        record.setMillis(1747210618109L);
+        record.setSourceClassName("com.bata.ebart.next.web.WebServer");
+        record.setSourceMethodName("<init>");
+
+        String line = new CompactLogFormatter(java.time.ZoneId.of("Europe/Amsterdam"))
+                .format(record);
+
+        assertTrue(line.matches(
+                "\\d{2}:\\d{2}:\\d{2}\\.\\d{3} - \\[INFO\\] - WebServer started - "
+                        + "\\[com\\.bata\\.ebart\\.next\\.web\\.WebServer\\.<init>\\]"
+                        + "\\R"));
+    }
+
+    private static File[] timestampedLogs(File directory) {
+        File[] files = directory.listFiles(
+                (dir, name) -> name.matches(
+                        "\\d{8}-\\d{6}(?:-\\d{2,})?\\.txt"));
+        if (files == null) {
+            return new File[0];
+        }
+        Arrays.sort(files, Comparator.comparing(File::getName));
+        return files;
     }
 
     private static String readUntil(BufferedReader reader, String expected) throws Exception {

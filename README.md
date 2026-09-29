@@ -138,7 +138,7 @@ A08 also configures cross-cutting runtime logging independently from presentatio
 logging:
   level: INFO
   file:
-    path: logs/event-timing.log
+    path: logs
     rotateBytes: 1048576
     retainedFiles: 5
   live:
@@ -148,7 +148,9 @@ logging:
 
 The framework still logs only through SLF4J. The executable maps the semantic startup level to
 `slf4j-jdk14 -> java.util.logging`, keeps the existing console output, writes retained rotating
-file logs and optionally exposes a dedicated best-effort live-log TCP listener. The JavaFX
+file logs under timestamped names such as `20250514-101657.txt`. Retained file records use
+`HH:mm:ss.SSS - [LEVEL] - message - [sourceClass.sourceMethod]`, while the executable optionally
+exposes a dedicated best-effort live-log TCP listener. The JavaFX
 engineering client initiates the live connection; its **Logs** tab can inspect new records and
 temporarily change the process-wide log level. A runtime level change is not persisted to YAML and
 restart restores the configured level. The live diagnostics stream is separate from IF-03

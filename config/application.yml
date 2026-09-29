@@ -20,7 +20,7 @@ logging:
   # Cross-cutting A08 runtime logging baseline.
   level: INFO
   file:
-    path: logs/event-timing.log
+    path: logs
     rotateBytes: 1048576
     retainedFiles: 5
   live:
