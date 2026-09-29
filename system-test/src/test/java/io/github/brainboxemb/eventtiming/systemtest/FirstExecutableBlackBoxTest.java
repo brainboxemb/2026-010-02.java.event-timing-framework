@@ -89,15 +89,22 @@ public class FirstExecutableBlackBoxTest {
 
             Response status = get(httpPort, "/api/v1/status");
             assertEquals("Unexpected /status HTTP status", 200, status.status);
+            String revision = extractJsonString(version.body, "revision");
             assertContains(status.body, "\"timingNodeId\":\"timing-node-blackbox\"");
-            assertContains(status.body, "\"lifecycle\":\"RUNNING\"");
+            assertContains(status.body, "\"lifecycle\":\"CLOSED\"");
             assertContains(status.body, "\"version\":\"" + expectedVersion + "\"");
+            assertContains(status.body, "\"revision\":\"" + revision + "\"");
 
             String firstSnapshot = receiveStatusSnapshot(webSocketPort);
-            assertSnapshot(firstSnapshot);
+            assertSnapshot(firstSnapshot, expectedVersion, revision);
 
             String reconnectSnapshot = receiveStatusSnapshot(webSocketPort);
-            assertSnapshot(reconnectSnapshot);
+            assertSnapshot(reconnectSnapshot, expectedVersion, revision);
+
+            Response resynchronisedStatus = get(httpPort, "/api/v1/status");
+            assertEquals("Unexpected resynchronisation /status HTTP status", 200, resynchronisedStatus.status);
+            assertStatusSemantics(resynchronisedStatus.body, expectedVersion, revision);
+            assertSnapshotSemanticsMatchStatus(reconnectSnapshot, resynchronisedStatus.body);
 
             requestControlledShutdown(shellPort);
             assertTrue(
@@ -125,11 +132,40 @@ public class FirstExecutableBlackBoxTest {
         }
     }
 
-    private static void assertSnapshot(String json) {
+    private static void assertSnapshot(
+            String json,
+            String expectedVersion,
+            String revision) {
         assertContains(json, "\"eventType\":\"STATUS_SNAPSHOT\"");
         assertContains(json, "\"timingNodeId\":\"timing-node-blackbox\"");
-        assertContains(json, "\"lifecycle\":\"RUNNING\"");
+        assertContains(json, "\"lifecycle\":\"CLOSED\"");
         assertContains(json, "\"apiVersion\":\"1\"");
+        assertContains(json, "\"version\":\"" + expectedVersion + "\"");
+        assertContains(json, "\"revision\":\"" + revision + "\"");
+    }
+
+    private static void assertStatusSemantics(
+            String json,
+            String expectedVersion,
+            String revision) {
+        assertContains(json, "\"timingNodeId\":\"timing-node-blackbox\"");
+        assertContains(json, "\"lifecycle\":\"CLOSED\"");
+        assertContains(json, "\"apiVersion\":\"1\"");
+        assertContains(json, "\"version\":\"" + expectedVersion + "\"");
+        assertContains(json, "\"revision\":\"" + revision + "\"");
+    }
+
+    private static void assertSnapshotSemanticsMatchStatus(
+            String snapshot,
+            String status) {
+        for (String field : new String[] {
+                "\"timingNodeId\":\"timing-node-blackbox\"",
+                "\"lifecycle\":\"CLOSED\"",
+                "\"apiVersion\":\"1\""
+        }) {
+            assertContains(snapshot, field);
+            assertContains(status, field);
+        }
     }
 
     private static String receiveStatusSnapshot(int port) throws Exception {
@@ -312,6 +348,20 @@ public class FirstExecutableBlackBoxTest {
             throw new IllegalStateException("Missing required system property: " + name);
         }
         return value;
+    }
+
+    private static String extractJsonString(String json, String field) {
+        String marker = "\"" + field + "\":\"";
+        int start = json.indexOf(marker);
+        if (start < 0) {
+            fail("Missing JSON string field " + field + " in " + json);
+        }
+        start += marker.length();
+        int end = json.indexOf('"', start);
+        if (end < 0) {
+            fail("Unterminated JSON string field " + field + " in " + json);
+        }
+        return json.substring(start, end);
     }
 
     private static void assertContains(String actual, String expected) {
