@@ -182,7 +182,7 @@ final class DiagnosticLogServer implements AutoCloseable {
                 + "\",\"source\":\""
                 + escape(CompactLogFormatter.source(record))
                 + "\",\"message\":\""
-                + escape(formatter.formatMessage(record))
+                + escape(formatter.message(record))
                 + "\",\"formatted\":\""
                 + escape(formatter.format(record))
                 + "\""
