@@ -8,8 +8,8 @@ import io.github.brainboxemb.eventtiming.infra.bootstrap.config.RemoteApiHttpCon
 import io.github.brainboxemb.eventtiming.infra.bootstrap.config.RemoteApiWebSocketConfig;
 import io.github.brainboxemb.eventtiming.infra.bootstrap.config.RemoteShellConfig;
 import io.github.brainboxemb.eventtiming.presentation.interfaces.console.LocalConsole;
-import io.github.brainboxemb.eventtiming.presentation.interfaces.remoteapi.RemoteApiHttpServer;
-import io.github.brainboxemb.eventtiming.presentation.interfaces.remoteapi.RemoteApiWebSocketServer;
+import io.github.brainboxemb.eventtiming.presentation.interfaces.remoteapi.HttpEndpoint;
+import io.github.brainboxemb.eventtiming.presentation.interfaces.remoteapi.WebSocketEndpoint;
 import io.github.brainboxemb.eventtiming.presentation.interfaces.shell.RemoteShellServer;
 import io.github.brainboxemb.eventtiming.runtime.TimingApplication;
 
@@ -35,8 +35,8 @@ public final class ApplicationBootstrap {
         Thread shutdownHook = new Thread(application::close, "event-timing-shutdown");
         runtime.addShutdownHook(shutdownHook);
 
-        RemoteApiHttpServer http = null;
-        RemoteApiWebSocketServer webSocket = null;
+        HttpEndpoint http = null;
+        WebSocketEndpoint webSocket = null;
         RemoteShellServer remoteShell = null;
         try {
             application.start();
@@ -75,7 +75,7 @@ public final class ApplicationBootstrap {
                 .build();
     }
 
-    private static RemoteApiHttpServer startHttp(
+    private static HttpEndpoint startHttp(
             ApplicationConfig config,
             TimingApplication application) throws IOException {
         RemoteApiConfig remoteApi = config.presentation().remoteApi();
@@ -84,7 +84,7 @@ public final class ApplicationBootstrap {
             return null;
         }
 
-        RemoteApiHttpServer server = new RemoteApiHttpServer(
+        HttpEndpoint server = new HttpEndpoint(
                 endpoint.bindAddress(),
                 endpoint.port(),
                 application.commandHandler());
@@ -92,7 +92,7 @@ public final class ApplicationBootstrap {
         return server;
     }
 
-    private static RemoteApiWebSocketServer startWebSocket(
+    private static WebSocketEndpoint startWebSocket(
             ApplicationConfig config,
             TimingApplication application) throws IOException {
         RemoteApiConfig remoteApi = config.presentation().remoteApi();
@@ -102,7 +102,7 @@ public final class ApplicationBootstrap {
             return null;
         }
 
-        RemoteApiWebSocketServer server = new RemoteApiWebSocketServer(
+        WebSocketEndpoint server = new WebSocketEndpoint(
                 endpoint.bindAddress(),
                 endpoint.port(),
                 application.commandHandler());
