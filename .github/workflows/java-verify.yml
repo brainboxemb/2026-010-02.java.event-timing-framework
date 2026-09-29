@@ -70,6 +70,14 @@ jobs:
           ! grep -F '<artifactId>slf4j-jdk14</artifactId>' framework/pom.xml
           grep -F '<artifactId>slf4j-jdk14</artifactId>' app/pom.xml
 
+      - name: Verify black-box system-test dependency boundary
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -f system-test/pom.xml
+          ! grep -F '<artifactId>event-timing-framework</artifactId>' system-test/pom.xml
+          ! grep -F '<artifactId>event-timing-app</artifactId>' system-test/pom.xml
+
   # Normal development lifecycle. Pull requests use affected auto-selection;
   # protected main publication deliberately does not allocate Windows again.
   java-production:
