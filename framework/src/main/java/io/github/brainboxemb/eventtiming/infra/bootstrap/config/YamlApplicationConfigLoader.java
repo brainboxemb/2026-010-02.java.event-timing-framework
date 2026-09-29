@@ -1,16 +1,10 @@
-package io.github.brainboxemb.eventtiming.app.bootstrap;
+package io.github.brainboxemb.eventtiming.infra.bootstrap.config;
 
 import io.github.brainboxemb.eventtiming.domain.timing.TimingNodeId;
-import io.github.brainboxemb.eventtiming.infra.bootstrap.config.ApplicationConfig;
-import io.github.brainboxemb.eventtiming.infra.bootstrap.config.PresentationConfig;
 import io.github.brainboxemb.eventtiming.infra.logging.LoggingConfig;
 import io.github.brainboxemb.eventtiming.infra.logging.LoggingFileConfig;
 import io.github.brainboxemb.eventtiming.infra.logging.LoggingLevel;
 import io.github.brainboxemb.eventtiming.infra.logging.LoggingServerConfig;
-import io.github.brainboxemb.eventtiming.infra.bootstrap.config.RemoteApiConfig;
-import io.github.brainboxemb.eventtiming.infra.bootstrap.config.RemoteApiHttpConfig;
-import io.github.brainboxemb.eventtiming.infra.bootstrap.config.RemoteApiWebSocketConfig;
-import io.github.brainboxemb.eventtiming.infra.bootstrap.config.RemoteShellConfig;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -24,7 +18,7 @@ import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.constructor.SafeConstructor;
 import org.yaml.snakeyaml.error.YAMLException;
 
-/** Maps the default executable YAML format into the framework bootstrap configuration model. */
+/** Maps the default IF-11 YAML syntax into the framework application configuration model. */
 public final class YamlApplicationConfigLoader {
     private static final String TIMING_NODE_ID = "timingNodeId";
     private static final String PRESENTATION = "presentation";

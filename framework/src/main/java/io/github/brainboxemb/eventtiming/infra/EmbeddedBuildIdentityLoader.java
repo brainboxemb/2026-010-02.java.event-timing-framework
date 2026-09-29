@@ -1,13 +1,10 @@
-package io.github.brainboxemb.eventtiming.app.bootstrap;
-
-import io.github.brainboxemb.eventtiming.app.TimingApplicationMain;
-import io.github.brainboxemb.eventtiming.infra.BuildIdentity;
+package io.github.brainboxemb.eventtiming.infra;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
 
-/** Maps the executable's filtered build resource into the framework BuildIdentity value. */
+/** Maps a concrete executable's filtered build resource into the reusable BuildIdentity value. */
 public final class EmbeddedBuildIdentityLoader {
     private static final String RESOURCE = "/event-timing-build.properties";
 
@@ -16,7 +13,7 @@ public final class EmbeddedBuildIdentityLoader {
 
     public static BuildIdentity load() {
         Properties properties = new Properties();
-        try (InputStream input = TimingApplicationMain.class.getResourceAsStream(RESOURCE)) {
+        try (InputStream input = EmbeddedBuildIdentityLoader.class.getResourceAsStream(RESOURCE)) {
             if (input == null) {
                 throw new IllegalStateException("Missing build identity resource: " + RESOURCE);
             }

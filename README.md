@@ -76,9 +76,12 @@ reusable logging infrastructure lives in the framework artifact, while the execu
 ```text
 io.github.brainboxemb.eventtiming.app/
   TimingApplicationMain
-  bootstrap/
+
+io.github.brainboxemb.eventtiming.infra/
+  BuildIdentity
+  EmbeddedBuildIdentityLoader
+  bootstrap/config/
     YamlApplicationConfigLoader
-    EmbeddedBuildIdentityLoader
 
 io.github.brainboxemb.eventtiming.infra.logging/
   Logging
@@ -95,9 +98,10 @@ framework still selects no SLF4J provider. The default executable supplies `slf4
 runtime and starts/stops the framework-provided logging component.
 
 `ApplicationBootstrap` consumes the validated framework configuration model and
-owns concrete composition plus presentation/startup wiring. YAML parsing and the
-filtered build-resource mapping remain executable concerns, so SnakeYAML does not
-become a framework dependency. The application has a deliberately minimal `NEW -> RUNNING -> STOPPED` executable lifecycle and
+owns concrete composition plus presentation/startup wiring. The default IF-11 YAML parser/mapping and embedded build-identity interpretation are framework
+infrastructure. The executable remains responsible only for supplying the configuration path and
+its filtered `event-timing-build.properties` resource; SnakeYAML is therefore a framework
+implementation dependency. The application has a deliberately minimal `NEW -> RUNNING -> STOPPED` executable lifecycle and
 now composes the first shared client boundary, `CommandHandler`, for the authoritative version
 query. Future timing-domain capability is added only when its use case is implemented.
 

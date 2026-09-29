@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Move the default IF-11 YAML loader and embedded build-identity interpretation into `event-timing-framework`; the executable now owns only its filtered provenance resource, provider selection, launcher and packaging while SnakeYAML becomes a framework implementation dependency.
+
 - Move reusable `infra.logging` runtime infrastructure and component-owned logging configuration into `event-timing-framework`; keep only SLF4J provider selection in the executable app, and replace the bootstrap-owned live config with `LoggingServerConfig` plus an independent `LoggingLevel` type.
 
 - Simplify the primary Remote API class names inside `presentation.interfaces.remoteapi` to `HttpEndpoint`, `WebSocketEndpoint` and `MessageWriter`; package structure and IF-03 behaviour are unchanged.

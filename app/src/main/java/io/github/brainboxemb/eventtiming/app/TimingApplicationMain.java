@@ -1,7 +1,7 @@
 package io.github.brainboxemb.eventtiming.app;
 
-import io.github.brainboxemb.eventtiming.app.bootstrap.EmbeddedBuildIdentityLoader;
-import io.github.brainboxemb.eventtiming.app.bootstrap.YamlApplicationConfigLoader;
+import io.github.brainboxemb.eventtiming.infra.EmbeddedBuildIdentityLoader;
+import io.github.brainboxemb.eventtiming.infra.bootstrap.config.YamlApplicationConfigLoader;
 import io.github.brainboxemb.eventtiming.infra.logging.Logging;
 import io.github.brainboxemb.eventtiming.infra.BuildIdentity;
 import io.github.brainboxemb.eventtiming.infra.bootstrap.ApplicationBootstrap;
