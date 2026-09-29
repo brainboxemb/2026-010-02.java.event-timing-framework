@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## 0.2.2 — 2026-09-29
+
 - Add a verification-only `system-test` reactor module for automated VC-ST1-001 black-box process testing: launch the packaged app JAR, verify HTTP version/status and WebSocket snapshot/reconnect behaviour, shut down via the remote terminal, and keep the verifier free of framework/app Java dependencies.
 
 - Move the default IF-11 YAML loader and embedded build-identity interpretation into `event-timing-framework`; the executable now owns only its filtered provenance resource, provider selection, launcher and packaging while SnakeYAML becomes a framework implementation dependency.
