@@ -14,6 +14,8 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.Arrays;
 import java.util.Comparator;
+import java.util.logging.ConsoleHandler;
+import java.util.logging.Formatter;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
@@ -23,6 +25,7 @@ import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 
 public class RuntimeLoggingTest {
@@ -67,6 +70,41 @@ public class RuntimeLoggingTest {
                 new String(Files.readAllBytes(retained[0].toPath()), StandardCharsets.UTF_8);
         assertTrue(fileText.contains(" - [INFO] - A08 live message - ["));
         assertTrue(fileText.contains(" - [DEBUG] - A08 debug message - ["));
+    }
+
+    @Test
+    public void appliesCompactFormatterToConsoleAndRestoresPreviousFormatter() throws Exception {
+        Logger root = Logger.getLogger("");
+        ConsoleHandler console = new ConsoleHandler();
+        Formatter previousFormatter = console.getFormatter();
+        root.addHandler(console);
+        try {
+            File logDirectory = temporaryFolder.newFolder("console");
+            LoggingConfig config = new LoggingConfig(
+                    LoggingConfig.Level.INFO,
+                    new LoggingFileConfig(logDirectory.getAbsolutePath(), 4096, 1),
+                    null);
+
+            try (RuntimeLogging ignored = RuntimeLogging.start(config)) {
+                assertTrue(console.getFormatter() instanceof CompactLogFormatter);
+
+                LogRecord record = new LogRecord(Level.INFO, "Application lifecycle state=RUNNING");
+                record.setSourceClassName(
+                        "io.github.brainboxemb.eventtiming.runtime.TimingApplicationLifecycle");
+                record.setSourceMethodName("start");
+                String line = console.getFormatter().format(record);
+                assertTrue(line.matches(
+                        "\\d{2}:\\d{2}:\\d{2}\\.\\d{3} - \\[INFO\\] - "
+                                + "Application lifecycle state=RUNNING - "
+                                + "\\[io\\.github\\.brainboxemb\\.eventtiming\\.runtime"
+                                + "\\.TimingApplicationLifecycle\\.start\\]\\R"));
+            }
+
+            assertSame(previousFormatter, console.getFormatter());
+        } finally {
+            root.removeHandler(console);
+            console.close();
+        }
     }
 
     @Test

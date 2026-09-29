@@ -9,6 +9,8 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.IdentityHashMap;
 import java.util.Map;
+import java.util.logging.ConsoleHandler;
+import java.util.logging.Formatter;
 import java.util.logging.Handler;
 import java.util.logging.Logger;
 
@@ -17,6 +19,7 @@ public final class RuntimeLogging implements AutoCloseable {
     private final Logger rootLogger;
     private final java.util.logging.Level previousRootLevel;
     private final Map<Handler, java.util.logging.Level> previousHandlerLevels;
+    private final Map<Handler, Formatter> previousHandlerFormatters;
     private final TimestampedFileLogHandler fileHandler;
     private final DiagnosticLogServer liveServer;
     private final LiveLogHandler liveHandler;
@@ -26,6 +29,7 @@ public final class RuntimeLogging implements AutoCloseable {
             Logger rootLogger,
             java.util.logging.Level previousRootLevel,
             Map<Handler, java.util.logging.Level> previousHandlerLevels,
+            Map<Handler, Formatter> previousHandlerFormatters,
             TimestampedFileLogHandler fileHandler,
             DiagnosticLogServer liveServer,
             LiveLogHandler liveHandler,
@@ -33,6 +37,7 @@ public final class RuntimeLogging implements AutoCloseable {
         this.rootLogger = rootLogger;
         this.previousRootLevel = previousRootLevel;
         this.previousHandlerLevels = previousHandlerLevels;
+        this.previousHandlerFormatters = previousHandlerFormatters;
         this.fileHandler = fileHandler;
         this.liveServer = liveServer;
         this.liveHandler = liveHandler;
@@ -48,9 +53,16 @@ public final class RuntimeLogging implements AutoCloseable {
         java.util.logging.Level previousRoot = root.getLevel();
         Map<Handler, java.util.logging.Level> previousHandlers =
                 new IdentityHashMap<Handler, java.util.logging.Level>();
+        Map<Handler, Formatter> previousFormatters =
+                new IdentityHashMap<Handler, Formatter>();
+        CompactLogFormatter consoleFormatter = new CompactLogFormatter();
         for (Handler handler : root.getHandlers()) {
             previousHandlers.put(handler, handler.getLevel());
             handler.setLevel(java.util.logging.Level.ALL);
+            if (handler instanceof ConsoleHandler) {
+                previousFormatters.put(handler, handler.getFormatter());
+                handler.setFormatter(consoleFormatter);
+            }
         }
 
         TimestampedFileLogHandler fileHandler = null;
@@ -82,6 +94,7 @@ public final class RuntimeLogging implements AutoCloseable {
                     root,
                     previousRoot,
                     previousHandlers,
+                    previousFormatters,
                     fileHandler,
                     liveServer,
                     liveHandler,
@@ -97,7 +110,7 @@ public final class RuntimeLogging implements AutoCloseable {
                 root.removeHandler(fileHandler);
                 fileHandler.close();
             }
-            restore(root, previousRoot, previousHandlers);
+            restore(root, previousRoot, previousHandlers, previousFormatters);
             throw ex;
         }
     }
@@ -123,16 +136,24 @@ public final class RuntimeLogging implements AutoCloseable {
         }
         rootLogger.removeHandler(fileHandler);
         fileHandler.close();
-        restore(rootLogger, previousRootLevel, previousHandlerLevels);
+        restore(
+                rootLogger,
+                previousRootLevel,
+                previousHandlerLevels,
+                previousHandlerFormatters);
     }
 
     private static void restore(
             Logger root,
             java.util.logging.Level rootLevel,
-            Map<Handler, java.util.logging.Level> handlerLevels) {
+            Map<Handler, java.util.logging.Level> handlerLevels,
+            Map<Handler, Formatter> handlerFormatters) {
         root.setLevel(rootLevel);
         for (Map.Entry<Handler, java.util.logging.Level> entry : handlerLevels.entrySet()) {
             entry.getKey().setLevel(entry.getValue());
+        }
+        for (Map.Entry<Handler, Formatter> entry : handlerFormatters.entrySet()) {
+            entry.getKey().setFormatter(entry.getValue());
         }
     }
 }
