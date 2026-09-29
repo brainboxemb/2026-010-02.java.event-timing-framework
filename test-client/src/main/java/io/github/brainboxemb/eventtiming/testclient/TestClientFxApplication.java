@@ -76,6 +76,7 @@ public final class TestClientFxApplication extends Application {
     private final Button logDisconnect = new Button("Disconnect");
     private final ComboBox<String> logLevel = new ComboBox<>();
     private final Button applyLogLevel = new Button("Apply level");
+    private final Label currentLogLevel = valueLabel();
     private final Label logStatus = new Label("Disconnected");
     private final TextArea liveLogs = new TextArea();
     private final TextField shellHost = new TextField("127.0.0.1");
@@ -257,6 +258,7 @@ public final class TestClientFxApplication extends Application {
         logHost.setPrefColumnCount(18);
         logPort.setPrefColumnCount(6);
         logDisconnect.setDisable(true);
+        logLevel.setDisable(true);
         applyLogLevel.setDisable(true);
         logLevel.getItems().setAll("TRACE", "DEBUG", "INFO", "WARN", "ERROR");
         logLevel.setValue("INFO");
@@ -271,7 +273,9 @@ public final class TestClientFxApplication extends Application {
                 logStatus);
 
         HBox level = new HBox(8,
-                new Label("Runtime level"),
+                new Label("Current level"),
+                currentLogLevel,
+                new Label("Set level"),
                 logLevel,
                 applyLogLevel);
 
@@ -439,7 +443,11 @@ public final class TestClientFxApplication extends Application {
 
                             @Override
                             public void onLevel(String level) {
-                                Platform.runLater(() -> logLevel.setValue(level));
+                                Platform.runLater(() -> {
+                                    currentLogLevel.setText(level);
+                                    logLevel.setValue(level);
+                                    logStatus.setText("Connected");
+                                });
                             }
 
                             @Override
@@ -497,6 +505,9 @@ public final class TestClientFxApplication extends Application {
         logPort.setDisable(connected);
         logLevel.setDisable(!connected);
         applyLogLevel.setDisable(!connected);
+        if (!connected) {
+            currentLogLevel.setText("-");
+        }
         logStatus.setText(status);
     }
 
