@@ -1,9 +1,5 @@
 package io.github.brainboxemb.eventtiming.infra.logging;
 
-import io.github.brainboxemb.eventtiming.infra.bootstrap.config.LoggingConfig;
-import io.github.brainboxemb.eventtiming.infra.bootstrap.config.LoggingFileConfig;
-import io.github.brainboxemb.eventtiming.infra.bootstrap.config.LoggingLiveConfig;
-
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
@@ -40,9 +36,9 @@ public class LoggingTest {
     public void writesFileStreamsLiveAndChangesRuntimeLevel() throws Exception {
         File logDirectory = temporaryFolder.newFolder("logs");
         LoggingConfig config = new LoggingConfig(
-                LoggingConfig.Level.INFO,
+                LoggingLevel.INFO,
                 new LoggingFileConfig(logDirectory.getAbsolutePath(), 4096, 1),
-                new LoggingLiveConfig("127.0.0.1", 0));
+                new LoggingServerConfig("127.0.0.1", 0));
 
         try (Logging runtime = Logging.start(config);
                 Socket socket = new Socket("127.0.0.1", runtime.livePort());
@@ -61,7 +57,7 @@ public class LoggingTest {
             writer.newLine();
             writer.flush();
             assertTrue(readUntil(reader, "\"type\":\"level\"").contains("\"DEBUG\""));
-            assertEquals(LoggingConfig.Level.DEBUG, runtime.level());
+            assertEquals(LoggingLevel.DEBUG, runtime.level());
 
             logger.fine("A08 debug message");
             assertTrue(readUntil(reader, "A08 debug message").contains("A08 debug message"));
@@ -85,7 +81,7 @@ public class LoggingTest {
         try {
             File logDirectory = temporaryFolder.newFolder("console");
             LoggingConfig config = new LoggingConfig(
-                    LoggingConfig.Level.INFO,
+                    LoggingLevel.INFO,
                     new LoggingFileConfig(logDirectory.getAbsolutePath(), 4096, 1),
                     null);
 
@@ -115,7 +111,7 @@ public class LoggingTest {
     public void rotatesWithinConfiguredRetention() throws Exception {
         File logDirectory = temporaryFolder.newFolder("rotating");
         LoggingConfig config = new LoggingConfig(
-                LoggingConfig.Level.INFO,
+                LoggingLevel.INFO,
                 new LoggingFileConfig(logDirectory.getAbsolutePath(), 512, 2),
                 null);
 

@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Move reusable `infra.logging` runtime infrastructure and component-owned logging configuration into `event-timing-framework`; keep only SLF4J provider selection in the executable app, and replace the bootstrap-owned live config with `LoggingServerConfig` plus an independent `LoggingLevel` type.
+
 - Simplify the primary Remote API class names inside `presentation.interfaces.remoteapi` to `HttpEndpoint`, `WebSocketEndpoint` and `MessageWriter`; package structure and IF-03 behaviour are unchanged.
 
 - Add Step-3 A08 runtime logging on the existing SLF4J/JUL boundary: executable-owned `infra.logging.Logging` and separate `LoggingServer`, configurable semantic startup level, timestamp-named rotating retained text files with non-overwriting collision handling for unsynchronised Pi clocks plus the same compact console/live representation, an optional client-initiated best-effort live diagnostics socket, temporary runtime-global level control, and a JavaFX Logs tab without mixing diagnostic records into IF-03 status/events.

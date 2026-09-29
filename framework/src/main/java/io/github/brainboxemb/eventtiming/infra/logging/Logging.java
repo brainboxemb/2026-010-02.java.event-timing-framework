@@ -1,9 +1,5 @@
 package io.github.brainboxemb.eventtiming.infra.logging;
 
-import io.github.brainboxemb.eventtiming.infra.bootstrap.config.LoggingConfig;
-import io.github.brainboxemb.eventtiming.infra.bootstrap.config.LoggingFileConfig;
-import io.github.brainboxemb.eventtiming.infra.bootstrap.config.LoggingLiveConfig;
-
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -14,7 +10,7 @@ import java.util.logging.Formatter;
 import java.util.logging.Handler;
 import java.util.logging.Logger;
 
-/** Concrete runtime logging infrastructure selected by the default executable application. */
+/** Reusable runtime logging infrastructure; the executable selects the SLF4J provider. */
 public final class Logging implements AutoCloseable {
     private final Logger rootLogger;
     private final java.util.logging.Level previousRootLevel;
@@ -79,12 +75,9 @@ public final class Logging implements AutoCloseable {
                     file.retainedFiles());
             root.addHandler(fileHandler);
 
-            LoggingLiveConfig live = config.live();
-            if (live != null) {
-                liveServer = new LoggingServer(
-                        live.bindAddress(),
-                        live.port(),
-                        control);
+            LoggingServerConfig serverConfig = config.server();
+            if (serverConfig != null) {
+                liveServer = new LoggingServer(serverConfig, control);
                 liveServer.start();
                 liveHandler = new LiveLogHandler(liveServer);
                 root.addHandler(liveHandler);
@@ -122,7 +115,7 @@ public final class Logging implements AutoCloseable {
         return liveServer.boundPort();
     }
 
-    LoggingConfig.Level level() {
+    LoggingLevel level() {
         return control.level();
     }
 

@@ -1,6 +1,6 @@
-package io.github.brainboxemb.eventtiming.infra.bootstrap.config;
+package io.github.brainboxemb.eventtiming.infra.logging;
 
-/** Retained operational log-file settings. */
+/** Retained operational log-file settings owned by the logging component. */
 public final class LoggingFileConfig {
     private final String path;
     private final int rotateBytes;

@@ -3,9 +3,10 @@ package io.github.brainboxemb.eventtiming.app.bootstrap;
 import io.github.brainboxemb.eventtiming.domain.timing.TimingNodeId;
 import io.github.brainboxemb.eventtiming.infra.bootstrap.config.ApplicationConfig;
 import io.github.brainboxemb.eventtiming.infra.bootstrap.config.PresentationConfig;
-import io.github.brainboxemb.eventtiming.infra.bootstrap.config.LoggingConfig;
-import io.github.brainboxemb.eventtiming.infra.bootstrap.config.LoggingFileConfig;
-import io.github.brainboxemb.eventtiming.infra.bootstrap.config.LoggingLiveConfig;
+import io.github.brainboxemb.eventtiming.infra.logging.LoggingConfig;
+import io.github.brainboxemb.eventtiming.infra.logging.LoggingFileConfig;
+import io.github.brainboxemb.eventtiming.infra.logging.LoggingLevel;
+import io.github.brainboxemb.eventtiming.infra.logging.LoggingServerConfig;
 import io.github.brainboxemb.eventtiming.infra.bootstrap.config.RemoteApiConfig;
 import io.github.brainboxemb.eventtiming.infra.bootstrap.config.RemoteApiHttpConfig;
 import io.github.brainboxemb.eventtiming.infra.bootstrap.config.RemoteApiWebSocketConfig;
@@ -93,9 +94,9 @@ public final class YamlApplicationConfigLoader {
         }
 
         String rawLevel = requireString(logging.get(LEVEL), LOGGING + "." + LEVEL);
-        LoggingConfig.Level level;
+        LoggingLevel level;
         try {
-            level = LoggingConfig.Level.valueOf(rawLevel.trim().toUpperCase());
+            level = LoggingLevel.valueOf(rawLevel.trim().toUpperCase());
         } catch (IllegalArgumentException ex) {
             throw new IllegalArgumentException(
                     LOGGING + "." + LEVEL + " must be TRACE, DEBUG, INFO, WARN or ERROR",
@@ -118,13 +119,13 @@ public final class YamlApplicationConfigLoader {
                 requirePositiveInteger(values.get(RETAINED_FILES), field + "." + RETAINED_FILES));
     }
 
-    private static LoggingLiveConfig mapLoggingLive(Object rawLive) {
+    private static LoggingServerConfig mapLoggingLive(Object rawLive) {
         if (rawLive == null) {
             return null;
         }
         String field = LOGGING + "." + LIVE;
         Map<?, ?> values = endpointMapping(rawLive, field);
-        return new LoggingLiveConfig(
+        return new LoggingServerConfig(
                 requireString(values.get(BIND_ADDRESS), field + "." + BIND_ADDRESS),
                 requirePort(values.get(PORT), field + "." + PORT));
     }
