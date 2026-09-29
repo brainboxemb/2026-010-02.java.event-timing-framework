@@ -1,6 +1,4 @@
-package io.github.brainboxemb.eventtiming.app.bootstrap;
-
-import io.github.brainboxemb.eventtiming.infra.bootstrap.config.ApplicationConfig;
+package io.github.brainboxemb.eventtiming.infra.bootstrap.config;
 
 import java.io.File;
 import java.nio.charset.StandardCharsets;
