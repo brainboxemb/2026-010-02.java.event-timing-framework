@@ -1,0 +1,173 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://maven.apache.org/surefire/maven-surefire-plugin/xsd/surefire-test-report-3.0.xsd" version="3.0" name="io.github.brainboxemb.eventtiming.infra.logging.LoggingTest" time="0.097" tests="6" errors="0" skipped="0" failures="0">
+  <properties>
+    <property name="awt.toolkit" value="sun.awt.X11.XToolkit"/>
+    <property name="file.encoding.pkg" value="sun.io"/>
+    <property name="java.specification.version" value="1.8"/>
+    <property name="sun.cpu.isalist" value=""/>
+    <property name="sun.jnu.encoding" value="UTF-8"/>
+    <property name="java.class.path" value="/home/runner/work/2026-010-02.java.event-timing-framework/2026-010-02.java.event-timing-framework/framework/target/test-classes:/home/runner/work/2026-010-02.java.event-timing-framework/2026-010-02.java.event-timing-framework/framework/target/classes:/home/runner/.m2/repository/org/slf4j/slf4j-api/2.0.17/slf4j-api-2.0.17.jar:/home/runner/.m2/repository/org/yaml/snakeyaml/2.7/snakeyaml-2.7.jar:/home/runner/.m2/repository/org/java-websocket/Java-WebSocket/1.6.0/Java-WebSocket-1.6.0.jar:/home/runner/.m2/repository/junit/junit/4.13.2/junit-4.13.2.jar:/home/runner/.m2/repository/org/hamcrest/hamcrest-core/1.3/hamcrest-core-1.3.jar:"/>
+    <property name="java.vm.vendor" value="Temurin"/>
+    <property name="sun.arch.data.model" value="64"/>
+    <property name="java.vendor.url" value="https://adoptium.net/"/>
+    <property name="user.timezone" value=""/>
+    <property name="java.vm.specification.version" value="1.8"/>
+    <property name="os.name" value="Linux"/>
+    <property name="sun.java.launcher" value="SUN_STANDARD"/>
+    <property name="sun.boot.library.path" value="/usr/lib/jvm/temurin-8-jdk-amd64/jre/lib/amd64"/>
+    <property name="sun.java.command" value="/home/runner/work/2026-010-02.java.event-timing-framework/2026-010-02.java.event-timing-framework/framework/target/surefire/surefirebooter-20260929202245568_3.jar /home/runner/work/2026-010-02.java.event-timing-framework/2026-010-02.java.event-timing-framework/framework/target/surefire 2026-09-29T20-22-45_449-jvmRun1 surefire-20260929202245568_1tmp surefire_0-20260929202245568_2tmp"/>
+    <property name="surefire.test.class.path" value="/home/runner/work/2026-010-02.java.event-timing-framework/2026-010-02.java.event-timing-framework/framework/target/test-classes:/home/runner/work/2026-010-02.java.event-timing-framework/2026-010-02.java.event-timing-framework/framework/target/classes:/home/runner/.m2/repository/org/slf4j/slf4j-api/2.0.17/slf4j-api-2.0.17.jar:/home/runner/.m2/repository/org/yaml/snakeyaml/2.7/snakeyaml-2.7.jar:/home/runner/.m2/repository/org/java-websocket/Java-WebSocket/1.6.0/Java-WebSocket-1.6.0.jar:/home/runner/.m2/repository/junit/junit/4.13.2/junit-4.13.2.jar:/home/runner/.m2/repository/org/hamcrest/hamcrest-core/1.3/hamcrest-core-1.3.jar:"/>
+    <property name="sun.cpu.endian" value="little"/>
+    <property name="user.home" value="/home/runner"/>
+    <property name="user.language" value="en"/>
+    <property name="java.specification.vendor" value="Oracle Corporation"/>
+    <property name="java.home" value="/usr/lib/jvm/temurin-8-jdk-amd64/jre"/>
+    <property name="basedir" value="/home/runner/work/2026-010-02.java.event-timing-framework/2026-010-02.java.event-timing-framework/framework"/>
+    <property name="file.separator" value="/"/>
+    <property name="line.separator" value="&#10;"/>
+    <property name="java.vm.specification.vendor" value="Oracle Corporation"/>
+    <property name="java.specification.name" value="Java Platform API Specification"/>
+    <property name="java.awt.graphicsenv" value="sun.awt.X11GraphicsEnvironment"/>
+    <property name="surefire.real.class.path" value="/home/runner/work/2026-010-02.java.event-timing-framework/2026-010-02.java.event-timing-framework/framework/target/surefire/surefirebooter-20260929202245568_3.jar"/>
+    <property name="sun.boot.class.path" value="/usr/lib/jvm/temurin-8-jdk-amd64/jre/lib/resources.jar:/usr/lib/jvm/temurin-8-jdk-amd64/jre/lib/rt.jar:/usr/lib/jvm/temurin-8-jdk-amd64/jre/lib/sunrsasign.jar:/usr/lib/jvm/temurin-8-jdk-amd64/jre/lib/jsse.jar:/usr/lib/jvm/temurin-8-jdk-amd64/jre/lib/jce.jar:/usr/lib/jvm/temurin-8-jdk-amd64/jre/lib/charsets.jar:/usr/lib/jvm/temurin-8-jdk-amd64/jre/lib/jfr.jar:/usr/lib/jvm/temurin-8-jdk-amd64/jre/classes"/>
+    <property name="sun.management.compiler" value="HotSpot 64-Bit Tiered Compilers"/>
+    <property name="java.runtime.version" value="1.8.0_504-b01"/>
+    <property name="user.name" value="runner"/>
+    <property name="path.separator" value=":"/>
+    <property name="os.version" value="6.17.0-1022-azure"/>
+    <property name="java.endorsed.dirs" value="/usr/lib/jvm/temurin-8-jdk-amd64/jre/lib/endorsed"/>
+    <property name="java.runtime.name" value="OpenJDK Runtime Environment"/>
+    <property name="eventTiming.expectedProjectVersion" value="0.2.2"/>
+    <property name="file.encoding" value="UTF-8"/>
+    <property name="java.vm.name" value="OpenJDK 64-Bit Server VM"/>
+    <property name="localRepository" value="/home/runner/.m2/repository"/>
+    <property name="java.vendor.url.bug" value="https://github.com/adoptium/adoptium-support/issues"/>
+    <property name="java.io.tmpdir" value="/tmp"/>
+    <property name="java.version" value="1.8.0_504"/>
+    <property name="user.dir" value="/home/runner/work/2026-010-02.java.event-timing-framework/2026-010-02.java.event-timing-framework/framework"/>
+    <property name="os.arch" value="amd64"/>
+    <property name="java.vm.specification.name" value="Java Virtual Machine Specification"/>
+    <property name="java.awt.printerjob" value="sun.print.PSPrinterJob"/>
+    <property name="sun.os.patch.level" value="unknown"/>
+    <property name="java.library.path" value="/usr/java/packages/lib/amd64:/usr/lib64:/lib64:/lib:/usr/lib"/>
+    <property name="java.vm.info" value="mixed mode"/>
+    <property name="java.vendor" value="Temurin"/>
+    <property name="java.vm.version" value="25.504-b01"/>
+    <property name="java.specification.maintenance.version" value="6"/>
+    <property name="java.ext.dirs" value="/usr/lib/jvm/temurin-8-jdk-amd64/jre/lib/ext:/usr/java/packages/lib/ext"/>
+    <property name="sun.io.unicode.encoding" value="UnicodeLittle"/>
+    <property name="java.class.version" value="52.0"/>
+  </properties>
+  <testcase name="rotatesWithinConfiguredRetention" classname="io.github.brainboxemb.eventtiming.infra.logging.LoggingTest" time="0.069">
+    <system-err><![CDATA[20:22:46.179 - [INFO] - rotation-0-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx - [io.github.brainboxemb.eventtiming.infra.logging.LoggingTest.rotatesWithinConfiguredRetention]
+20:22:46.181 - [INFO] - rotation-1-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx - [io.github.brainboxemb.eventtiming.infra.logging.LoggingTest.rotatesWithinConfiguredRetention]
+20:22:46.181 - [INFO] - rotation-2-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx - [io.github.brainboxemb.eventtiming.infra.logging.LoggingTest.rotatesWithinConfiguredRetention]
+20:22:46.182 - [INFO] - rotation-3-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx - [io.github.brainboxemb.eventtiming.infra.logging.LoggingTest.rotatesWithinConfiguredRetention]
+20:22:46.182 - [INFO] - rotation-4-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx - [io.github.brainboxemb.eventtiming.infra.logging.LoggingTest.rotatesWithinConfiguredRetention]
+20:22:46.183 - [INFO] - rotation-5-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx - [io.github.brainboxemb.eventtiming.infra.logging.LoggingTest.rotatesWithinConfiguredRetention]
+20:22:46.183 - [INFO] - rotation-6-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx - [io.github.brainboxemb.eventtiming.infra.logging.LoggingTest.rotatesWithinConfiguredRetention]
+20:22:46.184 - [INFO] - rotation-7-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx - [io.github.brainboxemb.eventtiming.infra.logging.LoggingTest.rotatesWithinConfiguredRetention]
+20:22:46.184 - [INFO] - rotation-8-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx - [io.github.brainboxemb.eventtiming.infra.logging.LoggingTest.rotatesWithinConfiguredRetention]
+20:22:46.185 - [INFO] - rotation-9-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx - [io.github.brainboxemb.eventtiming.infra.logging.LoggingTest.rotatesWithinConfiguredRetention]
+20:22:46.185 - [INFO] - rotation-10-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx - [io.github.brainboxemb.eventtiming.infra.logging.LoggingTest.rotatesWithinConfiguredRetention]
+20:22:46.186 - [INFO] - rotation-11-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx - [io.github.brainboxemb.eventtiming.infra.logging.LoggingTest.rotatesWithinConfiguredRetention]
+20:22:46.186 - [INFO] - rotation-12-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx - [io.github.brainboxemb.eventtiming.infra.logging.LoggingTest.rotatesWithinConfiguredRetention]
+20:22:46.187 - [INFO] - rotation-13-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx - [io.github.brainboxemb.eventtiming.infra.logging.LoggingTest.rotatesWithinConfiguredRetention]
+20:22:46.188 - [INFO] - rotation-14-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx - [io.github.brainboxemb.eventtiming.infra.logging.LoggingTest.rotatesWithinConfiguredRetention]
+20:22:46.188 - [INFO] - rotation-15-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx - [io.github.brainboxemb.eventtiming.infra.logging.LoggingTest.rotatesWithinConfiguredRetention]
+20:22:46.189 - [INFO] - rotation-16-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx - [io.github.brainboxemb.eventtiming.infra.logging.LoggingTest.rotatesWithinConfiguredRetention]
+20:22:46.189 - [INFO] - rotation-17-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx - [io.github.brainboxemb.eventtiming.infra.logging.LoggingTest.rotatesWithinConfiguredRetention]
+20:22:46.190 - [INFO] - rotation-18-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx - [io.github.brainboxemb.eventtiming.infra.logging.LoggingTest.rotatesWithinConfiguredRetention]
+20:22:46.190 - [INFO] - rotation-19-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx - [io.github.brainboxemb.eventtiming.infra.logging.LoggingTest.rotatesWithinConfiguredRetention]
+20:22:46.191 - [INFO] - rotation-20-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx - [io.github.brainboxemb.eventtiming.infra.logging.LoggingTest.rotatesWithinConfiguredRetention]
+20:22:46.191 - [INFO] - rotation-21-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx - [io.github.brainboxemb.eventtiming.infra.logging.LoggingTest.rotatesWithinConfiguredRetention]
+20:22:46.192 - [INFO] - rotation-22-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx - [io.github.brainboxemb.eventtiming.infra.logging.LoggingTest.rotatesWithinConfiguredRetention]
+20:22:46.192 - [INFO] - rotation-23-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx - [io.github.brainboxemb.eventtiming.infra.logging.LoggingTest.rotatesWithinConfiguredRetention]
+20:22:46.193 - [INFO] - rotation-24-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx - [io.github.brainboxemb.eventtiming.infra.logging.LoggingTest.rotatesWithinConfiguredRetention]
+20:22:46.193 - [INFO] - rotation-25-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx - [io.github.brainboxemb.eventtiming.infra.logging.LoggingTest.rotatesWithinConfiguredRetention]
+20:22:46.194 - [INFO] - rotation-26-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx - [io.github.brainboxemb.eventtiming.infra.logging.LoggingTest.rotatesWithinConfiguredRetention]
+20:22:46.194 - [INFO] - rotation-27-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx - [io.github.brainboxemb.eventtiming.infra.logging.LoggingTest.rotatesWithinConfiguredRetention]
+20:22:46.195 - [INFO] - rotation-28-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx - [io.github.brainboxemb.eventtiming.infra.logging.LoggingTest.rotatesWithinConfiguredRetention]
+20:22:46.195 - [INFO] - rotation-29-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx - [io.github.brainboxemb.eventtiming.infra.logging.LoggingTest.rotatesWithinConfiguredRetention]
+20:22:46.195 - [INFO] - rotation-30-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx - [io.github.brainboxemb.eventtiming.infra.logging.LoggingTest.rotatesWithinConfiguredRetention]
+20:22:46.196 - [INFO] - rotation-31-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx - [io.github.brainboxemb.eventtiming.infra.logging.LoggingTest.rotatesWithinConfiguredRetention]
+20:22:46.196 - [INFO] - rotation-32-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx - [io.github.brainboxemb.eventtiming.infra.logging.LoggingTest.rotatesWithinConfiguredRetention]
+20:22:46.197 - [INFO] - rotation-33-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx - [io.github.brainboxemb.eventtiming.infra.logging.LoggingTest.rotatesWithinConfiguredRetention]
+20:22:46.197 - [INFO] - rotation-34-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx - [io.github.brainboxemb.eventtiming.infra.logging.LoggingTest.rotatesWithinConfiguredRetention]
+20:22:46.198 - [INFO] - rotation-35-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx - [io.github.brainboxemb.eventtiming.infra.logging.LoggingTest.rotatesWithinConfiguredRetention]
+20:22:46.198 - [INFO] - rotation-36-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx - [io.github.brainboxemb.eventtiming.infra.logging.LoggingTest.rotatesWithinConfiguredRetention]
+20:22:46.198 - [INFO] - rotation-37-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx - [io.github.brainboxemb.eventtiming.infra.logging.LoggingTest.rotatesWithinConfiguredRetention]
+20:22:46.199 - [INFO] - rotation-38-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx - [io.github.brainboxemb.eventtiming.infra.logging.LoggingTest.rotatesWithinConfiguredRetention]
+20:22:46.199 - [INFO] - rotation-39-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx - [io.github.brainboxemb.eventtiming.infra.logging.LoggingTest.rotatesWithinConfiguredRetention]
+20:22:46.199 - [INFO] - rotation-40-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx - [io.github.brainboxemb.eventtiming.infra.logging.LoggingTest.rotatesWithinConfiguredRetention]
+20:22:46.200 - [INFO] - rotation-41-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx - [io.github.brainboxemb.eventtiming.infra.logging.LoggingTest.rotatesWithinConfiguredRetention]
+20:22:46.200 - [INFO] - rotation-42-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx - [io.github.brainboxemb.eventtiming.infra.logging.LoggingTest.rotatesWithinConfiguredRetention]
+20:22:46.201 - [INFO] - rotation-43-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx - [io.github.brainboxemb.eventtiming.infra.logging.LoggingTest.rotatesWithinConfiguredRetention]
+20:22:46.201 - [INFO] - rotation-44-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx - [io.github.brainboxemb.eventtiming.infra.logging.LoggingTest.rotatesWithinConfiguredRetention]
+20:22:46.202 - [INFO] - rotation-45-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx - [io.github.brainboxemb.eventtiming.infra.logging.LoggingTest.rotatesWithinConfiguredRetention]
+20:22:46.202 - [INFO] - rotation-46-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx - [io.github.brainboxemb.eventtiming.infra.logging.LoggingTest.rotatesWithinConfiguredRetention]
+20:22:46.203 - [INFO] - rotation-47-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx - [io.github.brainboxemb.eventtiming.infra.logging.LoggingTest.rotatesWithinConfiguredRetention]
+20:22:46.203 - [INFO] - rotation-48-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx - [io.github.brainboxemb.eventtiming.infra.logging.LoggingTest.rotatesWithinConfiguredRetention]
+20:22:46.203 - [INFO] - rotation-49-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx - [io.github.brainboxemb.eventtiming.infra.logging.LoggingTest.rotatesWithinConfiguredRetention]
+20:22:46.203 - [INFO] - rotation-50-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx - [io.github.brainboxemb.eventtiming.infra.logging.LoggingTest.rotatesWithinConfiguredRetention]
+20:22:46.204 - [INFO] - rotation-51-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx - [io.github.brainboxemb.eventtiming.infra.logging.LoggingTest.rotatesWithinConfiguredRetention]
+20:22:46.204 - [INFO] - rotation-52-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx - [io.github.brainboxemb.eventtiming.infra.logging.LoggingTest.rotatesWithinConfiguredRetention]
+20:22:46.205 - [INFO] - rotation-53-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx - [io.github.brainboxemb.eventtiming.infra.logging.LoggingTest.rotatesWithinConfiguredRetention]
+20:22:46.205 - [INFO] - rotation-54-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx - [io.github.brainboxemb.eventtiming.infra.logging.LoggingTest.rotatesWithinConfiguredRetention]
+20:22:46.206 - [INFO] - rotation-55-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx - [io.github.brainboxemb.eventtiming.infra.logging.LoggingTest.rotatesWithinConfiguredRetention]
+20:22:46.206 - [INFO] - rotation-56-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx - [io.github.brainboxemb.eventtiming.infra.logging.LoggingTest.rotatesWithinConfiguredRetention]
+20:22:46.206 - [INFO] - rotation-57-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx - [io.github.brainboxemb.eventtiming.infra.logging.LoggingTest.rotatesWithinConfiguredRetention]
+20:22:46.207 - [INFO] - rotation-58-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx - [io.github.brainboxemb.eventtiming.infra.logging.LoggingTest.rotatesWithinConfiguredRetention]
+20:22:46.207 - [INFO] - rotation-59-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx - [io.github.brainboxemb.eventtiming.infra.logging.LoggingTest.rotatesWithinConfiguredRetention]
+20:22:46.207 - [INFO] - rotation-60-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx - [io.github.brainboxemb.eventtiming.infra.logging.LoggingTest.rotatesWithinConfiguredRetention]
+20:22:46.208 - [INFO] - rotation-61-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx - [io.github.brainboxemb.eventtiming.infra.logging.LoggingTest.rotatesWithinConfiguredRetention]
+20:22:46.208 - [INFO] - rotation-62-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx - [io.github.brainboxemb.eventtiming.infra.logging.LoggingTest.rotatesWithinConfiguredRetention]
+20:22:46.209 - [INFO] - rotation-63-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx - [io.github.brainboxemb.eventtiming.infra.logging.LoggingTest.rotatesWithinConfiguredRetention]
+20:22:46.209 - [INFO] - rotation-64-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx - [io.github.brainboxemb.eventtiming.infra.logging.LoggingTest.rotatesWithinConfiguredRetention]
+20:22:46.209 - [INFO] - rotation-65-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx - [io.github.brainboxemb.eventtiming.infra.logging.LoggingTest.rotatesWithinConfiguredRetention]
+20:22:46.210 - [INFO] - rotation-66-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx - [io.github.brainboxemb.eventtiming.infra.logging.LoggingTest.rotatesWithinConfiguredRetention]
+20:22:46.210 - [INFO] - rotation-67-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx - [io.github.brainboxemb.eventtiming.infra.logging.LoggingTest.rotatesWithinConfiguredRetention]
+20:22:46.210 - [INFO] - rotation-68-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx - [io.github.brainboxemb.eventtiming.infra.logging.LoggingTest.rotatesWithinConfiguredRetention]
+20:22:46.211 - [INFO] - rotation-69-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx - [io.github.brainboxemb.eventtiming.infra.logging.LoggingTest.rotatesWithinConfiguredRetention]
+20:22:46.211 - [INFO] - rotation-70-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx - [io.github.brainboxemb.eventtiming.infra.logging.LoggingTest.rotatesWithinConfiguredRetention]
+20:22:46.211 - [INFO] - rotation-71-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx - [io.github.brainboxemb.eventtiming.infra.logging.LoggingTest.rotatesWithinConfiguredRetention]
+20:22:46.212 - [INFO] - rotation-72-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx - [io.github.brainboxemb.eventtiming.infra.logging.LoggingTest.rotatesWithinConfiguredRetention]
+20:22:46.212 - [INFO] - rotation-73-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx - [io.github.brainboxemb.eventtiming.infra.logging.LoggingTest.rotatesWithinConfiguredRetention]
+20:22:46.212 - [INFO] - rotation-74-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx - [io.github.brainboxemb.eventtiming.infra.logging.LoggingTest.rotatesWithinConfiguredRetention]
+20:22:46.213 - [INFO] - rotation-75-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx - [io.github.brainboxemb.eventtiming.infra.logging.LoggingTest.rotatesWithinConfiguredRetention]
+20:22:46.213 - [INFO] - rotation-76-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx - [io.github.brainboxemb.eventtiming.infra.logging.LoggingTest.rotatesWithinConfiguredRetention]
+20:22:46.213 - [INFO] - rotation-77-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx - [io.github.brainboxemb.eventtiming.infra.logging.LoggingTest.rotatesWithinConfiguredRetention]
+20:22:46.214 - [INFO] - rotation-78-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx - [io.github.brainboxemb.eventtiming.infra.logging.LoggingTest.rotatesWithinConfiguredRetention]
+20:22:46.214 - [INFO] - rotation-79-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx - [io.github.brainboxemb.eventtiming.infra.logging.LoggingTest.rotatesWithinConfiguredRetention]
+20:22:46.214 - [INFO] - rotation-80-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx - [io.github.brainboxemb.eventtiming.infra.logging.LoggingTest.rotatesWithinConfiguredRetention]
+20:22:46.215 - [INFO] - rotation-81-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx - [io.github.brainboxemb.eventtiming.infra.logging.LoggingTest.rotatesWithinConfiguredRetention]
+20:22:46.215 - [INFO] - rotation-82-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx - [io.github.brainboxemb.eventtiming.infra.logging.LoggingTest.rotatesWithinConfiguredRetention]
+20:22:46.216 - [INFO] - rotation-83-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx - [io.github.brainboxemb.eventtiming.infra.logging.LoggingTest.rotatesWithinConfiguredRetention]
+20:22:46.216 - [INFO] - rotation-84-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx - [io.github.brainboxemb.eventtiming.infra.logging.LoggingTest.rotatesWithinConfiguredRetention]
+20:22:46.216 - [INFO] - rotation-85-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx - [io.github.brainboxemb.eventtiming.infra.logging.LoggingTest.rotatesWithinConfiguredRetention]
+20:22:46.217 - [INFO] - rotation-86-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx - [io.github.brainboxemb.eventtiming.infra.logging.LoggingTest.rotatesWithinConfiguredRetention]
+20:22:46.217 - [INFO] - rotation-87-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx - [io.github.brainboxemb.eventtiming.infra.logging.LoggingTest.rotatesWithinConfiguredRetention]
+20:22:46.217 - [INFO] - rotation-88-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx - [io.github.brainboxemb.eventtiming.infra.logging.LoggingTest.rotatesWithinConfiguredRetention]
+20:22:46.218 - [INFO] - rotation-89-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx - [io.github.brainboxemb.eventtiming.infra.logging.LoggingTest.rotatesWithinConfiguredRetention]
+20:22:46.218 - [INFO] - rotation-90-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx - [io.github.brainboxemb.eventtiming.infra.logging.LoggingTest.rotatesWithinConfiguredRetention]
+20:22:46.219 - [INFO] - rotation-91-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx - [io.github.brainboxemb.eventtiming.infra.logging.LoggingTest.rotatesWithinConfiguredRetention]
+20:22:46.219 - [INFO] - rotation-92-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx - [io.github.brainboxemb.eventtiming.infra.logging.LoggingTest.rotatesWithinConfiguredRetention]
+20:22:46.219 - [INFO] - rotation-93-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx - [io.github.brainboxemb.eventtiming.infra.logging.LoggingTest.rotatesWithinConfiguredRetention]
+20:22:46.219 - [INFO] - rotation-94-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx - [io.github.brainboxemb.eventtiming.infra.logging.LoggingTest.rotatesWithinConfiguredRetention]
+20:22:46.220 - [INFO] - rotation-95-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx - [io.github.brainboxemb.eventtiming.infra.logging.LoggingTest.rotatesWithinConfiguredRetention]
+20:22:46.220 - [INFO] - rotation-96-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx - [io.github.brainboxemb.eventtiming.infra.logging.LoggingTest.rotatesWithinConfiguredRetention]
+20:22:46.221 - [INFO] - rotation-97-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx - [io.github.brainboxemb.eventtiming.infra.logging.LoggingTest.rotatesWithinConfiguredRetention]
+20:22:46.221 - [INFO] - rotation-98-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx - [io.github.brainboxemb.eventtiming.infra.logging.LoggingTest.rotatesWithinConfiguredRetention]
+20:22:46.221 - [INFO] - rotation-99-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx - [io.github.brainboxemb.eventtiming.infra.logging.LoggingTest.rotatesWithinConfiguredRetention]
+]]></system-err>
+  </testcase>
+  <testcase name="repeatedWallClockTimestampNeverOverwritesExistingLog" classname="io.github.brainboxemb.eventtiming.infra.logging.LoggingTest" time="0.002"/>
+  <testcase name="writesFileStreamsLiveAndChangesRuntimeLevel" classname="io.github.brainboxemb.eventtiming.infra.logging.LoggingTest" time="0.02">
+    <system-err><![CDATA[20:22:46.246 - [INFO] - A08 live message - [io.github.brainboxemb.eventtiming.infra.logging.LoggingTest.writesFileStreamsLiveAndChangesRuntimeLevel]
+20:22:46.247 - [DEBUG] - A08 debug message - [io.github.brainboxemb.eventtiming.infra.logging.LoggingTest.writesFileStreamsLiveAndChangesRuntimeLevel]
+]]></system-err>
+  </testcase>
+  <testcase name="appliesCompactFormatterToConsoleAndRestoresPreviousFormatter" classname="io.github.brainboxemb.eventtiming.infra.logging.LoggingTest" time="0.0"/>
+  <testcase name="staleWallClockCannotPruneActiveLog" classname="io.github.brainboxemb.eventtiming.infra.logging.LoggingTest" time="0.002"/>
+  <testcase name="formatsRetainedRecordLikeExistingOperatorLogs" classname="io.github.brainboxemb.eventtiming.infra.logging.LoggingTest" time="0.0"/>
+</testsuite>

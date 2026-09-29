@@ -1,0 +1,313 @@
+Java canonical verify
+repository=brainboxemb/2026-010-02.java.event-timing-framework
+source_revision=c07ccd6127ac0976018026778f7a63df7af043bc
+checked_out_sha=c07ccd6127ac0976018026778f7a63df7af043bc
+tool_java_project_revision=c0ca2e1365a64bc626ca331a8170d13340ae0b36
+tool_java_project_version=0.3.2
+
+> java -version
+openjdk version "1.8.0_504"
+OpenJDK Runtime Environment (Temurin)(build 1.8.0_504-b01)
+OpenJDK 64-Bit Server VM (Temurin)(build 25.504-b01, mixed mode)
+
+> ./mvnw --version
+Apache Maven 3.9.16 (2bdd9fddda4b155ebf8000e807eb73fd829a51d5)
+Maven home: /home/runner/.m2/wrapper/dists/apache-maven-3.9.16/56ba1f9f
+Java version: 1.8.0_504, vendor: Temurin, runtime: /usr/lib/jvm/temurin-8-jdk-amd64/jre
+Default locale: en, platform encoding: UTF-8
+OS name: "linux", version: "6.17.0-1022-azure", arch: "amd64", family: "unix"
+
+> ./mvnw --batch-mode --no-transfer-progress verify
+[INFO] Scanning for projects...
+[INFO] ------------------------------------------------------------------------
+[INFO] Reactor Build Order:
+[INFO] 
+[INFO] Event Timing Parent                                                [pom]
+[INFO] Event Timing Framework                                             [jar]
+[INFO] Event Timing Application                                           [jar]
+[INFO] Event Timing System Test                                           [jar]
+[INFO] 
+[INFO] -------< io.github.brainboxemb.eventtiming:event-timing-parent >--------
+[INFO] Building Event Timing Parent 0.2.2                                 [1/4]
+[INFO]   from pom.xml
+[INFO] --------------------------------[ pom ]---------------------------------
+[INFO] 
+[INFO] ------< io.github.brainboxemb.eventtiming:event-timing-framework >------
+[INFO] Building Event Timing Framework 0.2.2                              [2/4]
+[INFO]   from framework/pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- resources:3.4.0:resources (default-resources) @ event-timing-framework ---
+[INFO] skip non existing resourceDirectory /home/runner/work/2026-010-02.java.event-timing-framework/2026-010-02.java.event-timing-framework/framework/src/main/resources
+[INFO] 
+[INFO] --- compiler:3.13.0:compile (default-compile) @ event-timing-framework ---
+[INFO] Recompiling the module because of changed source code.
+[INFO] Compiling 32 source files with javac [debug target 1.8] to target/classes
+[INFO] 
+[INFO] --- resources:3.4.0:testResources (default-testResources) @ event-timing-framework ---
+[INFO] skip non existing resourceDirectory /home/runner/work/2026-010-02.java.event-timing-framework/2026-010-02.java.event-timing-framework/framework/src/test/resources
+[INFO] 
+[INFO] --- compiler:3.13.0:testCompile (default-testCompile) @ event-timing-framework ---
+[INFO] Recompiling the module because of changed dependency.
+[INFO] Compiling 14 source files with javac [debug target 1.8] to target/test-classes
+[INFO] 
+[INFO] --- surefire:3.2.5:test (default-test) @ event-timing-framework ---
+[INFO] Using auto detected provider org.apache.maven.surefire.junit4.JUnit4Provider
+[INFO] 
+[INFO] -------------------------------------------------------
+[INFO]  T E S T S
+[INFO] -------------------------------------------------------
+[INFO] Running io.github.brainboxemb.eventtiming.application.CommandHandlerTest
+[INFO] Tests run: 4, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.044 s -- in io.github.brainboxemb.eventtiming.application.CommandHandlerTest
+[INFO] Running io.github.brainboxemb.eventtiming.application.ApplicationStatusTest
+[INFO] Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0 s -- in io.github.brainboxemb.eventtiming.application.ApplicationStatusTest
+[INFO] Running io.github.brainboxemb.eventtiming.infra.bootstrap.config.YamlApplicationConfigLoaderTest
+[INFO] Tests run: 11, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.133 s -- in io.github.brainboxemb.eventtiming.infra.bootstrap.config.YamlApplicationConfigLoaderTest
+[INFO] Running io.github.brainboxemb.eventtiming.infra.bootstrap.ApplicationBootstrapTest
+SLF4J(W): No SLF4J providers were found.
+SLF4J(W): Defaulting to no-operation (NOP) logger implementation
+SLF4J(W): See https://www.slf4j.org/codes.html#noProviders for further details.
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.008 s -- in io.github.brainboxemb.eventtiming.infra.bootstrap.ApplicationBootstrapTest
+[INFO] Running io.github.brainboxemb.eventtiming.infra.logging.LoggingTest
+20:22:46.179 - [INFO] - rotation-0-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx - [io.github.brainboxemb.eventtiming.infra.logging.LoggingTest.rotatesWithinConfiguredRetention]
+20:22:46.181 - [INFO] - rotation-1-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx - [io.github.brainboxemb.eventtiming.infra.logging.LoggingTest.rotatesWithinConfiguredRetention]
+20:22:46.181 - [INFO] - rotation-2-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx - [io.github.brainboxemb.eventtiming.infra.logging.LoggingTest.rotatesWithinConfiguredRetention]
+20:22:46.182 - [INFO] - rotation-3-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx - [io.github.brainboxemb.eventtiming.infra.logging.LoggingTest.rotatesWithinConfiguredRetention]
+20:22:46.182 - [INFO] - rotation-4-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx - [io.github.brainboxemb.eventtiming.infra.logging.LoggingTest.rotatesWithinConfiguredRetention]
+20:22:46.183 - [INFO] - rotation-5-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx - [io.github.brainboxemb.eventtiming.infra.logging.LoggingTest.rotatesWithinConfiguredRetention]
+20:22:46.183 - [INFO] - rotation-6-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx - [io.github.brainboxemb.eventtiming.infra.logging.LoggingTest.rotatesWithinConfiguredRetention]
+20:22:46.184 - [INFO] - rotation-7-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx - [io.github.brainboxemb.eventtiming.infra.logging.LoggingTest.rotatesWithinConfiguredRetention]
+20:22:46.184 - [INFO] - rotation-8-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx - [io.github.brainboxemb.eventtiming.infra.logging.LoggingTest.rotatesWithinConfiguredRetention]
+20:22:46.185 - [INFO] - rotation-9-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx - [io.github.brainboxemb.eventtiming.infra.logging.LoggingTest.rotatesWithinConfiguredRetention]
+20:22:46.185 - [INFO] - rotation-10-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx - [io.github.brainboxemb.eventtiming.infra.logging.LoggingTest.rotatesWithinConfiguredRetention]
+20:22:46.186 - [INFO] - rotation-11-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx - [io.github.brainboxemb.eventtiming.infra.logging.LoggingTest.rotatesWithinConfiguredRetention]
+20:22:46.186 - [INFO] - rotation-12-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx - [io.github.brainboxemb.eventtiming.infra.logging.LoggingTest.rotatesWithinConfiguredRetention]
+20:22:46.187 - [INFO] - rotation-13-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx - [io.github.brainboxemb.eventtiming.infra.logging.LoggingTest.rotatesWithinConfiguredRetention]
+20:22:46.188 - [INFO] - rotation-14-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx - [io.github.brainboxemb.eventtiming.infra.logging.LoggingTest.rotatesWithinConfiguredRetention]
+20:22:46.188 - [INFO] - rotation-15-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx - [io.github.brainboxemb.eventtiming.infra.logging.LoggingTest.rotatesWithinConfiguredRetention]
+20:22:46.189 - [INFO] - rotation-16-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx - [io.github.brainboxemb.eventtiming.infra.logging.LoggingTest.rotatesWithinConfiguredRetention]
+20:22:46.189 - [INFO] - rotation-17-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx - [io.github.brainboxemb.eventtiming.infra.logging.LoggingTest.rotatesWithinConfiguredRetention]
+20:22:46.190 - [INFO] - rotation-18-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx - [io.github.brainboxemb.eventtiming.infra.logging.LoggingTest.rotatesWithinConfiguredRetention]
+20:22:46.190 - [INFO] - rotation-19-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx - [io.github.brainboxemb.eventtiming.infra.logging.LoggingTest.rotatesWithinConfiguredRetention]
+20:22:46.191 - [INFO] - rotation-20-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx - [io.github.brainboxemb.eventtiming.infra.logging.LoggingTest.rotatesWithinConfiguredRetention]
+20:22:46.191 - [INFO] - rotation-21-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx - [io.github.brainboxemb.eventtiming.infra.logging.LoggingTest.rotatesWithinConfiguredRetention]
+20:22:46.192 - [INFO] - rotation-22-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx - [io.github.brainboxemb.eventtiming.infra.logging.LoggingTest.rotatesWithinConfiguredRetention]
+20:22:46.192 - [INFO] - rotation-23-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx - [io.github.brainboxemb.eventtiming.infra.logging.LoggingTest.rotatesWithinConfiguredRetention]
+20:22:46.193 - [INFO] - rotation-24-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx - [io.github.brainboxemb.eventtiming.infra.logging.LoggingTest.rotatesWithinConfiguredRetention]
+20:22:46.193 - [INFO] - rotation-25-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx - [io.github.brainboxemb.eventtiming.infra.logging.LoggingTest.rotatesWithinConfiguredRetention]
+20:22:46.194 - [INFO] - rotation-26-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx - [io.github.brainboxemb.eventtiming.infra.logging.LoggingTest.rotatesWithinConfiguredRetention]
+20:22:46.194 - [INFO] - rotation-27-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx - [io.github.brainboxemb.eventtiming.infra.logging.LoggingTest.rotatesWithinConfiguredRetention]
+20:22:46.195 - [INFO] - rotation-28-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx - [io.github.brainboxemb.eventtiming.infra.logging.LoggingTest.rotatesWithinConfiguredRetention]
+20:22:46.195 - [INFO] - rotation-29-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx - [io.github.brainboxemb.eventtiming.infra.logging.LoggingTest.rotatesWithinConfiguredRetention]
+20:22:46.195 - [INFO] - rotation-30-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx - [io.github.brainboxemb.eventtiming.infra.logging.LoggingTest.rotatesWithinConfiguredRetention]
+20:22:46.196 - [INFO] - rotation-31-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx - [io.github.brainboxemb.eventtiming.infra.logging.LoggingTest.rotatesWithinConfiguredRetention]
+20:22:46.196 - [INFO] - rotation-32-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx - [io.github.brainboxemb.eventtiming.infra.logging.LoggingTest.rotatesWithinConfiguredRetention]
+20:22:46.197 - [INFO] - rotation-33-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx - [io.github.brainboxemb.eventtiming.infra.logging.LoggingTest.rotatesWithinConfiguredRetention]
+20:22:46.197 - [INFO] - rotation-34-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx - [io.github.brainboxemb.eventtiming.infra.logging.LoggingTest.rotatesWithinConfiguredRetention]
+20:22:46.198 - [INFO] - rotation-35-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx - [io.github.brainboxemb.eventtiming.infra.logging.LoggingTest.rotatesWithinConfiguredRetention]
+20:22:46.198 - [INFO] - rotation-36-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx - [io.github.brainboxemb.eventtiming.infra.logging.LoggingTest.rotatesWithinConfiguredRetention]
+20:22:46.198 - [INFO] - rotation-37-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx - [io.github.brainboxemb.eventtiming.infra.logging.LoggingTest.rotatesWithinConfiguredRetention]
+20:22:46.199 - [INFO] - rotation-38-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx - [io.github.brainboxemb.eventtiming.infra.logging.LoggingTest.rotatesWithinConfiguredRetention]
+20:22:46.199 - [INFO] - rotation-39-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx - [io.github.brainboxemb.eventtiming.infra.logging.LoggingTest.rotatesWithinConfiguredRetention]
+20:22:46.199 - [INFO] - rotation-40-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx - [io.github.brainboxemb.eventtiming.infra.logging.LoggingTest.rotatesWithinConfiguredRetention]
+20:22:46.200 - [INFO] - rotation-41-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx - [io.github.brainboxemb.eventtiming.infra.logging.LoggingTest.rotatesWithinConfiguredRetention]
+20:22:46.200 - [INFO] - rotation-42-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx - [io.github.brainboxemb.eventtiming.infra.logging.LoggingTest.rotatesWithinConfiguredRetention]
+20:22:46.201 - [INFO] - rotation-43-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx - [io.github.brainboxemb.eventtiming.infra.logging.LoggingTest.rotatesWithinConfiguredRetention]
+20:22:46.201 - [INFO] - rotation-44-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx - [io.github.brainboxemb.eventtiming.infra.logging.LoggingTest.rotatesWithinConfiguredRetention]
+20:22:46.202 - [INFO] - rotation-45-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx - [io.github.brainboxemb.eventtiming.infra.logging.LoggingTest.rotatesWithinConfiguredRetention]
+20:22:46.202 - [INFO] - rotation-46-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx - [io.github.brainboxemb.eventtiming.infra.logging.LoggingTest.rotatesWithinConfiguredRetention]
+20:22:46.203 - [INFO] - rotation-47-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx - [io.github.brainboxemb.eventtiming.infra.logging.LoggingTest.rotatesWithinConfiguredRetention]
+20:22:46.203 - [INFO] - rotation-48-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx - [io.github.brainboxemb.eventtiming.infra.logging.LoggingTest.rotatesWithinConfiguredRetention]
+20:22:46.203 - [INFO] - rotation-49-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx - [io.github.brainboxemb.eventtiming.infra.logging.LoggingTest.rotatesWithinConfiguredRetention]
+20:22:46.203 - [INFO] - rotation-50-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx - [io.github.brainboxemb.eventtiming.infra.logging.LoggingTest.rotatesWithinConfiguredRetention]
+20:22:46.204 - [INFO] - rotation-51-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx - [io.github.brainboxemb.eventtiming.infra.logging.LoggingTest.rotatesWithinConfiguredRetention]
+20:22:46.204 - [INFO] - rotation-52-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx - [io.github.brainboxemb.eventtiming.infra.logging.LoggingTest.rotatesWithinConfiguredRetention]
+20:22:46.205 - [INFO] - rotation-53-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx - [io.github.brainboxemb.eventtiming.infra.logging.LoggingTest.rotatesWithinConfiguredRetention]
+20:22:46.205 - [INFO] - rotation-54-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx - [io.github.brainboxemb.eventtiming.infra.logging.LoggingTest.rotatesWithinConfiguredRetention]
+20:22:46.206 - [INFO] - rotation-55-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx - [io.github.brainboxemb.eventtiming.infra.logging.LoggingTest.rotatesWithinConfiguredRetention]
+20:22:46.206 - [INFO] - rotation-56-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx - [io.github.brainboxemb.eventtiming.infra.logging.LoggingTest.rotatesWithinConfiguredRetention]
+20:22:46.206 - [INFO] - rotation-57-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx - [io.github.brainboxemb.eventtiming.infra.logging.LoggingTest.rotatesWithinConfiguredRetention]
+20:22:46.207 - [INFO] - rotation-58-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx - [io.github.brainboxemb.eventtiming.infra.logging.LoggingTest.rotatesWithinConfiguredRetention]
+20:22:46.207 - [INFO] - rotation-59-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx - [io.github.brainboxemb.eventtiming.infra.logging.LoggingTest.rotatesWithinConfiguredRetention]
+20:22:46.207 - [INFO] - rotation-60-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx - [io.github.brainboxemb.eventtiming.infra.logging.LoggingTest.rotatesWithinConfiguredRetention]
+20:22:46.208 - [INFO] - rotation-61-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx - [io.github.brainboxemb.eventtiming.infra.logging.LoggingTest.rotatesWithinConfiguredRetention]
+20:22:46.208 - [INFO] - rotation-62-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx - [io.github.brainboxemb.eventtiming.infra.logging.LoggingTest.rotatesWithinConfiguredRetention]
+20:22:46.209 - [INFO] - rotation-63-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx - [io.github.brainboxemb.eventtiming.infra.logging.LoggingTest.rotatesWithinConfiguredRetention]
+20:22:46.209 - [INFO] - rotation-64-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx - [io.github.brainboxemb.eventtiming.infra.logging.LoggingTest.rotatesWithinConfiguredRetention]
+20:22:46.209 - [INFO] - rotation-65-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx - [io.github.brainboxemb.eventtiming.infra.logging.LoggingTest.rotatesWithinConfiguredRetention]
+20:22:46.210 - [INFO] - rotation-66-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx - [io.github.brainboxemb.eventtiming.infra.logging.LoggingTest.rotatesWithinConfiguredRetention]
+20:22:46.210 - [INFO] - rotation-67-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx - [io.github.brainboxemb.eventtiming.infra.logging.LoggingTest.rotatesWithinConfiguredRetention]
+20:22:46.210 - [INFO] - rotation-68-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx - [io.github.brainboxemb.eventtiming.infra.logging.LoggingTest.rotatesWithinConfiguredRetention]
+20:22:46.211 - [INFO] - rotation-69-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx - [io.github.brainboxemb.eventtiming.infra.logging.LoggingTest.rotatesWithinConfiguredRetention]
+20:22:46.211 - [INFO] - rotation-70-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx - [io.github.brainboxemb.eventtiming.infra.logging.LoggingTest.rotatesWithinConfiguredRetention]
+20:22:46.211 - [INFO] - rotation-71-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx - [io.github.brainboxemb.eventtiming.infra.logging.LoggingTest.rotatesWithinConfiguredRetention]
+20:22:46.212 - [INFO] - rotation-72-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx - [io.github.brainboxemb.eventtiming.infra.logging.LoggingTest.rotatesWithinConfiguredRetention]
+20:22:46.212 - [INFO] - rotation-73-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx - [io.github.brainboxemb.eventtiming.infra.logging.LoggingTest.rotatesWithinConfiguredRetention]
+20:22:46.212 - [INFO] - rotation-74-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx - [io.github.brainboxemb.eventtiming.infra.logging.LoggingTest.rotatesWithinConfiguredRetention]
+20:22:46.213 - [INFO] - rotation-75-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx - [io.github.brainboxemb.eventtiming.infra.logging.LoggingTest.rotatesWithinConfiguredRetention]
+20:22:46.213 - [INFO] - rotation-76-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx - [io.github.brainboxemb.eventtiming.infra.logging.LoggingTest.rotatesWithinConfiguredRetention]
+20:22:46.213 - [INFO] - rotation-77-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx - [io.github.brainboxemb.eventtiming.infra.logging.LoggingTest.rotatesWithinConfiguredRetention]
+20:22:46.214 - [INFO] - rotation-78-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx - [io.github.brainboxemb.eventtiming.infra.logging.LoggingTest.rotatesWithinConfiguredRetention]
+20:22:46.214 - [INFO] - rotation-79-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx - [io.github.brainboxemb.eventtiming.infra.logging.LoggingTest.rotatesWithinConfiguredRetention]
+20:22:46.214 - [INFO] - rotation-80-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx - [io.github.brainboxemb.eventtiming.infra.logging.LoggingTest.rotatesWithinConfiguredRetention]
+20:22:46.215 - [INFO] - rotation-81-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx - [io.github.brainboxemb.eventtiming.infra.logging.LoggingTest.rotatesWithinConfiguredRetention]
+20:22:46.215 - [INFO] - rotation-82-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx - [io.github.brainboxemb.eventtiming.infra.logging.LoggingTest.rotatesWithinConfiguredRetention]
+20:22:46.216 - [INFO] - rotation-83-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx - [io.github.brainboxemb.eventtiming.infra.logging.LoggingTest.rotatesWithinConfiguredRetention]
+20:22:46.216 - [INFO] - rotation-84-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx - [io.github.brainboxemb.eventtiming.infra.logging.LoggingTest.rotatesWithinConfiguredRetention]
+20:22:46.216 - [INFO] - rotation-85-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx - [io.github.brainboxemb.eventtiming.infra.logging.LoggingTest.rotatesWithinConfiguredRetention]
+20:22:46.217 - [INFO] - rotation-86-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx - [io.github.brainboxemb.eventtiming.infra.logging.LoggingTest.rotatesWithinConfiguredRetention]
+20:22:46.217 - [INFO] - rotation-87-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx - [io.github.brainboxemb.eventtiming.infra.logging.LoggingTest.rotatesWithinConfiguredRetention]
+20:22:46.217 - [INFO] - rotation-88-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx - [io.github.brainboxemb.eventtiming.infra.logging.LoggingTest.rotatesWithinConfiguredRetention]
+20:22:46.218 - [INFO] - rotation-89-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx - [io.github.brainboxemb.eventtiming.infra.logging.LoggingTest.rotatesWithinConfiguredRetention]
+20:22:46.218 - [INFO] - rotation-90-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx - [io.github.brainboxemb.eventtiming.infra.logging.LoggingTest.rotatesWithinConfiguredRetention]
+20:22:46.219 - [INFO] - rotation-91-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx - [io.github.brainboxemb.eventtiming.infra.logging.LoggingTest.rotatesWithinConfiguredRetention]
+20:22:46.219 - [INFO] - rotation-92-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx - [io.github.brainboxemb.eventtiming.infra.logging.LoggingTest.rotatesWithinConfiguredRetention]
+20:22:46.219 - [INFO] - rotation-93-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx - [io.github.brainboxemb.eventtiming.infra.logging.LoggingTest.rotatesWithinConfiguredRetention]
+20:22:46.219 - [INFO] - rotation-94-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx - [io.github.brainboxemb.eventtiming.infra.logging.LoggingTest.rotatesWithinConfiguredRetention]
+20:22:46.220 - [INFO] - rotation-95-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx - [io.github.brainboxemb.eventtiming.infra.logging.LoggingTest.rotatesWithinConfiguredRetention]
+20:22:46.220 - [INFO] - rotation-96-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx - [io.github.brainboxemb.eventtiming.infra.logging.LoggingTest.rotatesWithinConfiguredRetention]
+20:22:46.221 - [INFO] - rotation-97-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx - [io.github.brainboxemb.eventtiming.infra.logging.LoggingTest.rotatesWithinConfiguredRetention]
+20:22:46.221 - [INFO] - rotation-98-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx - [io.github.brainboxemb.eventtiming.infra.logging.LoggingTest.rotatesWithinConfiguredRetention]
+20:22:46.221 - [INFO] - rotation-99-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx - [io.github.brainboxemb.eventtiming.infra.logging.LoggingTest.rotatesWithinConfiguredRetention]
+20:22:46.246 - [INFO] - A08 live message - [io.github.brainboxemb.eventtiming.infra.logging.LoggingTest.writesFileStreamsLiveAndChangesRuntimeLevel]
+20:22:46.247 - [DEBUG] - A08 debug message - [io.github.brainboxemb.eventtiming.infra.logging.LoggingTest.writesFileStreamsLiveAndChangesRuntimeLevel]
+[INFO] Tests run: 6, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.097 s -- in io.github.brainboxemb.eventtiming.infra.logging.LoggingTest
+[INFO] Running io.github.brainboxemb.eventtiming.infra.BuildIdentityTest
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.001 s -- in io.github.brainboxemb.eventtiming.infra.BuildIdentityTest
+[INFO] Running io.github.brainboxemb.eventtiming.presentation.interfaces.console.LocalConsoleTest
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.003 s -- in io.github.brainboxemb.eventtiming.presentation.interfaces.console.LocalConsoleTest
+[INFO] Running io.github.brainboxemb.eventtiming.presentation.interfaces.shell.RemoteShellServerTest
+[INFO] Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.005 s -- in io.github.brainboxemb.eventtiming.presentation.interfaces.shell.RemoteShellServerTest
+[INFO] Running io.github.brainboxemb.eventtiming.presentation.interfaces.remoteapi.WebSocketEndpointTest
+[INFO] Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.122 s -- in io.github.brainboxemb.eventtiming.presentation.interfaces.remoteapi.WebSocketEndpointTest
+[INFO] Running io.github.brainboxemb.eventtiming.presentation.interfaces.remoteapi.HttpEndpointTest
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.193 s -- in io.github.brainboxemb.eventtiming.presentation.interfaces.remoteapi.HttpEndpointTest
+[INFO] Running io.github.brainboxemb.eventtiming.runtime.TimingApplicationLifecycleTest
+[INFO] Tests run: 6, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.056 s -- in io.github.brainboxemb.eventtiming.runtime.TimingApplicationLifecycleTest
+[INFO] Running io.github.brainboxemb.eventtiming.runtime.TimingApplicationTest
+[INFO] Tests run: 4, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0 s -- in io.github.brainboxemb.eventtiming.runtime.TimingApplicationTest
+[INFO] Running io.github.brainboxemb.eventtiming.domain.timing.TimingNodeIdTest
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0 s -- in io.github.brainboxemb.eventtiming.domain.timing.TimingNodeIdTest
+[INFO] Running io.github.brainboxemb.eventtiming.domain.timing.TimingNodeTest
+[INFO] Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.002 s -- in io.github.brainboxemb.eventtiming.domain.timing.TimingNodeTest
+[INFO] 
+[INFO] Results:
+[INFO] 
+[INFO] Tests run: 52, Failures: 0, Errors: 0, Skipped: 0
+[INFO] 
+[INFO] 
+[INFO] --- jar:3.5.0:jar (default-jar) @ event-timing-framework ---
+[INFO] Building jar: /home/runner/work/2026-010-02.java.event-timing-framework/2026-010-02.java.event-timing-framework/framework/target/event-timing-framework-0.2.2.jar
+[INFO] 
+[INFO] ---------< io.github.brainboxemb.eventtiming:event-timing-app >---------
+[INFO] Building Event Timing Application 0.2.2                            [3/4]
+[INFO]   from app/pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- git-commit-id:4.9.10:revision (capture-git-build-provenance) @ event-timing-app ---
+[INFO] 
+[INFO] --- resources:3.4.0:resources (default-resources) @ event-timing-app ---
+[INFO] Copying 1 resource from src/main/resources to target/classes
+[INFO] The encoding used to copy filtered properties files has not been set. This means that the same encoding will be used to copy filtered properties files as when copying other filtered resources. This might not be what you want! Run your build with --debug to see which files might be affected. Read more at https://maven.apache.org/plugins/maven-resources-plugin/examples/filtering-properties-files.html
+[INFO] 
+[INFO] --- compiler:3.13.0:compile (default-compile) @ event-timing-app ---
+[INFO] Recompiling the module because of changed dependency.
+[INFO] Compiling 1 source file with javac [debug target 1.8] to target/classes
+[INFO] 
+[INFO] --- resources:3.4.0:testResources (default-testResources) @ event-timing-app ---
+[INFO] skip non existing resourceDirectory /home/runner/work/2026-010-02.java.event-timing-framework/2026-010-02.java.event-timing-framework/app/src/test/resources
+[INFO] 
+[INFO] --- compiler:3.13.0:testCompile (default-testCompile) @ event-timing-app ---
+[INFO] Recompiling the module because of changed dependency.
+[INFO] Compiling 1 source file with javac [debug target 1.8] to target/test-classes
+[INFO] 
+[INFO] --- surefire:3.2.5:test (default-test) @ event-timing-app ---
+[INFO] Using auto detected provider org.apache.maven.surefire.junit4.JUnit4Provider
+[INFO] 
+[INFO] -------------------------------------------------------
+[INFO]  T E S T S
+[INFO] -------------------------------------------------------
+[INFO] Running io.github.brainboxemb.eventtiming.app.bootstrap.EmbeddedBuildIdentityLoaderTest
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.046 s -- in io.github.brainboxemb.eventtiming.app.bootstrap.EmbeddedBuildIdentityLoaderTest
+[INFO] 
+[INFO] Results:
+[INFO] 
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0
+[INFO] 
+[INFO] 
+[INFO] --- jar:3.5.0:jar (default-jar) @ event-timing-app ---
+[INFO] Building jar: /home/runner/work/2026-010-02.java.event-timing-framework/2026-010-02.java.event-timing-framework/app/target/event-timing-app-0.2.2.jar
+[INFO] 
+[INFO] --- shade:3.6.0:shade (default) @ event-timing-app ---
+[INFO] Including io.github.brainboxemb.eventtiming:event-timing-framework:jar:0.2.2 in the shaded jar.
+[INFO] Including org.yaml:snakeyaml:jar:2.7 in the shaded jar.
+[INFO] Including org.java-websocket:Java-WebSocket:jar:1.6.0 in the shaded jar.
+[INFO] Including org.slf4j:slf4j-api:jar:2.0.17 in the shaded jar.
+[INFO] Including org.slf4j:slf4j-jdk14:jar:2.0.17 in the shaded jar.
+[WARNING] Java-WebSocket-1.6.0.jar, event-timing-app-0.2.2.jar, event-timing-framework-0.2.2.jar, slf4j-api-2.0.17.jar, slf4j-jdk14-2.0.17.jar, snakeyaml-2.7.jar define 1 overlapping resource: 
+[WARNING]   - META-INF/MANIFEST.MF
+[WARNING] slf4j-api-2.0.17.jar, slf4j-jdk14-2.0.17.jar define 1 overlapping resource: 
+[WARNING]   - META-INF/LICENSE.txt
+[WARNING] Java-WebSocket-1.6.0.jar, slf4j-api-2.0.17.jar, slf4j-jdk14-2.0.17.jar, snakeyaml-2.7.jar define 1 overlapping classes: 
+[WARNING]   - META-INF.versions.9.module-info
+[WARNING] maven-shade-plugin has detected that some files are
+[WARNING] present in two or more JARs. When this happens, only one
+[WARNING] single version of the file is copied to the uber jar.
+[WARNING] Usually this is not harmful and you can skip these warnings,
+[WARNING] otherwise try to manually exclude artifacts based on
+[WARNING] mvn dependency:tree -Ddetail=true and the above output.
+[WARNING] See https://maven.apache.org/plugins/maven-shade-plugin/
+[INFO] Replacing original artifact with shaded artifact.
+[INFO] Replacing /home/runner/work/2026-010-02.java.event-timing-framework/2026-010-02.java.event-timing-framework/app/target/event-timing-app-0.2.2.jar with /home/runner/work/2026-010-02.java.event-timing-framework/2026-010-02.java.event-timing-framework/app/target/event-timing-app-0.2.2-shaded.jar
+[INFO] 
+[INFO] -----< io.github.brainboxemb.eventtiming:event-timing-system-test >-----
+[INFO] Building Event Timing System Test 0.2.2                            [4/4]
+[INFO]   from system-test/pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- resources:3.4.0:resources (default-resources) @ event-timing-system-test ---
+[INFO] skip non existing resourceDirectory /home/runner/work/2026-010-02.java.event-timing-framework/2026-010-02.java.event-timing-framework/system-test/src/main/resources
+[INFO] 
+[INFO] --- compiler:3.13.0:compile (default-compile) @ event-timing-system-test ---
+[INFO] No sources to compile
+[INFO] 
+[INFO] --- resources:3.4.0:testResources (default-testResources) @ event-timing-system-test ---
+[INFO] skip non existing resourceDirectory /home/runner/work/2026-010-02.java.event-timing-framework/2026-010-02.java.event-timing-framework/system-test/src/test/resources
+[INFO] 
+[INFO] --- compiler:3.13.0:testCompile (default-testCompile) @ event-timing-system-test ---
+[INFO] Recompiling the module because of changed source code.
+[INFO] Compiling 1 source file with javac [debug target 1.8] to target/test-classes
+[INFO] 
+[INFO] --- surefire:3.2.5:test (default-test) @ event-timing-system-test ---
+[INFO] Using auto detected provider org.apache.maven.surefire.junit4.JUnit4Provider
+[INFO] 
+[INFO] -------------------------------------------------------
+[INFO]  T E S T S
+[INFO] -------------------------------------------------------
+[INFO] Running io.github.brainboxemb.eventtiming.systemtest.FirstExecutableBlackBoxTest
+SLF4J(W): No SLF4J providers were found.
+SLF4J(W): Defaulting to no-operation (NOP) logger implementation
+SLF4J(W): See https://www.slf4j.org/codes.html#noProviders for further details.
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.686 s -- in io.github.brainboxemb.eventtiming.systemtest.FirstExecutableBlackBoxTest
+[INFO] 
+[INFO] Results:
+[INFO] 
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0
+[INFO] 
+[INFO] 
+[INFO] --- jar:3.5.0:jar (default-jar) @ event-timing-system-test ---
+[WARNING] JAR will be empty - no content was marked for inclusion!
+[INFO] Building jar: /home/runner/work/2026-010-02.java.event-timing-framework/2026-010-02.java.event-timing-framework/system-test/target/event-timing-system-test-0.2.2.jar
+[INFO] ------------------------------------------------------------------------
+[INFO] Reactor Summary for Event Timing Parent 0.2.2:
+[INFO] 
+[INFO] Event Timing Parent ................................ SUCCESS [  0.002 s]
+[INFO] Event Timing Framework ............................. SUCCESS [  4.750 s]
+[INFO] Event Timing Application ........................... SUCCESS [  4.301 s]
+[INFO] Event Timing System Test ........................... SUCCESS [  0.973 s]
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  10.148 s
+[INFO] Finished at: 2026-09-29T20:22:52Z
+[INFO] ------------------------------------------------------------------------
