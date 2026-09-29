@@ -68,13 +68,13 @@ public class YamlApplicationConfigLoaderTest {
                         + "    port: 8030\n");
 
         assertEquals(
-                io.github.brainboxemb.eventtiming.infra.bootstrap.config.LoggingConfig.Level.DEBUG,
+                io.github.brainboxemb.eventtiming.infra.logging.LoggingLevel.DEBUG,
                 config.logging().level());
         assertEquals("logs", config.logging().file().path());
         assertEquals(1048576, config.logging().file().rotateBytes());
         assertEquals(5, config.logging().file().retainedFiles());
-        assertEquals("127.0.0.1", config.logging().live().bindAddress());
-        assertEquals(8030, config.logging().live().port());
+        assertEquals("127.0.0.1", config.logging().server().bindAddress());
+        assertEquals(8030, config.logging().server().port());
     }
 
     @Test(expected = IllegalArgumentException.class)

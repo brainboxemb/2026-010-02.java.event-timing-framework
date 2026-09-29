@@ -71,7 +71,7 @@ io.github.brainboxemb.eventtiming/
 ```
 
 The executable artifact remains thin. Launcher/input adapters stay under `...eventtiming.app`;
-the provider-specific logging implementation is executable-owned infrastructure:
+reusable logging infrastructure lives in the framework artifact, while the executable selects the SLF4J provider:
 
 ```text
 io.github.brainboxemb.eventtiming.app/
@@ -90,9 +90,9 @@ io.github.brainboxemb.eventtiming.infra.logging/
 ```
 
 `Logging` owns JUL/backend and sink composition. `LoggingServer` is the separate
-client-facing live-log socket. These classes are packaged by infrastructure responsibility but
-remain in the executable Maven artifact, so `event-timing-framework` still selects no logging
-provider/backend.
+client-facing live-log socket. These reusable classes live in `event-timing-framework`; the
+framework still selects no SLF4J provider. The default executable supplies `slf4j-jdk14` at
+runtime and starts/stops the framework-provided logging component.
 
 `ApplicationBootstrap` consumes the validated framework configuration model and
 owns concrete composition plus presentation/startup wiring. YAML parsing and the
@@ -353,8 +353,8 @@ A Git tag does **not** silently determine or override the application version. I
 Lifecycle diagnostics use the selected logging composition:
 
 ```text
-event-timing-framework  -> SLF4J API only; no logging provider selected
-event-timing-app        -> SLF4J API + slf4j-jdk14 -> java.util.logging
+event-timing-framework  -> SLF4J API + reusable JUL logging infrastructure; no SLF4J provider selected
+event-timing-app        -> selects slf4j-jdk14 -> java.util.logging
 ```
 
 `java.util.logging` writes the lifecycle INFO records through the runtime logging backend. Startup logging includes the concrete Git revision, source ref, build origin and dirty-state. The stable stdout smoke line used by CI intentionally remains independent of build-specific provenance:

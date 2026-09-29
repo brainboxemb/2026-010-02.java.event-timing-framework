@@ -1,24 +1,22 @@
 package io.github.brainboxemb.eventtiming.infra.logging;
 
-import io.github.brainboxemb.eventtiming.infra.bootstrap.config.LoggingConfig;
-
 import java.util.logging.Logger;
 
 /** Owns the configured global logging level plus a temporary runtime override. */
 final class LoggingControl {
     private final Logger rootLogger;
-    private LoggingConfig.Level level;
+    private LoggingLevel level;
 
-    LoggingControl(Logger rootLogger, LoggingConfig.Level initialLevel) {
+    LoggingControl(Logger rootLogger, LoggingLevel initialLevel) {
         this.rootLogger = rootLogger;
         setLevel(initialLevel);
     }
 
-    synchronized LoggingConfig.Level level() {
+    synchronized LoggingLevel level() {
         return level;
     }
 
-    synchronized void setLevel(LoggingConfig.Level newLevel) {
+    synchronized void setLevel(LoggingLevel newLevel) {
         if (newLevel == null) {
             throw new IllegalArgumentException("logging level must not be null");
         }
@@ -26,7 +24,7 @@ final class LoggingControl {
         level = newLevel;
     }
 
-    static java.util.logging.Level toJulLevel(LoggingConfig.Level level) {
+    static java.util.logging.Level toJulLevel(LoggingLevel level) {
         switch (level) {
             case TRACE:
                 return java.util.logging.Level.FINEST;

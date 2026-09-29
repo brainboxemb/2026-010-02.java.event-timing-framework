@@ -1,11 +1,11 @@
-package io.github.brainboxemb.eventtiming.infra.bootstrap.config;
+package io.github.brainboxemb.eventtiming.infra.logging;
 
-/** Optional engineering live-log listener settings. */
-public final class LoggingLiveConfig {
+/** Optional live-diagnostics listener configuration owned by LoggingServer. */
+public final class LoggingServerConfig {
     private final String bindAddress;
     private final int port;
 
-    public LoggingLiveConfig(String bindAddress, int port) {
+    public LoggingServerConfig(String bindAddress, int port) {
         if (bindAddress == null || bindAddress.trim().isEmpty()) {
             throw new IllegalArgumentException("logging live bindAddress must not be blank");
         }

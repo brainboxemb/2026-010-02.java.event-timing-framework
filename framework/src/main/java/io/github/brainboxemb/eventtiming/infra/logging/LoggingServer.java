@@ -1,7 +1,5 @@
 package io.github.brainboxemb.eventtiming.infra.logging;
 
-import io.github.brainboxemb.eventtiming.infra.bootstrap.config.LoggingConfig;
-
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.IOException;
@@ -41,9 +39,15 @@ final class LoggingServer implements AutoCloseable {
     private volatile Socket activeClient;
     private Thread acceptThread;
 
-    LoggingServer(String bindAddress, int port, LoggingControl control) {
-        this.bindAddress = bindAddress;
-        this.port = port;
+    LoggingServer(LoggingServerConfig config, LoggingControl control) {
+        if (config == null) {
+            throw new IllegalArgumentException("logging server config must not be null");
+        }
+        if (control == null) {
+            throw new IllegalArgumentException("logging control must not be null");
+        }
+        this.bindAddress = config.bindAddress();
+        this.port = config.port();
         this.control = control;
     }
 
@@ -143,7 +147,7 @@ final class LoggingServer implements AutoCloseable {
         if (value.regionMatches(true, 0, "SET_LEVEL ", 0, 10)) {
             String requested = value.substring(10).trim().toUpperCase();
             try {
-                LoggingConfig.Level level = LoggingConfig.Level.valueOf(requested);
+                LoggingLevel level = LoggingLevel.valueOf(requested);
                 control.setLevel(level);
                 offer(levelLine(level));
             } catch (IllegalArgumentException ex) {
@@ -190,7 +194,7 @@ final class LoggingServer implements AutoCloseable {
                 + "}";
     }
 
-    private static String levelLine(LoggingConfig.Level level) {
+    private static String levelLine(LoggingLevel level) {
         return "{\"type\":\"level\",\"level\":\"" + level.name() + "\"}";
     }
 

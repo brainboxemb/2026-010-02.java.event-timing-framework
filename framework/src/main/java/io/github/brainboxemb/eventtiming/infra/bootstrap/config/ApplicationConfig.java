@@ -1,6 +1,7 @@
 package io.github.brainboxemb.eventtiming.infra.bootstrap.config;
 
 import io.github.brainboxemb.eventtiming.domain.timing.TimingNodeId;
+import io.github.brainboxemb.eventtiming.infra.logging.LoggingConfig;
 
 /** Effective deployment configuration consumed by the framework bootstrap. */
 public final class ApplicationConfig {
