@@ -146,11 +146,14 @@ public class LoggingTest {
                 ZoneId.of("Europe/Amsterdam"));
 
         Path current;
-        try (TimestampedFileLogHandler handler =
-                new TimestampedFileLogHandler(logDirectory.toPath(), 4096, 10, repeatedClock)) {
+        TimestampedFileLogHandler handler =
+                new TimestampedFileLogHandler(logDirectory.toPath(), 4096, 10, repeatedClock);
+        try {
             current = handler.currentFile();
             assertEquals("20250514-101657-01.txt", current.getFileName().toString());
             assertTrue(Files.exists(current));
+        } finally {
+            handler.close();
         }
 
         assertEquals(
@@ -174,11 +177,14 @@ public class LoggingTest {
                 ZoneId.of("Europe/Amsterdam"));
 
         Path current;
-        try (TimestampedFileLogHandler handler =
-                new TimestampedFileLogHandler(logDirectory.toPath(), 4096, 2, staleClock)) {
+        TimestampedFileLogHandler handler =
+                new TimestampedFileLogHandler(logDirectory.toPath(), 4096, 2, staleClock);
+        try {
             current = handler.currentFile();
             assertEquals("20250514-101657.txt", current.getFileName().toString());
             assertTrue(Files.exists(current));
+        } finally {
+            handler.close();
         }
 
         assertTrue(Files.exists(current));
