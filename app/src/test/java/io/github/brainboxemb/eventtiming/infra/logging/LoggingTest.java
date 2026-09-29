@@ -12,6 +12,10 @@ import java.io.OutputStreamWriter;
 import java.net.Socket;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.nio.file.Path;
+import java.time.Clock;
+import java.time.Instant;
+import java.time.ZoneId;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.logging.ConsoleHandler;
@@ -129,6 +133,56 @@ public class LoggingTest {
             assertTrue(generation.getName().matches(
                     "\\d{8}-\\d{6}(?:-\\d{2,})?\\.txt"));
         }
+    }
+
+    @Test
+    public void repeatedWallClockTimestampNeverOverwritesExistingLog() throws Exception {
+        File logDirectory = temporaryFolder.newFolder("repeated-clock");
+        Path existing = logDirectory.toPath().resolve("20250514-101657.txt");
+        Files.write(existing, "previous-session".getBytes(StandardCharsets.UTF_8));
+
+        Clock repeatedClock = Clock.fixed(
+                Instant.parse("2025-05-14T08:16:57Z"),
+                ZoneId.of("Europe/Amsterdam"));
+
+        Path current;
+        try (TimestampedFileLogHandler handler =
+                new TimestampedFileLogHandler(logDirectory.toPath(), 4096, 10, repeatedClock)) {
+            current = handler.currentFile();
+            assertEquals("20250514-101657-01.txt", current.getFileName().toString());
+            assertTrue(Files.exists(current));
+        }
+
+        assertEquals(
+                "previous-session",
+                new String(Files.readAllBytes(existing), StandardCharsets.UTF_8));
+        assertTrue(Files.exists(current));
+    }
+
+    @Test
+    public void staleWallClockCannotPruneActiveLog() throws Exception {
+        File logDirectory = temporaryFolder.newFolder("stale-clock-retention");
+        Files.write(
+                logDirectory.toPath().resolve("20300101-000000.txt"),
+                "future-a".getBytes(StandardCharsets.UTF_8));
+        Files.write(
+                logDirectory.toPath().resolve("20400101-000000.txt"),
+                "future-b".getBytes(StandardCharsets.UTF_8));
+
+        Clock staleClock = Clock.fixed(
+                Instant.parse("2025-05-14T08:16:57Z"),
+                ZoneId.of("Europe/Amsterdam"));
+
+        Path current;
+        try (TimestampedFileLogHandler handler =
+                new TimestampedFileLogHandler(logDirectory.toPath(), 4096, 2, staleClock)) {
+            current = handler.currentFile();
+            assertEquals("20250514-101657.txt", current.getFileName().toString());
+            assertTrue(Files.exists(current));
+        }
+
+        assertTrue(Files.exists(current));
+        assertEquals(2, timestampedLogs(logDirectory).length);
     }
 
     @Test
