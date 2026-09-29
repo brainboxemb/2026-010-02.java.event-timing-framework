@@ -1,4 +1,4 @@
-package io.github.brainboxemb.eventtiming.app.logging;
+package io.github.brainboxemb.eventtiming.infra.logging;
 
 import io.github.brainboxemb.eventtiming.infra.bootstrap.config.LoggingConfig;
 import io.github.brainboxemb.eventtiming.infra.bootstrap.config.LoggingFileConfig;
@@ -28,7 +28,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 
-public class RuntimeLoggingTest {
+public class LoggingTest {
     @Rule
     public TemporaryFolder temporaryFolder = new TemporaryFolder();
 
@@ -40,7 +40,7 @@ public class RuntimeLoggingTest {
                 new LoggingFileConfig(logDirectory.getAbsolutePath(), 4096, 1),
                 new LoggingLiveConfig("127.0.0.1", 0));
 
-        try (RuntimeLogging runtime = RuntimeLogging.start(config);
+        try (Logging runtime = Logging.start(config);
                 Socket socket = new Socket("127.0.0.1", runtime.livePort());
                 BufferedReader reader = new BufferedReader(
                         new InputStreamReader(socket.getInputStream(), StandardCharsets.UTF_8));
@@ -85,7 +85,7 @@ public class RuntimeLoggingTest {
                     new LoggingFileConfig(logDirectory.getAbsolutePath(), 4096, 1),
                     null);
 
-            try (RuntimeLogging ignored = RuntimeLogging.start(config)) {
+            try (Logging ignored = Logging.start(config)) {
                 assertTrue(console.getFormatter() instanceof CompactLogFormatter);
 
                 LogRecord record = new LogRecord(Level.INFO, "Application lifecycle state=RUNNING");
@@ -115,7 +115,7 @@ public class RuntimeLoggingTest {
                 new LoggingFileConfig(logDirectory.getAbsolutePath(), 512, 2),
                 null);
 
-        try (RuntimeLogging ignored = RuntimeLogging.start(config)) {
+        try (Logging ignored = Logging.start(config)) {
             Logger logger = Logger.getLogger("test.a08.rotation");
             for (int i = 0; i < 100; i++) {
                 logger.info("rotation-" + i + "-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx");

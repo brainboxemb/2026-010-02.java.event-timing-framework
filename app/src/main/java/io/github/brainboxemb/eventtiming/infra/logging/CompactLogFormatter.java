@@ -1,4 +1,4 @@
-package io.github.brainboxemb.eventtiming.app.logging;
+package io.github.brainboxemb.eventtiming.infra.logging;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
@@ -8,7 +8,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.logging.Formatter;
 import java.util.logging.LogRecord;
 
-/** Compact operator-facing formatter used by retained runtime log files. */
+/** Compact operator-facing formatter shared by console, retained file and live logging. */
 final class CompactLogFormatter extends Formatter {
     private static final DateTimeFormatter TIME_FORMAT =
             DateTimeFormatter.ofPattern("HH:mm:ss.SSS");

@@ -1,4 +1,4 @@
-package io.github.brainboxemb.eventtiming.app.logging;
+package io.github.brainboxemb.eventtiming.infra.logging;
 
 import java.io.BufferedOutputStream;
 import java.io.IOException;

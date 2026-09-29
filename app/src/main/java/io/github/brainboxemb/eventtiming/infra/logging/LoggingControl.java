@@ -1,4 +1,4 @@
-package io.github.brainboxemb.eventtiming.app.logging;
+package io.github.brainboxemb.eventtiming.infra.logging;
 
 import io.github.brainboxemb.eventtiming.infra.bootstrap.config.LoggingConfig;
 

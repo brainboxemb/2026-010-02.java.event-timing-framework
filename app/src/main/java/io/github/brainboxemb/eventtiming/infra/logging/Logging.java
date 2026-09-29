@@ -1,4 +1,4 @@
-package io.github.brainboxemb.eventtiming.app.logging;
+package io.github.brainboxemb.eventtiming.infra.logging;
 
 import io.github.brainboxemb.eventtiming.infra.bootstrap.config.LoggingConfig;
 import io.github.brainboxemb.eventtiming.infra.bootstrap.config.LoggingFileConfig;
@@ -14,24 +14,24 @@ import java.util.logging.Formatter;
 import java.util.logging.Handler;
 import java.util.logging.Logger;
 
-/** Concrete JUL logging composition selected by the default executable application. */
-public final class RuntimeLogging implements AutoCloseable {
+/** Concrete runtime logging infrastructure selected by the default executable application. */
+public final class Logging implements AutoCloseable {
     private final Logger rootLogger;
     private final java.util.logging.Level previousRootLevel;
     private final Map<Handler, java.util.logging.Level> previousHandlerLevels;
     private final Map<Handler, Formatter> previousHandlerFormatters;
     private final TimestampedFileLogHandler fileHandler;
-    private final DiagnosticLogServer liveServer;
+    private final LoggingServer liveServer;
     private final LiveLogHandler liveHandler;
     private final LoggingControl control;
 
-    private RuntimeLogging(
+    private Logging(
             Logger rootLogger,
             java.util.logging.Level previousRootLevel,
             Map<Handler, java.util.logging.Level> previousHandlerLevels,
             Map<Handler, Formatter> previousHandlerFormatters,
             TimestampedFileLogHandler fileHandler,
-            DiagnosticLogServer liveServer,
+            LoggingServer liveServer,
             LiveLogHandler liveHandler,
             LoggingControl control) {
         this.rootLogger = rootLogger;
@@ -44,7 +44,7 @@ public final class RuntimeLogging implements AutoCloseable {
         this.control = control;
     }
 
-    public static RuntimeLogging start(LoggingConfig config) throws IOException {
+    public static Logging start(LoggingConfig config) throws IOException {
         if (config == null) {
             throw new IllegalArgumentException("logging config must not be null");
         }
@@ -66,7 +66,7 @@ public final class RuntimeLogging implements AutoCloseable {
         }
 
         TimestampedFileLogHandler fileHandler = null;
-        DiagnosticLogServer liveServer = null;
+        LoggingServer liveServer = null;
         LiveLogHandler liveHandler = null;
         try {
             LoggingControl control = new LoggingControl(root, config.level());
@@ -81,7 +81,7 @@ public final class RuntimeLogging implements AutoCloseable {
 
             LoggingLiveConfig live = config.live();
             if (live != null) {
-                liveServer = new DiagnosticLogServer(
+                liveServer = new LoggingServer(
                         live.bindAddress(),
                         live.port(),
                         control);
@@ -90,7 +90,7 @@ public final class RuntimeLogging implements AutoCloseable {
                 root.addHandler(liveHandler);
             }
 
-            return new RuntimeLogging(
+            return new Logging(
                     root,
                     previousRoot,
                     previousHandlers,

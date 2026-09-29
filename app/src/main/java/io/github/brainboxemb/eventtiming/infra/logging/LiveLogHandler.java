@@ -1,13 +1,13 @@
-package io.github.brainboxemb.eventtiming.app.logging;
+package io.github.brainboxemb.eventtiming.infra.logging;
 
 import java.util.logging.Handler;
 import java.util.logging.LogRecord;
 
 /** JUL sink that forwards records to the non-blocking engineering diagnostics queue. */
 final class LiveLogHandler extends Handler {
-    private final DiagnosticLogServer server;
+    private final LoggingServer server;
 
-    LiveLogHandler(DiagnosticLogServer server) {
+    LiveLogHandler(LoggingServer server) {
         this.server = server;
         setLevel(java.util.logging.Level.ALL);
     }
@@ -26,6 +26,6 @@ final class LiveLogHandler extends Handler {
 
     @Override
     public void close() {
-        // Server lifecycle is owned by RuntimeLogging.
+        // Server lifecycle is owned by Logging.
     }
 }

@@ -1,4 +1,4 @@
-package io.github.brainboxemb.eventtiming.app.logging;
+package io.github.brainboxemb.eventtiming.infra.logging;
 
 import io.github.brainboxemb.eventtiming.infra.bootstrap.config.LoggingConfig;
 
@@ -26,7 +26,7 @@ import java.util.logging.LogRecord;
  * they only offer records to a bounded queue, so a slow/disconnected client cannot block normal
  * application execution.</p>
  */
-final class DiagnosticLogServer implements AutoCloseable {
+final class LoggingServer implements AutoCloseable {
     private static final int QUEUE_CAPACITY = 512;
 
     private final String bindAddress;
@@ -41,7 +41,7 @@ final class DiagnosticLogServer implements AutoCloseable {
     private volatile Socket activeClient;
     private Thread acceptThread;
 
-    DiagnosticLogServer(String bindAddress, int port, LoggingControl control) {
+    LoggingServer(String bindAddress, int port, LoggingControl control) {
         this.bindAddress = bindAddress;
         this.port = port;
         this.control = control;
@@ -49,7 +49,7 @@ final class DiagnosticLogServer implements AutoCloseable {
 
     synchronized void start() throws IOException {
         if (serverSocket != null) {
-            throw new IllegalStateException("diagnostic log server is already started");
+            throw new IllegalStateException("logging server is already started");
         }
         ServerSocket socket = new ServerSocket();
         socket.bind(new InetSocketAddress(InetAddress.getByName(bindAddress), port), 1);
@@ -64,7 +64,7 @@ final class DiagnosticLogServer implements AutoCloseable {
     int boundPort() {
         ServerSocket socket = serverSocket;
         if (socket == null) {
-            throw new IllegalStateException("diagnostic log server is not started");
+            throw new IllegalStateException("logging server is not started");
         }
         return socket.getLocalPort();
     }

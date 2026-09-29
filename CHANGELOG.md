@@ -2,7 +2,7 @@
 
 ## Unreleased
 
-- Add Step-3 A08 runtime logging on the existing SLF4J/JUL boundary: configurable semantic startup level, timestamp-named rotating retained text files with compact operator-facing records, an optional client-initiated best-effort live diagnostics socket, temporary runtime-global level control, and a JavaFX Logs tab without mixing diagnostic records into IF-03 status/events.
+- Add Step-3 A08 runtime logging on the existing SLF4J/JUL boundary: executable-owned `infra.logging.Logging` and separate `LoggingServer`, configurable semantic startup level, timestamp-named rotating retained text files plus the same compact console/live representation, an optional client-initiated best-effort live diagnostics socket, temporary runtime-global level control, and a JavaFX Logs tab without mixing diagnostic records into IF-03 status/events.
 
 - Organise source packages and artifact ownership around the architecture: keep primary IF-03 classes at `presentation.interfaces.remoteapi`, move `TimingApplication` runtime plus `infra.bootstrap.ApplicationBootstrap` and the effective configuration model into the reusable framework, and reduce `event-timing-app` to `TimingApplicationMain` plus concrete YAML/build-resource loaders.
 
