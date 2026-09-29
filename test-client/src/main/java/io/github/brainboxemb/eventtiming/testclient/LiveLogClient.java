@@ -31,7 +31,9 @@ public final class LiveLogClient implements AutoCloseable {
             Instant occurredAt,
             String level,
             String logger,
+            String source,
             String message,
+            String formatted,
             String thrown,
             String rawJson) {
     }
@@ -134,7 +136,9 @@ public final class LiveLogClient implements AutoCloseable {
                     Instant.parse(requiredText(root, "occurredAt")),
                     requiredText(root, "level"),
                     requiredText(root, "logger"),
+                    requiredText(root, "source"),
                     requiredText(root, "message"),
+                    requiredText(root, "formatted"),
                     thrown == null || thrown.isNull() ? null : thrown.asText(),
                     rawJson));
             return;
