@@ -163,8 +163,16 @@ final class TimestampedFileLogHandler extends Handler {
 
         Collections.sort(files, Comparator.comparing(path -> path.getFileName().toString()));
         int remove = files.size() - retainedFiles;
-        for (int i = 0; i < remove; i++) {
-            Files.deleteIfExists(files.get(i));
+        for (Path file : files) {
+            if (remove <= 0) {
+                break;
+            }
+            if (file.equals(currentFile)) {
+                continue;
+            }
+            if (Files.deleteIfExists(file)) {
+                remove--;
+            }
         }
     }
 
