@@ -70,7 +70,8 @@ io.github.brainboxemb.eventtiming/
         RemoteApiWebSocketConfig
 ```
 
-The executable artifact is a thin launcher/input adapter:
+The executable artifact remains thin. Launcher/input adapters stay under `...eventtiming.app`;
+the provider-specific logging implementation is executable-owned infrastructure:
 
 ```text
 io.github.brainboxemb.eventtiming.app/
@@ -78,7 +79,20 @@ io.github.brainboxemb.eventtiming.app/
   bootstrap/
     YamlApplicationConfigLoader
     EmbeddedBuildIdentityLoader
+
+io.github.brainboxemb.eventtiming.infra.logging/
+  Logging
+  LoggingServer
+  LoggingControl
+  TimestampedFileLogHandler
+  CompactLogFormatter
+  LiveLogHandler
 ```
+
+`Logging` owns JUL/backend and sink composition. `LoggingServer` is the separate
+client-facing live-log socket. These classes are packaged by infrastructure responsibility but
+remain in the executable Maven artifact, so `event-timing-framework` still selects no logging
+provider/backend.
 
 `ApplicationBootstrap` consumes the validated framework configuration model and
 owns concrete composition plus presentation/startup wiring. YAML parsing and the
@@ -131,6 +145,32 @@ presentation:
       bindAddress: 127.0.0.1
       port: 8082
 ```
+
+A08 also configures cross-cutting runtime logging independently from presentation/status:
+
+```yaml
+logging:
+  level: INFO
+  file:
+    path: logs
+    rotateBytes: 1048576
+    retainedFiles: 5
+  live:
+    bindAddress: 127.0.0.1
+    port: 8030
+```
+
+The framework still logs only through SLF4J. Executable infrastructure `Logging` maps the
+semantic startup level to `slf4j-jdk14 -> java.util.logging`, applies the same compact formatter
+to console output, and writes retained rotating file logs under timestamped names such as
+`20250514-101657.txt`. Retained file records use
+`HH:mm:ss.SSS - [LEVEL] - message - [sourceClass.sourceMethod]`, while the executable optionally
+exposes a dedicated best-effort live-log TCP listener. The JavaFX
+`LoggingServer` owns that live socket; the engineering client initiates the connection and its
+**Logs** tab can inspect new records and
+temporarily change the process-wide log level. A runtime level change is not persisted to YAML and
+restart restores the configured level. The live diagnostics stream is separate from IF-03
+`/api/v1/events`.
 
 The remote shell is a small line-oriented TCP development/service endpoint. It is **not** an SSH
 or Telnet protocol implementation. IF-03 is the general **Remote API**; A06/A07 implement its first

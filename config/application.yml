@@ -15,3 +15,15 @@ presentation:
       # IF-03 live event development baseline: separate loopback-only listener.
       bindAddress: 127.0.0.1
       port: 8082
+
+logging:
+  # Cross-cutting A08 runtime logging baseline.
+  level: INFO
+  file:
+    path: logs
+    rotateBytes: 1048576
+    retainedFiles: 5
+  live:
+    # Engineering/test client connects to this dedicated diagnostics listener.
+    bindAddress: 127.0.0.1
+    port: 8030

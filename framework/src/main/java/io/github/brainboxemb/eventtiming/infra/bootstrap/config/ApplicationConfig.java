@@ -6,8 +6,16 @@ import io.github.brainboxemb.eventtiming.domain.timing.TimingNodeId;
 public final class ApplicationConfig {
     private final TimingNodeId timingNodeId;
     private final PresentationConfig presentation;
+    private final LoggingConfig logging;
 
     public ApplicationConfig(TimingNodeId timingNodeId, PresentationConfig presentation) {
+        this(timingNodeId, presentation, null);
+    }
+
+    public ApplicationConfig(
+            TimingNodeId timingNodeId,
+            PresentationConfig presentation,
+            LoggingConfig logging) {
         if (timingNodeId == null) {
             throw new IllegalArgumentException("timingNodeId must not be null");
         }
@@ -16,6 +24,7 @@ public final class ApplicationConfig {
         }
         this.timingNodeId = timingNodeId;
         this.presentation = presentation;
+        this.logging = logging;
     }
 
     public TimingNodeId timingNodeId() {
@@ -24,5 +33,9 @@ public final class ApplicationConfig {
 
     public PresentationConfig presentation() {
         return presentation;
+    }
+
+    public LoggingConfig logging() {
+        return logging;
     }
 }

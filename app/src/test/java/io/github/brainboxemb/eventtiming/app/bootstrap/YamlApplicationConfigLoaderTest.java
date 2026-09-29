@@ -24,6 +24,7 @@ public class YamlApplicationConfigLoaderTest {
         assertEquals("timing-node-01", config.timingNodeId().value());
         assertNull(config.presentation().remoteShell());
         assertNull(config.presentation().remoteApi());
+        assertNull(config.logging());
     }
 
     @Test
@@ -50,6 +51,42 @@ public class YamlApplicationConfigLoaderTest {
                 "127.0.0.1",
                 config.presentation().remoteApi().webSocket().bindAddress());
         assertEquals(8082, config.presentation().remoteApi().webSocket().port());
+    }
+
+    @Test
+    public void loadsRuntimeLoggingConfig() throws Exception {
+        ApplicationConfig config = load(
+                "timingNodeId: timing-node-01\n"
+                        + "logging:\n"
+                        + "  level: DEBUG\n"
+                        + "  file:\n"
+                        + "    path: logs\n"
+                        + "    rotateBytes: 1048576\n"
+                        + "    retainedFiles: 5\n"
+                        + "  live:\n"
+                        + "    bindAddress: 127.0.0.1\n"
+                        + "    port: 8030\n");
+
+        assertEquals(
+                io.github.brainboxemb.eventtiming.infra.bootstrap.config.LoggingConfig.Level.DEBUG,
+                config.logging().level());
+        assertEquals("logs", config.logging().file().path());
+        assertEquals(1048576, config.logging().file().rotateBytes());
+        assertEquals(5, config.logging().file().retainedFiles());
+        assertEquals("127.0.0.1", config.logging().live().bindAddress());
+        assertEquals(8030, config.logging().live().port());
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void rejectsUnsupportedLoggingLevel() throws Exception {
+        load(
+                "timingNodeId: timing-node-01\n"
+                        + "logging:\n"
+                        + "  level: VERBOSE\n"
+                        + "  file:\n"
+                        + "    path: logs\n"
+                        + "    rotateBytes: 1024\n"
+                        + "    retainedFiles: 2\n");
     }
 
     @Test(expected = IllegalArgumentException.class)

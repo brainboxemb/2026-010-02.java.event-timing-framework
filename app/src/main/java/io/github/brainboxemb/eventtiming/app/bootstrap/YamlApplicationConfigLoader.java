@@ -3,6 +3,9 @@ package io.github.brainboxemb.eventtiming.app.bootstrap;
 import io.github.brainboxemb.eventtiming.domain.timing.TimingNodeId;
 import io.github.brainboxemb.eventtiming.infra.bootstrap.config.ApplicationConfig;
 import io.github.brainboxemb.eventtiming.infra.bootstrap.config.PresentationConfig;
+import io.github.brainboxemb.eventtiming.infra.bootstrap.config.LoggingConfig;
+import io.github.brainboxemb.eventtiming.infra.bootstrap.config.LoggingFileConfig;
+import io.github.brainboxemb.eventtiming.infra.bootstrap.config.LoggingLiveConfig;
 import io.github.brainboxemb.eventtiming.infra.bootstrap.config.RemoteApiConfig;
 import io.github.brainboxemb.eventtiming.infra.bootstrap.config.RemoteApiHttpConfig;
 import io.github.brainboxemb.eventtiming.infra.bootstrap.config.RemoteApiWebSocketConfig;
@@ -24,6 +27,13 @@ import org.yaml.snakeyaml.error.YAMLException;
 public final class YamlApplicationConfigLoader {
     private static final String TIMING_NODE_ID = "timingNodeId";
     private static final String PRESENTATION = "presentation";
+    private static final String LOGGING = "logging";
+    private static final String LEVEL = "level";
+    private static final String FILE = "file";
+    private static final String PATH = "path";
+    private static final String ROTATE_BYTES = "rotateBytes";
+    private static final String RETAINED_FILES = "retainedFiles";
+    private static final String LIVE = "live";
     private static final String REMOTE_SHELL = "remoteShell";
     private static final String REMOTE_API = "remoteApi";
     private static final String HTTP = "http";
@@ -51,7 +61,7 @@ public final class YamlApplicationConfigLoader {
         }
 
         Map<?, ?> root = requireMapping(document, "configuration root");
-        rejectUnknownFields(root, "configuration root", TIMING_NODE_ID, PRESENTATION);
+        rejectUnknownFields(root, "configuration root", TIMING_NODE_ID, PRESENTATION, LOGGING);
 
         if (!root.containsKey(TIMING_NODE_ID)) {
             throw new IllegalArgumentException(
@@ -60,7 +70,63 @@ public final class YamlApplicationConfigLoader {
 
         TimingNodeId timingNodeId = new TimingNodeId(
                 requireString(root.get(TIMING_NODE_ID), TIMING_NODE_ID));
-        return new ApplicationConfig(timingNodeId, mapPresentation(root.get(PRESENTATION)));
+        return new ApplicationConfig(
+                timingNodeId,
+                mapPresentation(root.get(PRESENTATION)),
+                mapLogging(root.get(LOGGING)));
+    }
+
+    private static LoggingConfig mapLogging(Object rawLogging) {
+        if (rawLogging == null) {
+            return null;
+        }
+
+        Map<?, ?> logging = requireMapping(rawLogging, LOGGING);
+        rejectUnknownFields(logging, LOGGING, LEVEL, FILE, LIVE);
+        if (!logging.containsKey(LEVEL)) {
+            throw new IllegalArgumentException(
+                    "Missing required configuration field: " + LOGGING + "." + LEVEL);
+        }
+        if (!logging.containsKey(FILE)) {
+            throw new IllegalArgumentException(
+                    "Missing required configuration field: " + LOGGING + "." + FILE);
+        }
+
+        String rawLevel = requireString(logging.get(LEVEL), LOGGING + "." + LEVEL);
+        LoggingConfig.Level level;
+        try {
+            level = LoggingConfig.Level.valueOf(rawLevel.trim().toUpperCase());
+        } catch (IllegalArgumentException ex) {
+            throw new IllegalArgumentException(
+                    LOGGING + "." + LEVEL + " must be TRACE, DEBUG, INFO, WARN or ERROR",
+                    ex);
+        }
+
+        return new LoggingConfig(
+                level,
+                mapLoggingFile(logging.get(FILE)),
+                mapLoggingLive(logging.get(LIVE)));
+    }
+
+    private static LoggingFileConfig mapLoggingFile(Object rawFile) {
+        String field = LOGGING + "." + FILE;
+        Map<?, ?> values = requireMapping(rawFile, field);
+        rejectUnknownFields(values, field, PATH, ROTATE_BYTES, RETAINED_FILES);
+        return new LoggingFileConfig(
+                requireString(values.get(PATH), field + "." + PATH),
+                requirePositiveInteger(values.get(ROTATE_BYTES), field + "." + ROTATE_BYTES),
+                requirePositiveInteger(values.get(RETAINED_FILES), field + "." + RETAINED_FILES));
+    }
+
+    private static LoggingLiveConfig mapLoggingLive(Object rawLive) {
+        if (rawLive == null) {
+            return null;
+        }
+        String field = LOGGING + "." + LIVE;
+        Map<?, ?> values = endpointMapping(rawLive, field);
+        return new LoggingLiveConfig(
+                requireString(values.get(BIND_ADDRESS), field + "." + BIND_ADDRESS),
+                requirePort(values.get(PORT), field + "." + PORT));
     }
 
     private static PresentationConfig mapPresentation(Object rawPresentation) {
@@ -134,6 +200,13 @@ public final class YamlApplicationConfigLoader {
                     "Missing required configuration field: " + field + "." + PORT);
         }
         return values;
+    }
+
+    private static int requirePositiveInteger(Object value, String field) {
+        if (!(value instanceof Integer) || ((Integer) value).intValue() <= 0) {
+            throw new IllegalArgumentException(field + " must be a positive YAML integer");
+        }
+        return ((Integer) value).intValue();
     }
 
     private static int requirePort(Object value, String field) {
