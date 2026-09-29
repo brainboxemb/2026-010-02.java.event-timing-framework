@@ -483,18 +483,7 @@ public final class TestClientFxApplication extends Application {
     }
 
     private void appendLog(LiveLogClient.LogEntry entry) {
-        liveLogs.appendText(
-                entry.occurredAt()
-                        + " "
-                        + entry.level()
-                        + " "
-                        + entry.logger()
-                        + " - "
-                        + entry.message()
-                        + System.lineSeparator());
-        if (entry.thrown() != null) {
-            liveLogs.appendText("  " + entry.thrown() + System.lineSeparator());
-        }
+        liveLogs.appendText(entry.formatted());
         liveLogs.positionCaret(liveLogs.getLength());
     }
 

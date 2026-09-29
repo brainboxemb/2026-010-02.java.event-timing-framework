@@ -43,14 +43,19 @@ class LiveLogClientTest {
         LiveLogClient.dispatch(
                 "{\"type\":\"log\",\"occurredAt\":\"2026-09-28T14:00:00Z\","
                         + "\"level\":\"INFO\",\"logger\":\"example.Logger\","
-                        + "\"message\":\"hello\"}",
+                        + "\"source\":\"example.Logger.run\",\"message\":\"hello\","
+                        + "\"formatted\":\"16:00:00.000 - [INFO] - hello - [example.Logger.run]\\n\"}",
                 listener);
         LiveLogClient.dispatch("{\"type\":\"level\",\"level\":\"DEBUG\"}", listener);
 
         assertEquals(Instant.parse("2026-09-28T14:00:00Z"), entry.get().occurredAt());
         assertEquals("INFO", entry.get().level());
         assertEquals("example.Logger", entry.get().logger());
+        assertEquals("example.Logger.run", entry.get().source());
         assertEquals("hello", entry.get().message());
+        assertEquals(
+                "16:00:00.000 - [INFO] - hello - [example.Logger.run]" + System.lineSeparator(),
+                entry.get().formatted());
         assertNull(entry.get().thrown());
         assertEquals("DEBUG", level.get());
         assertNull(error.get());
