@@ -12,14 +12,18 @@ This repository is the public implementation repository for **SI-01 — Headless
 
 Architectural responsibilities are not automatically Maven artifacts.
 
-The initial reactor deliberately contains only two product deliverables:
+The reactor contains two product deliverables plus one verification-only module:
 
 ```text
-framework/   event-timing-framework   reusable library
-app/         event-timing-app         runnable/default application
+framework/    event-timing-framework    reusable library
+app/          event-timing-app          runnable/default application
+system-test/  event-timing-system-test  black-box verification only
 ```
 
-The root `event-timing-parent` POM is build/aggregation metadata rather than a deployed product component.
+`system-test` has no Java dependency on either product artifact. It starts the built app JAR as
+a separate JVM process and verifies only external interfaces. It is not a release/publication
+artifact. The root `event-timing-parent` POM is build/aggregation metadata rather than a deployed
+product component.
 
 The reusable `event-timing-framework` JAR is organised by logical responsibility, but a
 layer/package is not represented by a runtime marker object merely to make the source tree mirror
@@ -277,6 +281,12 @@ cd 2026-010-02.java.event-timing-framework
 ./bootstrap.sh
 ./mvnw verify
 ```
+
+The root `verify` also executes `system-test` after the application JAR has been packaged. That
+test launches the JAR as a child JVM with temporary loopback ports, verifies IF-03
+`/version`, `/status`, WebSocket snapshot/reconnect behaviour, and then shuts the process down
+through the remote terminal `quit` command. The verifier does not import framework/application
+classes, so this is a process-level black-box check rather than another in-process component test.
 
 Use `update-repo.ps1` / `update-repo.sh` for a controlled dependency-alignment pass after changing refs in `project.yml`. The generic tool refuses to overwrite local changes inside a managed dependency.
 
