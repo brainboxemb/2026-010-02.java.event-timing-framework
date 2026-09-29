@@ -32,6 +32,7 @@ final class DiagnosticLogServer implements AutoCloseable {
     private final String bindAddress;
     private final int port;
     private final LoggingControl control;
+    private final CompactLogFormatter formatter = new CompactLogFormatter();
     private final BlockingQueue<String> outbound =
             new ArrayBlockingQueue<String>(QUEUE_CAPACITY);
 
@@ -170,7 +171,7 @@ final class DiagnosticLogServer implements AutoCloseable {
         }
     }
 
-    private static String logLine(LogRecord record) {
+    private String logLine(LogRecord record) {
         String thrown = record.getThrown() == null ? null : record.getThrown().toString();
         return "{\"type\":\"log\",\"occurredAt\":\""
                 + escape(Instant.ofEpochMilli(record.getMillis()).toString())
@@ -178,8 +179,12 @@ final class DiagnosticLogServer implements AutoCloseable {
                 + LoggingControl.semanticLevel(record.getLevel())
                 + "\",\"logger\":\""
                 + escape(record.getLoggerName() == null ? "" : record.getLoggerName())
+                + "\",\"source\":\""
+                + escape(CompactLogFormatter.source(record))
                 + "\",\"message\":\""
-                + escape(record.getMessage() == null ? "" : record.getMessage())
+                + escape(formatter.formatMessage(record))
+                + "\",\"formatted\":\""
+                + escape(formatter.format(record))
                 + "\""
                 + (thrown == null ? "" : ",\"thrown\":\"" + escape(thrown) + "\"")
                 + "}";
