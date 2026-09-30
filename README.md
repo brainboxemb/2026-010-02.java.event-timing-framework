@@ -12,12 +12,13 @@ This repository is the public implementation repository for **SI-01 — Headless
 
 Architectural responsibilities are not automatically Maven artifacts.
 
-The reactor contains two product deliverables plus one verification-only module:
+The default reactor contains the two product deliverables. The verification-only
+`system-test` module is added only when the explicit Maven `system-test` profile is selected:
 
 ```text
 framework/    event-timing-framework    reusable library
 app/          event-timing-app          runnable/default application
-system-test/  event-timing-system-test  black-box verification only
+system-test/  event-timing-system-test  black-box verification only (profile-only)
 ```
 
 `system-test` has no Java dependency on either product artifact. It starts the built app JAR as
@@ -282,11 +283,22 @@ cd 2026-010-02.java.event-timing-framework
 ./mvnw verify
 ```
 
-The root `verify` also executes `system-test` after the application JAR has been packaged. That
-test launches the JAR as a child JVM with temporary loopback ports, verifies IF-03
-`/version`, `/status`, WebSocket snapshot/reconnect behaviour, and then shuts the process down
-through the remote terminal `quit` command. The verifier does not import framework/application
-classes, so this is a process-level black-box check rather than another in-process component test.
+The default root `verify` builds the product reactor and runs its normal tests, but does **not**
+launch the separate application process. Deliberate full system verification is explicit:
+
+```powershell
+.\mvnw.cmd verify -Psystem-test
+```
+
+```bash
+./mvnw verify -Psystem-test
+```
+
+That profile adds `system-test` after the application JAR has been packaged. The test launches
+the JAR as a child JVM with temporary loopback ports, verifies IF-03 `/version`, `/status`,
+WebSocket snapshot/reconnect behaviour, and then shuts the process down through the remote
+terminal `quit` command. The verifier does not import framework/application classes, so this
+remains a process-level black-box check rather than another in-process component test.
 
 Use `update-repo.ps1` / `update-repo.sh` for a controlled dependency-alignment pass after changing refs in `project.yml`. The generic tool refuses to overwrite local changes inside a managed dependency.
 
@@ -298,11 +310,15 @@ the Maven project.
 On first open, NetBeans may perform a **priming build** to resolve the reactor/dependencies. That
 Maven preparation can compile and run tests; it is not the application Run action.
 
-The repository contains `nbactions.xml` so **Run Project** on the root Maven project first
-installs the current reactor sources with tests skipped, then starts the executable `app/`
-module with `config/application.yml`. This ensures the app uses the sibling framework from the
-same checkout rather than an older local SNAPSHOT. The root POM remains build/aggregation metadata
-and is not made into an executable application.
+The repository contains `nbactions.xml` so **Build Project** uses `install` and
+**Clean and Build Project** uses `clean install`, both with `maven.test.skip=true`. Those IDE
+build actions are intentionally fast and do not compile or run tests.
+
+**Run Project** on the root Maven project first installs the current product reactor sources with
+tests skipped, then starts the executable `app/` module with `config/application.yml`. This
+ensures the app uses the sibling framework from the same checkout rather than an older local
+SNAPSHOT. The root POM remains build/aggregation metadata and is not made into an executable
+application.
 
 Use **Run Project** (or **Debug Project** when debugging), then enter:
 
@@ -319,10 +335,15 @@ path.
 
 Run and Debug use the same configured application path; Debug only adds the NetBeans JPDA debugger.
 
-The command-line equivalent remains:
+The command-line split is:
 
 ```powershell
+# Normal product verification: framework/app tests, no separate process launch
 .\mvnw.cmd verify
+
+# Deliberate VC-ST1-001 black-box verification
+.\mvnw.cmd verify -Psystem-test
+
 java -jar app\target\event-timing-app-0.2.3-SNAPSHOT.jar config\application.yml
 ```
 
@@ -454,6 +475,13 @@ orchestration/
 
 `timing.md`/`timing.json` record actual GitHub job/step timings and Maven-reported time so Java work can be distinguished from runner, checkout, setup and artifact-transfer overhead.
 
+The canonical Maven `verify` intentionally excludes the black-box `system-test` profile.
+Pull-request CI therefore runs normal product tests without launching VC-ST1-001 on every commit.
+After an affected change is integrated into protected `main`, a repository-owned Linux job runs
+`verify -Psystem-test` explicitly. Exact release-tag qualification runs the same explicit profile
+on both Linux and Windows; both Surefire result sets are copied into the final release evidence
+bundle.
+
 Generated output is published as:
 
 ```text
@@ -479,6 +507,8 @@ The exact tag is the release qualification boundary. Tag verification always per
 ```text
 exact tagged Linux canonical Maven build
 native Windows Maven verify       (parallel with Linux)
+explicit VC-ST1-001 profile verify on Linux
+explicit VC-ST1-001 profile verify on Windows
 exact Linux-produced app JAR smoke on Windows
 rel/vX.Y.Z/bld publication
 product artifact/build-identity validation

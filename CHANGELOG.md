@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Decouple black-box VC-ST1-001 from ordinary local/PR verification: make `system-test` an explicit Maven profile, keep NetBeans Build/Rebuild test-free, run the process-level test after affected protected-main integration, and require Linux plus Windows system-test evidence for release-tag qualification.
+
 - Resume normal development on `0.2.3-SNAPSHOT` after the accepted `v0.2.2` Step-3 release; this mechanical successor does not pre-decide the eventual Step-4 release number.
 
 ## 0.2.2 — 2026-09-29

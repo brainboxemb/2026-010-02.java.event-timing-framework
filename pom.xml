@@ -15,7 +15,6 @@
   <modules>
     <module>framework</module>
     <module>app</module>
-    <module>system-test</module>
   </modules>
 
   <properties>
@@ -40,6 +39,12 @@
   </properties>
 
   <profiles>
+    <profile>
+      <id>system-test</id>
+      <modules>
+        <module>system-test</module>
+      </modules>
+    </profile>
     <profile>
       <id>github-actions-provenance</id>
       <activation>
