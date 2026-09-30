@@ -1,7 +1,7 @@
-package io.github.brainboxemb.eventtiming.presentation.interfaces.api;
+package io.github.brainboxemb.eventtiming.timingpoint.presentation.interfaces.api;
 
-import io.github.brainboxemb.eventtiming.application.ApplicationStatus;
-import io.github.brainboxemb.eventtiming.infra.BuildIdentity;
+import io.github.brainboxemb.eventtiming.timingpoint.application.ApplicationStatus;
+import io.github.brainboxemb.eventtiming.timingpoint.infra.BuildIdentity;
 
 /** Explicit JSON mapping for the IF-03 first-executable contract. */
 public final class MessageWriter {

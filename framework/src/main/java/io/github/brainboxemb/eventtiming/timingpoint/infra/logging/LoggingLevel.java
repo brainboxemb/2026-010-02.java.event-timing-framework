@@ -1,4 +1,4 @@
-package io.github.brainboxemb.eventtiming.infra.logging;
+package io.github.brainboxemb.eventtiming.timingpoint.infra.logging;
 
 /** Semantic logging levels independent from the selected SLF4J backend/provider. */
 public enum LoggingLevel {
