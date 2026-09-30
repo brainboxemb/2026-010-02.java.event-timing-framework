@@ -4,7 +4,7 @@ import io.github.brainboxemb.eventtiming.timingpoint.domain.timing.TimingNodeId;
 import io.github.brainboxemb.eventtiming.timingpoint.infra.logging.LoggingConfig;
 import io.github.brainboxemb.eventtiming.timingpoint.infra.logging.LoggingFileConfig;
 import io.github.brainboxemb.eventtiming.timingpoint.infra.logging.LoggingLevel;
-import io.github.brainboxemb.eventtiming.timingpoint.infra.logging.LoggingServerConfig;
+import io.github.brainboxemb.eventtiming.timingpoint.infra.loggingserver.LoggingServerConfig;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -68,7 +68,8 @@ public final class YamlApplicationConfigLoader {
         return new ApplicationConfig(
                 timingNodeId,
                 mapPresentation(root.get(PRESENTATION)),
-                mapLogging(root.get(LOGGING)));
+                mapLogging(root.get(LOGGING)),
+                mapLoggingLive(root.get(LOGGING)));
     }
 
     private static LoggingConfig mapLogging(Object rawLogging) {
@@ -99,8 +100,7 @@ public final class YamlApplicationConfigLoader {
 
         return new LoggingConfig(
                 level,
-                mapLoggingFile(logging.get(FILE)),
-                mapLoggingLive(logging.get(LIVE)));
+                mapLoggingFile(logging.get(FILE)));
     }
 
     private static LoggingFileConfig mapLoggingFile(Object rawFile) {
@@ -113,7 +113,12 @@ public final class YamlApplicationConfigLoader {
                 requirePositiveInteger(values.get(RETAINED_FILES), field + "." + RETAINED_FILES));
     }
 
-    private static LoggingServerConfig mapLoggingLive(Object rawLive) {
+    private static LoggingServerConfig mapLoggingLive(Object rawLogging) {
+        if (rawLogging == null) {
+            return null;
+        }
+        Map<?, ?> logging = requireMapping(rawLogging, LOGGING);
+        Object rawLive = logging.get(LIVE);
         if (rawLive == null) {
             return null;
         }
