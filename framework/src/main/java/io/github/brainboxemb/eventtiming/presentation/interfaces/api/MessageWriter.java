@@ -1,4 +1,4 @@
-package io.github.brainboxemb.eventtiming.presentation.interfaces.remoteapi;
+package io.github.brainboxemb.eventtiming.presentation.interfaces.api;
 
 import io.github.brainboxemb.eventtiming.application.ApplicationStatus;
 import io.github.brainboxemb.eventtiming.infra.BuildIdentity;

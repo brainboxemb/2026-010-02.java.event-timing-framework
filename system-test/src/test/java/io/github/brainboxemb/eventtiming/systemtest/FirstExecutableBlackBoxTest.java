@@ -303,7 +303,7 @@ public class FirstExecutableBlackBoxTest {
                 + "  remoteShell:\n"
                 + "    bindAddress: 127.0.0.1\n"
                 + "    port: " + shellPort + "\n"
-                + "  remoteApi:\n"
+                + "  api:\n"
                 + "    http:\n"
                 + "      bindAddress: 127.0.0.1\n"
                 + "      port: " + httpPort + "\n"

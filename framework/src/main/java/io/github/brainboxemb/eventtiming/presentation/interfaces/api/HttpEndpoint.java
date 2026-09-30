@@ -1,4 +1,4 @@
-package io.github.brainboxemb.eventtiming.presentation.interfaces.remoteapi;
+package io.github.brainboxemb.eventtiming.presentation.interfaces.api;
 
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpServer;
@@ -15,7 +15,7 @@ import java.util.concurrent.Executors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/** HTTP/JSON transport for the IF-03 Remote API. */
+/** HTTP/JSON transport for the IF-03 API. */
 public final class HttpEndpoint implements AutoCloseable {
     private static final Logger LOG = LoggerFactory.getLogger(HttpEndpoint.class);
 

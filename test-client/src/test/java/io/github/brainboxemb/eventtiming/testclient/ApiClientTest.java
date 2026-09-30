@@ -14,7 +14,7 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 
-public class RemoteApiClientTest {
+public class ApiClientTest {
     private HttpServer server;
 
     @AfterEach
@@ -57,7 +57,7 @@ public class RemoteApiClientTest {
                         + "}"));
         server.start();
 
-        RemoteApiClient client = new RemoteApiClient(
+        ApiClient client = new ApiClient(
                 URI.create("http://127.0.0.1:" + server.getAddress().getPort()));
 
         var version = client.getVersion();

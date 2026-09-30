@@ -12,8 +12,8 @@ import java.time.Instant;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 
-/** Independent IF-03 Remote API event client used by the JavaFX development tool. */
-public final class RemoteApiEventClient implements AutoCloseable {
+/** Independent IF-03 API event client used by the JavaFX development tool. */
+public final class ApiEventClient implements AutoCloseable {
     public interface Listener {
         void onConnected();
 
@@ -27,7 +27,7 @@ public final class RemoteApiEventClient implements AutoCloseable {
     public record StatusEvent(
             String eventType,
             Instant occurredAt,
-            RemoteApiClient.StatusResult status,
+            ApiClient.StatusResult status,
             String rawJson) {
     }
 
@@ -58,14 +58,14 @@ public final class RemoteApiEventClient implements AutoCloseable {
                 .buildAsync(endpoint, bridge)
                 .whenComplete((socket, error) -> {
                     if (error != null) {
-                        synchronized (RemoteApiEventClient.this) {
+                        synchronized (ApiEventClient.this) {
                             connecting = false;
                         }
                         result.completeExceptionally(error);
                         return;
                     }
 
-                    synchronized (RemoteApiEventClient.this) {
+                    synchronized (ApiEventClient.this) {
                         webSocket = socket;
                         connecting = false;
                     }
@@ -93,15 +93,15 @@ public final class RemoteApiEventClient implements AutoCloseable {
 
     static StatusEvent parseEvent(String rawJson) throws IOException {
         JsonNode root = JSON.readTree(rawJson);
-        String eventType = RemoteApiClient.requiredText(root, "eventType");
+        String eventType = ApiClient.requiredText(root, "eventType");
         Instant occurredAt = Instant.parse(
-                RemoteApiClient.requiredText(root, "occurredAt"));
-        JsonNode payload = RemoteApiClient.required(root, "payload");
+                ApiClient.requiredText(root, "occurredAt"));
+        JsonNode payload = ApiClient.required(root, "payload");
         String payloadJson = JSON.writeValueAsString(payload);
         return new StatusEvent(
                 eventType,
                 occurredAt,
-                RemoteApiClient.parseStatus(payloadJson),
+                ApiClient.parseStatus(payloadJson),
                 rawJson);
     }
 

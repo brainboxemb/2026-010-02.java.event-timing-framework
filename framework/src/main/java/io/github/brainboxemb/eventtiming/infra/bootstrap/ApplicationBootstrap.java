@@ -3,13 +3,13 @@ package io.github.brainboxemb.eventtiming.infra.bootstrap;
 import io.github.brainboxemb.eventtiming.domain.timing.TimingNode;
 import io.github.brainboxemb.eventtiming.infra.BuildIdentity;
 import io.github.brainboxemb.eventtiming.infra.bootstrap.config.ApplicationConfig;
-import io.github.brainboxemb.eventtiming.infra.bootstrap.config.RemoteApiConfig;
-import io.github.brainboxemb.eventtiming.infra.bootstrap.config.RemoteApiHttpConfig;
-import io.github.brainboxemb.eventtiming.infra.bootstrap.config.RemoteApiWebSocketConfig;
+import io.github.brainboxemb.eventtiming.infra.bootstrap.config.ApiConfig;
+import io.github.brainboxemb.eventtiming.infra.bootstrap.config.ApiHttpConfig;
+import io.github.brainboxemb.eventtiming.infra.bootstrap.config.ApiWebSocketConfig;
 import io.github.brainboxemb.eventtiming.infra.bootstrap.config.RemoteShellConfig;
 import io.github.brainboxemb.eventtiming.presentation.interfaces.console.LocalConsole;
-import io.github.brainboxemb.eventtiming.presentation.interfaces.remoteapi.HttpEndpoint;
-import io.github.brainboxemb.eventtiming.presentation.interfaces.remoteapi.WebSocketEndpoint;
+import io.github.brainboxemb.eventtiming.presentation.interfaces.api.HttpEndpoint;
+import io.github.brainboxemb.eventtiming.presentation.interfaces.api.WebSocketEndpoint;
 import io.github.brainboxemb.eventtiming.presentation.interfaces.shell.RemoteShellServer;
 import io.github.brainboxemb.eventtiming.runtime.TimingApplication;
 
@@ -79,8 +79,8 @@ public final class ApplicationBootstrap {
     private static HttpEndpoint startHttp(
             ApplicationConfig config,
             TimingApplication application) throws IOException {
-        RemoteApiConfig remoteApi = config.presentation().remoteApi();
-        RemoteApiHttpConfig endpoint = remoteApi == null ? null : remoteApi.http();
+        ApiConfig api = config.presentation().api();
+        ApiHttpConfig endpoint = api == null ? null : api.http();
         if (endpoint == null) {
             return null;
         }
@@ -96,9 +96,9 @@ public final class ApplicationBootstrap {
     private static WebSocketEndpoint startWebSocket(
             ApplicationConfig config,
             TimingApplication application) throws IOException {
-        RemoteApiConfig remoteApi = config.presentation().remoteApi();
-        RemoteApiWebSocketConfig endpoint =
-                remoteApi == null ? null : remoteApi.webSocket();
+        ApiConfig api = config.presentation().api();
+        ApiWebSocketConfig endpoint =
+                api == null ? null : api.webSocket();
         if (endpoint == null) {
             return null;
         }

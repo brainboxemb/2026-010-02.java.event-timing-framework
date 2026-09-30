@@ -6,7 +6,7 @@ presentation:
     # Development/service baseline: explicit loopback-only listener.
     bindAddress: 127.0.0.1
     port: 8023
-  remoteApi:
+  api:
     http:
       # IF-03 request/response development baseline: loopback-only.
       bindAddress: 127.0.0.1

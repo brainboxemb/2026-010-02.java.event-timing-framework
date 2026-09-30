@@ -6,7 +6,7 @@ Project-wide planning, requirements, architecture, interface design and verifica
 
 ## Current scope
 
-This repository is the public implementation repository for **SI-01 — Headless Timing Application**. `v0.2.2` is the accepted SIP Step-3 application/Remote API foundation baseline; normal development continues on `0.2.3-SNAPSHOT` while Step 4 begins. The baseline provides external YAML configuration, long-running process lifecycle, shared local/remote terminal semantics, IF-03 HTTP/WebSocket version and status, runtime logging/live diagnostics, and automated separate-process system verification. Timing-domain behaviour plus RFID, CAN, display and backoffice integrations remain later-step work.
+This repository is the public implementation repository for **SI-01 — Headless Timing Application**. `v0.2.2` is the accepted SIP Step-3 application/API foundation baseline; normal development continues on `0.2.3-SNAPSHOT` while Step 4 begins. The baseline provides external YAML configuration, long-running process lifecycle, shared local/remote terminal semantics, IF-03 HTTP/WebSocket version and status, runtime logging/live diagnostics, and automated separate-process system verification. Timing-domain behaviour plus RFID, CAN, display and backoffice integrations remain later-step work.
 
 ## Artifact and package model
 
@@ -44,9 +44,9 @@ io.github.brainboxemb.eventtiming.runtime.TimingApplication
 io.github.brainboxemb.eventtiming.runtime.TimingApplicationLifecycle
 io.github.brainboxemb.eventtiming.presentation.interfaces.console.LocalConsole
 io.github.brainboxemb.eventtiming.presentation.interfaces.shell.RemoteShellServer
-io.github.brainboxemb.eventtiming.presentation.interfaces.remoteapi.HttpEndpoint
-io.github.brainboxemb.eventtiming.presentation.interfaces.remoteapi.WebSocketEndpoint
-io.github.brainboxemb.eventtiming.presentation.interfaces.remoteapi.MessageWriter
+io.github.brainboxemb.eventtiming.presentation.interfaces.api.HttpEndpoint
+io.github.brainboxemb.eventtiming.presentation.interfaces.api.WebSocketEndpoint
+io.github.brainboxemb.eventtiming.presentation.interfaces.api.MessageWriter
 io.github.brainboxemb.eventtiming.presentation.common.terminal.TerminalSession
 ```
 
@@ -70,9 +70,9 @@ io.github.brainboxemb.eventtiming/
         ApplicationConfig
         PresentationConfig
         RemoteShellConfig
-        RemoteApiConfig
-        RemoteApiHttpConfig
-        RemoteApiWebSocketConfig
+        ApiConfig
+        ApiHttpConfig
+        ApiWebSocketConfig
 ```
 
 The executable artifact remains thin. Launcher/input adapters stay under `...eventtiming.app`;
@@ -146,7 +146,7 @@ presentation:
   remoteShell:
     bindAddress: 127.0.0.1
     port: 8023
-  remoteApi:
+  api:
     http:
       bindAddress: 127.0.0.1
       port: 8081
@@ -182,7 +182,7 @@ restart restores the configured level. The live diagnostics stream is separate f
 `/api/v1/events`.
 
 The remote shell is a small line-oriented TCP development/service endpoint. It is **not** an SSH
-or Telnet protocol implementation. IF-03 is the general **Remote API**; A06/A07 implement its first
+or Telnet protocol implementation. IF-03 is the general **API**; A06/A07 implement its first
 HTTP version/status and WebSocket event slice:
 
 ```text
@@ -196,9 +196,9 @@ The WebSocket adapter sends a complete `STATUS_SNAPSHOT` immediately after conne
 TimingNode remains `CLOSED`, so no synthetic change is generated merely to exercise the
 transport.
 
-Remote API HTTP and WebSocket are grouped under `presentation.remoteApi` because they are two
+API HTTP and WebSocket are grouped under `presentation.api` because they are two
 transports of the same functional interface. A future browser/iPad `presentation.web` interface
-may have its own HTTP/WebSocket endpoints without sharing the Remote API namespace.
+may have its own HTTP/WebSocket endpoints without sharing the API namespace.
 
 The committed development example keeps all network presentation listeners loopback-only;
 binding to another interface must be a deliberate configuration change.
@@ -234,7 +234,7 @@ added only when their SIP activities provide a real consumer.
 
 ### Step-3 JavaFX test client
 
-`test-client/` is a standalone Java 17 / JavaFX development tool for manually inspecting the IF-03 Remote API.
+`test-client/` is a standalone Java 17 / JavaFX development tool for manually inspecting the IF-03 API.
 It is deliberately not part of the Java-8 SI-01 Maven reactor and has no dependency on
 `event-timing-framework` or `event-timing-app`.
 

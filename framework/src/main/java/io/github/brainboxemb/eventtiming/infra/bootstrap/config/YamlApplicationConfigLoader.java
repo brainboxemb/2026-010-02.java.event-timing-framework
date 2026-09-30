@@ -30,7 +30,7 @@ public final class YamlApplicationConfigLoader {
     private static final String RETAINED_FILES = "retainedFiles";
     private static final String LIVE = "live";
     private static final String REMOTE_SHELL = "remoteShell";
-    private static final String REMOTE_API = "remoteApi";
+    private static final String API = "api";
     private static final String HTTP = "http";
     private static final String WEB_SOCKET = "webSocket";
     private static final String BIND_ADDRESS = "bindAddress";
@@ -130,11 +130,11 @@ public final class YamlApplicationConfigLoader {
         }
 
         Map<?, ?> presentation = requireMapping(rawPresentation, PRESENTATION);
-        rejectUnknownFields(presentation, PRESENTATION, REMOTE_SHELL, REMOTE_API);
+        rejectUnknownFields(presentation, PRESENTATION, REMOTE_SHELL, API);
 
         return new PresentationConfig(
                 mapRemoteShell(presentation.get(REMOTE_SHELL)),
-                mapRemoteApi(presentation.get(REMOTE_API)));
+                mapApi(presentation.get(API)));
     }
 
     private static RemoteShellConfig mapRemoteShell(Object raw) {
@@ -149,36 +149,36 @@ public final class YamlApplicationConfigLoader {
                         PRESENTATION + "." + REMOTE_SHELL + "." + PORT));
     }
 
-    private static RemoteApiConfig mapRemoteApi(Object raw) {
+    private static ApiConfig mapApi(Object raw) {
         if (raw == null) {
             return null;
         }
-        String field = PRESENTATION + "." + REMOTE_API;
+        String field = PRESENTATION + "." + API;
         Map<?, ?> values = requireMapping(raw, field);
         rejectUnknownFields(values, field, HTTP, WEB_SOCKET);
-        return new RemoteApiConfig(
-                mapRemoteApiHttp(values.get(HTTP)),
-                mapRemoteApiWebSocket(values.get(WEB_SOCKET)));
+        return new ApiConfig(
+                mapApiHttp(values.get(HTTP)),
+                mapApiWebSocket(values.get(WEB_SOCKET)));
     }
 
-    private static RemoteApiHttpConfig mapRemoteApiHttp(Object raw) {
+    private static ApiHttpConfig mapApiHttp(Object raw) {
         if (raw == null) {
             return null;
         }
-        String field = PRESENTATION + "." + REMOTE_API + "." + HTTP;
+        String field = PRESENTATION + "." + API + "." + HTTP;
         Map<?, ?> values = endpointMapping(raw, field);
-        return new RemoteApiHttpConfig(
+        return new ApiHttpConfig(
                 requireString(values.get(BIND_ADDRESS), field + "." + BIND_ADDRESS),
                 requirePort(values.get(PORT), field + "." + PORT));
     }
 
-    private static RemoteApiWebSocketConfig mapRemoteApiWebSocket(Object raw) {
+    private static ApiWebSocketConfig mapApiWebSocket(Object raw) {
         if (raw == null) {
             return null;
         }
-        String field = PRESENTATION + "." + REMOTE_API + "." + WEB_SOCKET;
+        String field = PRESENTATION + "." + API + "." + WEB_SOCKET;
         Map<?, ?> values = endpointMapping(raw, field);
-        return new RemoteApiWebSocketConfig(
+        return new ApiWebSocketConfig(
                 requireString(values.get(BIND_ADDRESS), field + "." + BIND_ADDRESS),
                 requirePort(values.get(PORT), field + "." + PORT));
     }
