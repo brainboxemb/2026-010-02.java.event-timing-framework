@@ -1,4 +1,4 @@
-package io.github.brainboxemb.eventtiming.infra.bootstrap.config;
+package io.github.brainboxemb.eventtiming.timingpoint.infra.bootstrap.config;
 
 /** Effective configuration for the IF-03 API WebSocket listener. */
 public final class ApiWebSocketConfig {

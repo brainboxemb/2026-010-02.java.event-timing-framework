@@ -1,7 +1,7 @@
-package io.github.brainboxemb.eventtiming.app.bootstrap;
+package io.github.brainboxemb.eventtiming.timingpoint.app.bootstrap;
 
-import io.github.brainboxemb.eventtiming.infra.BuildIdentity;
-import io.github.brainboxemb.eventtiming.infra.EmbeddedBuildIdentityLoader;
+import io.github.brainboxemb.eventtiming.timingpoint.infra.BuildIdentity;
+import io.github.brainboxemb.eventtiming.timingpoint.infra.EmbeddedBuildIdentityLoader;
 
 import org.junit.Test;
 

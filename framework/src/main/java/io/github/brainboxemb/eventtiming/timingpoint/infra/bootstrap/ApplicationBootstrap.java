@@ -1,17 +1,17 @@
-package io.github.brainboxemb.eventtiming.infra.bootstrap;
+package io.github.brainboxemb.eventtiming.timingpoint.infra.bootstrap;
 
-import io.github.brainboxemb.eventtiming.domain.timing.TimingNode;
-import io.github.brainboxemb.eventtiming.infra.BuildIdentity;
-import io.github.brainboxemb.eventtiming.infra.bootstrap.config.ApplicationConfig;
-import io.github.brainboxemb.eventtiming.infra.bootstrap.config.ApiConfig;
-import io.github.brainboxemb.eventtiming.infra.bootstrap.config.ApiHttpConfig;
-import io.github.brainboxemb.eventtiming.infra.bootstrap.config.ApiWebSocketConfig;
-import io.github.brainboxemb.eventtiming.infra.bootstrap.config.RemoteShellConfig;
-import io.github.brainboxemb.eventtiming.presentation.interfaces.console.LocalConsole;
-import io.github.brainboxemb.eventtiming.presentation.interfaces.api.HttpEndpoint;
-import io.github.brainboxemb.eventtiming.presentation.interfaces.api.WebSocketEndpoint;
-import io.github.brainboxemb.eventtiming.presentation.interfaces.shell.RemoteShellServer;
-import io.github.brainboxemb.eventtiming.runtime.TimingApplication;
+import io.github.brainboxemb.eventtiming.timingpoint.domain.timing.TimingNode;
+import io.github.brainboxemb.eventtiming.timingpoint.infra.BuildIdentity;
+import io.github.brainboxemb.eventtiming.timingpoint.infra.bootstrap.config.ApplicationConfig;
+import io.github.brainboxemb.eventtiming.timingpoint.infra.bootstrap.config.ApiConfig;
+import io.github.brainboxemb.eventtiming.timingpoint.infra.bootstrap.config.ApiHttpConfig;
+import io.github.brainboxemb.eventtiming.timingpoint.infra.bootstrap.config.ApiWebSocketConfig;
+import io.github.brainboxemb.eventtiming.timingpoint.infra.bootstrap.config.RemoteShellConfig;
+import io.github.brainboxemb.eventtiming.timingpoint.presentation.interfaces.console.LocalConsole;
+import io.github.brainboxemb.eventtiming.timingpoint.presentation.interfaces.api.HttpEndpoint;
+import io.github.brainboxemb.eventtiming.timingpoint.presentation.interfaces.api.WebSocketEndpoint;
+import io.github.brainboxemb.eventtiming.timingpoint.presentation.interfaces.shell.RemoteShellServer;
+import io.github.brainboxemb.eventtiming.timingpoint.runtime.TimingApplication;
 
 import java.io.IOException;
 import java.io.InputStreamReader;

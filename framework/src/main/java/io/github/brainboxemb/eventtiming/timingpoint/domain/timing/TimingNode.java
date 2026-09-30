@@ -1,4 +1,4 @@
-package io.github.brainboxemb.eventtiming.domain.timing;
+package io.github.brainboxemb.eventtiming.timingpoint.domain.timing;
 
 /** Logical timing unit with its own stable identity and lifecycle. */
 public final class TimingNode {
