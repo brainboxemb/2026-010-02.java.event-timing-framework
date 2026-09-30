@@ -1,4 +1,4 @@
-package io.github.brainboxemb.eventtiming.infra.logging;
+package io.github.brainboxemb.eventtiming.timingpoint.infra.logging;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -90,7 +90,7 @@ public class LoggingTest {
 
                 LogRecord record = new LogRecord(Level.INFO, "Application lifecycle state=RUNNING");
                 record.setSourceClassName(
-                        "io.github.brainboxemb.eventtiming.runtime.TimingApplicationLifecycle");
+                        "io.github.brainboxemb.eventtiming.timingpoint.runtime.TimingApplicationLifecycle");
                 record.setSourceMethodName("start");
                 String line = console.getFormatter().format(record);
                 assertTrue(line.matches(

@@ -1,4 +1,4 @@
-package io.github.brainboxemb.eventtiming.infra.bootstrap.config;
+package io.github.brainboxemb.eventtiming.timingpoint.infra.bootstrap.config;
 
 import java.io.File;
 import java.nio.charset.StandardCharsets;
@@ -66,7 +66,7 @@ public class YamlApplicationConfigLoaderTest {
                         + "    port: 8030\n");
 
         assertEquals(
-                io.github.brainboxemb.eventtiming.infra.logging.LoggingLevel.DEBUG,
+                io.github.brainboxemb.eventtiming.timingpoint.infra.logging.LoggingLevel.DEBUG,
                 config.logging().level());
         assertEquals("logs", config.logging().file().path());
         assertEquals(1048576, config.logging().file().rotateBytes());
