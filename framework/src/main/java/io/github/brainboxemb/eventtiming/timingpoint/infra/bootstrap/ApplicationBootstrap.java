@@ -1,0 +1,149 @@
+package io.github.brainboxemb.eventtiming.timingpoint.infra.bootstrap;
+
+import io.github.brainboxemb.eventtiming.timingpoint.domain.timing.TimingNode;
+import io.github.brainboxemb.eventtiming.timingpoint.infra.BuildIdentity;
+import io.github.brainboxemb.eventtiming.timingpoint.infra.bootstrap.config.ApplicationConfig;
+import io.github.brainboxemb.eventtiming.timingpoint.infra.bootstrap.config.ApiConfig;
+import io.github.brainboxemb.eventtiming.timingpoint.infra.bootstrap.config.ApiHttpConfig;
+import io.github.brainboxemb.eventtiming.timingpoint.infra.bootstrap.config.ApiWebSocketConfig;
+import io.github.brainboxemb.eventtiming.timingpoint.infra.bootstrap.config.RemoteShellConfig;
+import io.github.brainboxemb.eventtiming.timingpoint.presentation.interfaces.console.LocalConsole;
+import io.github.brainboxemb.eventtiming.timingpoint.presentation.interfaces.api.HttpEndpoint;
+import io.github.brainboxemb.eventtiming.timingpoint.presentation.interfaces.api.WebSocketEndpoint;
+import io.github.brainboxemb.eventtiming.timingpoint.presentation.interfaces.shell.RemoteShellServer;
+import io.github.brainboxemb.eventtiming.timingpoint.runtime.TimingApplication;
+
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
+
+/**
+ * Cross-cutting framework bootstrap: composition and startup wiring.
+ *
+ * <p>The bootstrap consumes an already parsed and validated ApplicationConfig. Input-format
+ * parsing is a separate infrastructure concern; the default IF-11 YAML loader lives beside the
+ * framework configuration model and is not part of bootstrap composition itself.</p>
+ */
+public final class ApplicationBootstrap {
+    private ApplicationBootstrap() {
+    }
+
+    public static void run(BuildIdentity buildIdentity, ApplicationConfig config)
+            throws IOException {
+        TimingApplication application = compose(buildIdentity, config);
+
+        Runtime runtime = Runtime.getRuntime();
+        Thread shutdownHook = new Thread(application::close, "event-timing-shutdown");
+        runtime.addShutdownHook(shutdownHook);
+
+        HttpEndpoint http = null;
+        WebSocketEndpoint webSocket = null;
+        RemoteShellServer remoteShell = null;
+        try {
+            application.start();
+            http = startHttp(config, application);
+            webSocket = startWebSocket(config, application);
+            remoteShell = startRemoteShell(config, application);
+            startLocalConsole(application);
+            try {
+                application.awaitStopped();
+            } catch (InterruptedException ex) {
+                Thread.currentThread().interrupt();
+            }
+        } finally {
+            if (webSocket != null) {
+                webSocket.close();
+            }
+            if (http != null) {
+                http.close();
+            }
+            if (remoteShell != null) {
+                remoteShell.close();
+            }
+            application.close();
+            removeShutdownHook(runtime, shutdownHook);
+        }
+
+        System.out.println(application.smokeOutput());
+    }
+
+    static TimingApplication compose(BuildIdentity buildIdentity, ApplicationConfig config) {
+        if (config == null) {
+            throw new IllegalArgumentException("config must not be null");
+        }
+        return TimingApplication.builder(buildIdentity)
+                .timingNode(new TimingNode(config.timingNodeId()))
+                .build();
+    }
+
+    private static HttpEndpoint startHttp(
+            ApplicationConfig config,
+            TimingApplication application) throws IOException {
+        ApiConfig api = config.presentation().api();
+        ApiHttpConfig endpoint = api == null ? null : api.http();
+        if (endpoint == null) {
+            return null;
+        }
+
+        HttpEndpoint server = new HttpEndpoint(
+                endpoint.bindAddress(),
+                endpoint.port(),
+                application.commandHandler());
+        server.start();
+        return server;
+    }
+
+    private static WebSocketEndpoint startWebSocket(
+            ApplicationConfig config,
+            TimingApplication application) throws IOException {
+        ApiConfig api = config.presentation().api();
+        ApiWebSocketConfig endpoint =
+                api == null ? null : api.webSocket();
+        if (endpoint == null) {
+            return null;
+        }
+
+        WebSocketEndpoint server = new WebSocketEndpoint(
+                endpoint.bindAddress(),
+                endpoint.port(),
+                application.commandHandler());
+        server.start();
+        return server;
+    }
+
+    private static RemoteShellServer startRemoteShell(
+            ApplicationConfig config,
+            TimingApplication application) throws IOException {
+        RemoteShellConfig endpoint = config.presentation().remoteShell();
+        if (endpoint == null) {
+            return null;
+        }
+
+        RemoteShellServer server = new RemoteShellServer(
+                endpoint.bindAddress(),
+                endpoint.port(),
+                application.commandHandler(),
+                application::close);
+        server.start();
+        return server;
+    }
+
+    private static void startLocalConsole(TimingApplication application) {
+        LocalConsole console = new LocalConsole(
+                application.commandHandler(),
+                application::close,
+                new InputStreamReader(System.in),
+                new OutputStreamWriter(System.out));
+        Thread consoleThread = new Thread(console, "event-timing-console");
+        consoleThread.setDaemon(true);
+        consoleThread.start();
+    }
+
+    private static void removeShutdownHook(Runtime runtime, Thread shutdownHook) {
+        try {
+            runtime.removeShutdownHook(shutdownHook);
+        } catch (IllegalStateException ignored) {
+            // JVM shutdown is already in progress.
+        }
+    }
+}

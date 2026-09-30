@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Rename SI-01 to **Timing Point Application**, move SI-01 framework/app Java packages under `io.github.brainboxemb.eventtiming.timingpoint`, and split runtime `Logging` from the independently composed `infra.loggingserver.LoggingServer` package while preserving the external `logging.live` YAML shape.
+
 - Rename the programmable IF-03 presentation interface from `Remote API` to `API`, including `presentation.interfaces.api`, `Api*` configuration types, the `presentation.api` YAML key and engineering test-client names; HTTP/WebSocket wire paths and behavior are unchanged.
 
 - Decouple black-box VC-ST1-001 from ordinary local/PR verification: make `system-test` an explicit Maven profile, keep NetBeans Build/Rebuild test-free, run the process-level test after affected protected-main integration, and require Linux plus Windows system-test evidence for release-tag qualification.
