@@ -1,6 +1,6 @@
-package io.github.brainboxemb.eventtiming.application;
+package io.github.brainboxemb.eventtiming.timingpoint.application;
 
-import io.github.brainboxemb.eventtiming.infra.BuildIdentity;
+import io.github.brainboxemb.eventtiming.timingpoint.infra.BuildIdentity;
 
 import java.util.function.Supplier;
 

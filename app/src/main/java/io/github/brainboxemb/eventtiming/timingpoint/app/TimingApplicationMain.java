@@ -1,13 +1,13 @@
-package io.github.brainboxemb.eventtiming.app;
+package io.github.brainboxemb.eventtiming.timingpoint.app;
 
-import io.github.brainboxemb.eventtiming.infra.EmbeddedBuildIdentityLoader;
-import io.github.brainboxemb.eventtiming.infra.bootstrap.config.YamlApplicationConfigLoader;
-import io.github.brainboxemb.eventtiming.infra.logging.Logging;
-import io.github.brainboxemb.eventtiming.infra.BuildIdentity;
-import io.github.brainboxemb.eventtiming.infra.bootstrap.ApplicationBootstrap;
-import io.github.brainboxemb.eventtiming.infra.bootstrap.config.ApplicationConfig;
-import io.github.brainboxemb.eventtiming.runtime.TimingApplication;
-import io.github.brainboxemb.eventtiming.runtime.TimingApplicationLifecycle;
+import io.github.brainboxemb.eventtiming.timingpoint.infra.EmbeddedBuildIdentityLoader;
+import io.github.brainboxemb.eventtiming.timingpoint.infra.bootstrap.config.YamlApplicationConfigLoader;
+import io.github.brainboxemb.eventtiming.timingpoint.infra.logging.Logging;
+import io.github.brainboxemb.eventtiming.timingpoint.infra.BuildIdentity;
+import io.github.brainboxemb.eventtiming.timingpoint.infra.bootstrap.ApplicationBootstrap;
+import io.github.brainboxemb.eventtiming.timingpoint.infra.bootstrap.config.ApplicationConfig;
+import io.github.brainboxemb.eventtiming.timingpoint.runtime.TimingApplication;
+import io.github.brainboxemb.eventtiming.timingpoint.runtime.TimingApplicationLifecycle;
 
 import java.io.IOException;
 import java.nio.file.Paths;

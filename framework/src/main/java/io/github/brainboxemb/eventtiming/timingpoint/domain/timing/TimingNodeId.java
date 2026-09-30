@@ -1,4 +1,4 @@
-package io.github.brainboxemb.eventtiming.domain.timing;
+package io.github.brainboxemb.eventtiming.timingpoint.domain.timing;
 
 /** Stable software identity of one {@link TimingNode}. */
 public final class TimingNodeId {

@@ -1,4 +1,4 @@
-package io.github.brainboxemb.eventtiming.infra;
+package io.github.brainboxemb.eventtiming.timingpoint.infra;
 
 /**
  * Immutable identity and deterministic provenance of one built application artifact.
