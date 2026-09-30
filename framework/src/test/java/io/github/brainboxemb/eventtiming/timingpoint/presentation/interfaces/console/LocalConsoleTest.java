@@ -1,10 +1,10 @@
-package io.github.brainboxemb.eventtiming.presentation.interfaces.console;
+package io.github.brainboxemb.eventtiming.timingpoint.presentation.interfaces.console;
 
-import io.github.brainboxemb.eventtiming.application.ApplicationStatus;
-import io.github.brainboxemb.eventtiming.application.CommandHandler;
-import io.github.brainboxemb.eventtiming.domain.timing.TimingNode;
-import io.github.brainboxemb.eventtiming.domain.timing.TimingNodeId;
-import io.github.brainboxemb.eventtiming.infra.BuildIdentity;
+import io.github.brainboxemb.eventtiming.timingpoint.application.ApplicationStatus;
+import io.github.brainboxemb.eventtiming.timingpoint.application.CommandHandler;
+import io.github.brainboxemb.eventtiming.timingpoint.domain.timing.TimingNode;
+import io.github.brainboxemb.eventtiming.timingpoint.domain.timing.TimingNodeId;
+import io.github.brainboxemb.eventtiming.timingpoint.infra.BuildIdentity;
 
 import java.io.StringReader;
 import java.io.StringWriter;
