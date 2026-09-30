@@ -453,10 +453,11 @@ exact release-tag qualification          full
 
 `smoke` runs the exact Linux-produced application JAR on Windows without a second Maven build. `full` adds an independent native Windows Maven `verify`; that native Windows build can start in parallel with the Linux canonical producer after preflight, while exact-artifact smoke waits for Linux output. A normal protected-main publication deliberately does not allocate Windows again after the pull request has already qualified the change.
 
-The canonical Linux producer stages both product JARs:
+The canonical Linux producer stages all three product JARs:
 
 ```text
 artifacts/
+  event-timing-data-api-<version>.jar
   event-timing-framework-<version>.jar
   event-timing-app-<version>.jar
 ```
@@ -538,6 +539,7 @@ BuildIdentity       revision=<tagged commit SHA>
 
 Release assets contain:
 
+- `event-timing-data-api-X.Y.Z.jar`;
 - `event-timing-framework-X.Y.Z.jar`;
 - `event-timing-app-X.Y.Z.jar`;
 - SHA-256 checksums;
