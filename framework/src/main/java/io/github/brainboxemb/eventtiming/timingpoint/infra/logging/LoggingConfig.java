@@ -1,4 +1,4 @@
-package io.github.brainboxemb.eventtiming.infra.logging;
+package io.github.brainboxemb.eventtiming.timingpoint.infra.logging;
 
 /** Effective runtime configuration owned by the reusable logging component. */
 public final class LoggingConfig {

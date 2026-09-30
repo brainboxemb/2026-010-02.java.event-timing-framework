@@ -1,4 +1,4 @@
-package io.github.brainboxemb.eventtiming.infra.bootstrap.config;
+package io.github.brainboxemb.eventtiming.timingpoint.infra.bootstrap.config;
 
 /** Effective presentation configuration consumed by ApplicationBootstrap. */
 public final class PresentationConfig {
