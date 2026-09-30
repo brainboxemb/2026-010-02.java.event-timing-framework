@@ -1,4 +1,7 @@
-package io.github.brainboxemb.eventtiming.timingpoint.infra.logging;
+package io.github.brainboxemb.eventtiming.timingpoint.infra.loggingserver;
+
+import io.github.brainboxemb.eventtiming.timingpoint.infra.logging.Logging;
+import io.github.brainboxemb.eventtiming.timingpoint.infra.logging.LoggingLevel;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -15,22 +18,25 @@ import java.time.Instant;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.TimeUnit;
+import java.util.logging.Formatter;
 import java.util.logging.LogRecord;
+import java.util.logging.Logger;
 
 /**
- * Small best-effort engineering log listener.
+ * Optional best-effort engineering log listener.
  *
- * <p>The client initiates the connection. Log publishers never write to the socket directly:
- * they only offer records to a bounded queue, so a slow/disconnected client cannot block normal
- * application execution.</p>
+ * <p>The client initiates the connection. Log publishers only offer records to a bounded queue,
+ * so a slow/disconnected client cannot block normal application execution.</p>
  */
-final class LoggingServer implements AutoCloseable {
+public final class LoggingServer implements AutoCloseable {
     private static final int QUEUE_CAPACITY = 512;
 
     private final String bindAddress;
     private final int port;
-    private final LoggingControl control;
-    private final CompactLogFormatter formatter = new CompactLogFormatter();
+    private final Logging logging;
+    private final Logger rootLogger = Logger.getLogger("");
+    private final LiveLogHandler liveHandler;
+    private final MessageFormatter messageFormatter = new MessageFormatter();
     private final BlockingQueue<String> outbound =
             new ArrayBlockingQueue<String>(QUEUE_CAPACITY);
 
@@ -39,25 +45,27 @@ final class LoggingServer implements AutoCloseable {
     private volatile Socket activeClient;
     private Thread acceptThread;
 
-    LoggingServer(LoggingServerConfig config, LoggingControl control) {
+    public LoggingServer(LoggingServerConfig config, Logging logging) {
         if (config == null) {
             throw new IllegalArgumentException("logging server config must not be null");
         }
-        if (control == null) {
-            throw new IllegalArgumentException("logging control must not be null");
+        if (logging == null) {
+            throw new IllegalArgumentException("logging must not be null");
         }
         this.bindAddress = config.bindAddress();
         this.port = config.port();
-        this.control = control;
+        this.logging = logging;
+        this.liveHandler = new LiveLogHandler(this);
     }
 
-    synchronized void start() throws IOException {
+    public synchronized void start() throws IOException {
         if (serverSocket != null) {
             throw new IllegalStateException("logging server is already started");
         }
         ServerSocket socket = new ServerSocket();
         socket.bind(new InetSocketAddress(InetAddress.getByName(bindAddress), port), 1);
         serverSocket = socket;
+        rootLogger.addHandler(liveHandler);
 
         Thread thread = new Thread(this::acceptLoop, "event-timing-live-log");
         thread.setDaemon(true);
@@ -65,7 +73,7 @@ final class LoggingServer implements AutoCloseable {
         thread.start();
     }
 
-    int boundPort() {
+    public int boundPort() {
         ServerSocket socket = serverSocket;
         if (socket == null) {
             throw new IllegalStateException("logging server is not started");
@@ -126,7 +134,7 @@ final class LoggingServer implements AutoCloseable {
         writerThread.setDaemon(true);
         writerThread.start();
 
-        offer(levelLine(control.level()));
+        offer(levelLine(logging.level()));
 
         try {
             String command;
@@ -141,14 +149,14 @@ final class LoggingServer implements AutoCloseable {
     private void handleCommand(String command) {
         String value = command == null ? "" : command.trim();
         if ("GET_LEVEL".equalsIgnoreCase(value)) {
-            offer(levelLine(control.level()));
+            offer(levelLine(logging.level()));
             return;
         }
         if (value.regionMatches(true, 0, "SET_LEVEL ", 0, 10)) {
             String requested = value.substring(10).trim().toUpperCase();
             try {
                 LoggingLevel level = LoggingLevel.valueOf(requested);
-                control.setLevel(level);
+                logging.setLevel(level);
                 offer(levelLine(level));
             } catch (IllegalArgumentException ex) {
                 offer(errorLine("Unsupported level: " + requested));
@@ -180,18 +188,50 @@ final class LoggingServer implements AutoCloseable {
         return "{\"type\":\"log\",\"occurredAt\":\""
                 + escape(Instant.ofEpochMilli(record.getMillis()).toString())
                 + "\",\"level\":\""
-                + LoggingControl.semanticLevel(record.getLevel())
+                + semanticLevel(record.getLevel())
                 + "\",\"logger\":\""
                 + escape(record.getLoggerName() == null ? "" : record.getLoggerName())
                 + "\",\"source\":\""
-                + escape(CompactLogFormatter.source(record))
+                + escape(source(record))
                 + "\",\"message\":\""
-                + escape(formatter.message(record))
+                + escape(messageFormatter.format(record))
                 + "\",\"formatted\":\""
-                + escape(formatter.format(record))
+                + escape(logging.format(record))
                 + "\""
                 + (thrown == null ? "" : ",\"thrown\":\"" + escape(thrown) + "\"")
                 + "}";
+    }
+
+    private static String semanticLevel(java.util.logging.Level level) {
+        int value = level.intValue();
+        if (value >= java.util.logging.Level.SEVERE.intValue()) {
+            return "ERROR";
+        }
+        if (value >= java.util.logging.Level.WARNING.intValue()) {
+            return "WARN";
+        }
+        if (value >= java.util.logging.Level.INFO.intValue()) {
+            return "INFO";
+        }
+        if (value >= java.util.logging.Level.FINE.intValue()) {
+            return "DEBUG";
+        }
+        return "TRACE";
+    }
+
+    private static String source(LogRecord record) {
+        String className = record.getSourceClassName();
+        String methodName = record.getSourceMethodName();
+        if (className == null || className.trim().isEmpty()) {
+            className = record.getLoggerName();
+        }
+        if (className == null || className.trim().isEmpty()) {
+            className = "unknown";
+        }
+        if (methodName == null || methodName.trim().isEmpty()) {
+            return className;
+        }
+        return className + "." + methodName;
     }
 
     private static String levelLine(LoggingLevel level) {
@@ -236,6 +276,7 @@ final class LoggingServer implements AutoCloseable {
     @Override
     public synchronized void close() {
         closed = true;
+        rootLogger.removeHandler(liveHandler);
         closeSocket(activeClient);
         activeClient = null;
 
@@ -269,6 +310,13 @@ final class LoggingServer implements AutoCloseable {
             socket.close();
         } catch (IOException ignored) {
             // Best-effort diagnostics cleanup.
+        }
+    }
+
+    private static final class MessageFormatter extends Formatter {
+        @Override
+        public String format(LogRecord record) {
+            return formatMessage(record);
         }
     }
 }

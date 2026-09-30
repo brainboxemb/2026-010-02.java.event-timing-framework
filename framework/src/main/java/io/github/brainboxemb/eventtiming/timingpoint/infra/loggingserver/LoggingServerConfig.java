@@ -1,4 +1,4 @@
-package io.github.brainboxemb.eventtiming.timingpoint.infra.logging;
+package io.github.brainboxemb.eventtiming.timingpoint.infra.loggingserver;
 
 /** Optional live-diagnostics listener configuration owned by LoggingServer. */
 public final class LoggingServerConfig {

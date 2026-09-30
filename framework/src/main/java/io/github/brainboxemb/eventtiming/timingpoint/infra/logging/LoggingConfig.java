@@ -4,12 +4,8 @@ package io.github.brainboxemb.eventtiming.timingpoint.infra.logging;
 public final class LoggingConfig {
     private final LoggingLevel level;
     private final LoggingFileConfig file;
-    private final LoggingServerConfig server;
 
-    public LoggingConfig(
-            LoggingLevel level,
-            LoggingFileConfig file,
-            LoggingServerConfig server) {
+    public LoggingConfig(LoggingLevel level, LoggingFileConfig file) {
         if (level == null) {
             throw new IllegalArgumentException("logging level must not be null");
         }
@@ -18,7 +14,6 @@ public final class LoggingConfig {
         }
         this.level = level;
         this.file = file;
-        this.server = server;
     }
 
     public LoggingLevel level() {
@@ -27,9 +22,5 @@ public final class LoggingConfig {
 
     public LoggingFileConfig file() {
         return file;
-    }
-
-    public LoggingServerConfig server() {
-        return server;
     }
 }
