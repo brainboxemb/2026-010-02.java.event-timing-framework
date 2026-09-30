@@ -239,9 +239,9 @@ The temporary no-argument startup remains only for the existing artifact smoke c
 TimingNodes, further presentation endpoints, platform/profile overlays and I/O configuration are
 added only when their SIP activities provide a real consumer.
 
-### Step-3 JavaFX test client
+### Engineering Client
 
-`test-client/` is a standalone Java 17 / JavaFX development tool for manually inspecting the IF-03 API.
+`test-client/` is the standalone Java 17 / JavaFX **Engineering Client** used for manual integration, diagnostics and public-interface inspection. It remains engineering tooling rather than SI-02 and deliberately has no dependency on SI-01 implementation classes.
 It is deliberately not part of the Java-8 SI-01 Maven reactor and has no dependency on
 `event-timing-framework` or `event-timing-app`.
 
