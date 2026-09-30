@@ -1,10 +1,10 @@
-package io.github.brainboxemb.eventtiming.infra.bootstrap;
+package io.github.brainboxemb.eventtiming.timingpoint.infra.bootstrap;
 
-import io.github.brainboxemb.eventtiming.domain.timing.TimingNodeId;
-import io.github.brainboxemb.eventtiming.infra.bootstrap.config.ApplicationConfig;
-import io.github.brainboxemb.eventtiming.infra.bootstrap.config.PresentationConfig;
-import io.github.brainboxemb.eventtiming.infra.BuildIdentity;
-import io.github.brainboxemb.eventtiming.runtime.TimingApplication;
+import io.github.brainboxemb.eventtiming.timingpoint.domain.timing.TimingNodeId;
+import io.github.brainboxemb.eventtiming.timingpoint.infra.bootstrap.config.ApplicationConfig;
+import io.github.brainboxemb.eventtiming.timingpoint.infra.bootstrap.config.PresentationConfig;
+import io.github.brainboxemb.eventtiming.timingpoint.infra.BuildIdentity;
+import io.github.brainboxemb.eventtiming.timingpoint.runtime.TimingApplication;
 
 import org.junit.Test;
 

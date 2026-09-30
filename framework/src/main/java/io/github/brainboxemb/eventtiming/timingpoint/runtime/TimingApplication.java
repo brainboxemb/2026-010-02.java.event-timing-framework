@@ -1,9 +1,9 @@
-package io.github.brainboxemb.eventtiming.runtime;
+package io.github.brainboxemb.eventtiming.timingpoint.runtime;
 
-import io.github.brainboxemb.eventtiming.application.ApplicationStatus;
-import io.github.brainboxemb.eventtiming.application.CommandHandler;
-import io.github.brainboxemb.eventtiming.domain.timing.TimingNode;
-import io.github.brainboxemb.eventtiming.infra.BuildIdentity;
+import io.github.brainboxemb.eventtiming.timingpoint.application.ApplicationStatus;
+import io.github.brainboxemb.eventtiming.timingpoint.application.CommandHandler;
+import io.github.brainboxemb.eventtiming.timingpoint.domain.timing.TimingNode;
+import io.github.brainboxemb.eventtiming.timingpoint.infra.BuildIdentity;
 
 /**
  * Top-level reusable runtime object for one SI-01 application composition.
