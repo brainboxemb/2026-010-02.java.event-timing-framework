@@ -59,7 +59,7 @@ architecture evidence.
 The reusable framework owns the runtime and cross-cutting bootstrap model:
 
 ```text
-io.github.brainboxemb.eventtiming/
+io.github.brainboxemb.eventtiming/timingpoint/
   runtime/
     TimingApplication
     TimingApplicationLifecycle
