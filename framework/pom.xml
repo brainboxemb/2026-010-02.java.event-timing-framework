@@ -7,8 +7,8 @@
     <version>0.2.3-SNAPSHOT</version>
   </parent>
   <artifactId>event-timing-framework</artifactId>
-  <name>Event Timing Framework</name>
-  <description>Reusable event-timing framework library.</description>
+  <name>Timing Point Framework</name>
+  <description>Reusable framework library for the SI-01 Timing Point Application.</description>
   <dependencies>
     <dependency>
       <groupId>org.slf4j</groupId>

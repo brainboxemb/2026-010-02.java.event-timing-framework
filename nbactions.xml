@@ -45,7 +45,7 @@
 
     <action>
         <actionName>run</actionName>
-        <displayName>Run Event Timing Application</displayName>
+        <displayName>Run Timing Point Application</displayName>
         <packagings>
             <packaging>pom</packaging>
         </packagings>
@@ -59,7 +59,7 @@
     </action>
     <action>
         <actionName>debug</actionName>
-        <displayName>Debug Event Timing Application</displayName>
+        <displayName>Debug Timing Point Application</displayName>
         <packagings>
             <packaging>pom</packaging>
         </packagings>

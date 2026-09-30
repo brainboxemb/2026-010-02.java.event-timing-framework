@@ -50,7 +50,7 @@ public class LoggingTest {
                 assertTrue(line.matches(
                         "\\d{2}:\\d{2}:\\d{2}\\.\\d{3} - \\[INFO\\] - "
                                 + "Application lifecycle state=RUNNING - "
-                                + "\\[io\\.github\\.brainboxemb\\.eventtiming\\.runtime"
+                                + "\\[io\\.github\\.brainboxemb\\.eventtiming\\.timingpoint\\.runtime"
                                 + "\\.TimingApplicationLifecycle\\.start\\]\\R"));
             }
 
@@ -167,17 +167,4 @@ public class LoggingTest {
         return files;
     }
 
-    private static String readUntil(BufferedReader reader, String expected) throws Exception {
-        long deadline = System.currentTimeMillis() + 3000L;
-        while (System.currentTimeMillis() < deadline) {
-            String line = reader.readLine();
-            if (line == null) {
-                break;
-            }
-            if (line.contains(expected)) {
-                return line;
-            }
-        }
-        throw new AssertionError("Did not receive line containing: " + expected);
-    }
 }

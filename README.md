@@ -6,7 +6,7 @@ Project-wide planning, requirements, architecture, interface design and verifica
 
 ## Current scope
 
-This repository is the public implementation repository for **SI-01 — Headless Timing Application**. `v0.2.2` is the accepted SIP Step-3 application/API foundation baseline; normal development continues on `0.2.3-SNAPSHOT` while Step 4 begins. The baseline provides external YAML configuration, long-running process lifecycle, shared local/remote terminal semantics, IF-03 HTTP/WebSocket version and status, runtime logging/live diagnostics, and automated separate-process system verification. Timing-domain behaviour plus RFID, CAN, display and backoffice integrations remain later-step work.
+This repository is the public implementation repository for **SI-01 — Timing Point Application**. `v0.2.2` is the accepted SIP Step-3 application/API foundation baseline; normal development continues on `0.2.3-SNAPSHOT` while Step 4 begins. The baseline provides external YAML configuration, long-running process lifecycle, shared local/remote terminal semantics, IF-03 HTTP/WebSocket version and status, runtime logging/live diagnostics, and automated separate-process system verification. Timing-domain behaviour plus RFID, CAN, display and backoffice integrations remain later-step work.
 
 ## Artifact and package model
 
@@ -33,21 +33,21 @@ the architecture diagram.
 Current real framework behaviour is deliberately small:
 
 ```text
-io.github.brainboxemb.eventtiming.application.ApplicationStatus
-io.github.brainboxemb.eventtiming.application.CommandHandler
-io.github.brainboxemb.eventtiming.domain.timing.TimingNode
-io.github.brainboxemb.eventtiming.domain.timing.TimingNodeId
-io.github.brainboxemb.eventtiming.infra.BuildIdentity
-io.github.brainboxemb.eventtiming.infra.bootstrap.ApplicationBootstrap
-io.github.brainboxemb.eventtiming.infra.bootstrap.config.ApplicationConfig
-io.github.brainboxemb.eventtiming.runtime.TimingApplication
-io.github.brainboxemb.eventtiming.runtime.TimingApplicationLifecycle
-io.github.brainboxemb.eventtiming.presentation.interfaces.console.LocalConsole
-io.github.brainboxemb.eventtiming.presentation.interfaces.shell.RemoteShellServer
-io.github.brainboxemb.eventtiming.presentation.interfaces.api.HttpEndpoint
-io.github.brainboxemb.eventtiming.presentation.interfaces.api.WebSocketEndpoint
-io.github.brainboxemb.eventtiming.presentation.interfaces.api.MessageWriter
-io.github.brainboxemb.eventtiming.presentation.common.terminal.TerminalSession
+io.github.brainboxemb.eventtiming.timingpoint.application.ApplicationStatus
+io.github.brainboxemb.eventtiming.timingpoint.application.CommandHandler
+io.github.brainboxemb.eventtiming.timingpoint.domain.timing.TimingNode
+io.github.brainboxemb.eventtiming.timingpoint.domain.timing.TimingNodeId
+io.github.brainboxemb.eventtiming.timingpoint.infra.BuildIdentity
+io.github.brainboxemb.eventtiming.timingpoint.infra.bootstrap.ApplicationBootstrap
+io.github.brainboxemb.eventtiming.timingpoint.infra.bootstrap.config.ApplicationConfig
+io.github.brainboxemb.eventtiming.timingpoint.runtime.TimingApplication
+io.github.brainboxemb.eventtiming.timingpoint.runtime.TimingApplicationLifecycle
+io.github.brainboxemb.eventtiming.timingpoint.presentation.interfaces.console.LocalConsole
+io.github.brainboxemb.eventtiming.timingpoint.presentation.interfaces.shell.RemoteShellServer
+io.github.brainboxemb.eventtiming.timingpoint.presentation.interfaces.api.HttpEndpoint
+io.github.brainboxemb.eventtiming.timingpoint.presentation.interfaces.api.WebSocketEndpoint
+io.github.brainboxemb.eventtiming.timingpoint.presentation.interfaces.api.MessageWriter
+io.github.brainboxemb.eventtiming.timingpoint.presentation.common.terminal.TerminalSession
 ```
 
 `application` owns the shared client-facing request boundary. `infra` owns build/runtime
@@ -75,32 +75,40 @@ io.github.brainboxemb.eventtiming/
         ApiWebSocketConfig
 ```
 
-The executable artifact remains thin. Launcher/input adapters stay under `...eventtiming.app`;
+The executable artifact remains thin. Launcher/input adapters stay under `...eventtiming.timingpoint.app`;
 reusable logging infrastructure lives in the framework artifact, while the executable selects the SLF4J provider:
 
 ```text
-io.github.brainboxemb.eventtiming.app/
+io.github.brainboxemb.eventtiming.timingpoint.app/
   TimingApplicationMain
 
-io.github.brainboxemb.eventtiming.infra/
+io.github.brainboxemb.eventtiming.timingpoint.infra/
   BuildIdentity
   EmbeddedBuildIdentityLoader
   bootstrap/config/
     YamlApplicationConfigLoader
 
-io.github.brainboxemb.eventtiming.infra.logging/
+io.github.brainboxemb.eventtiming.timingpoint.infra.logging/
   Logging
-  LoggingServer
+  LoggingConfig
+  LoggingLevel
+  LoggingFileConfig
   LoggingControl
   TimestampedFileLogHandler
   CompactLogFormatter
+
+io.github.brainboxemb.eventtiming.timingpoint.infra.loggingserver/
+  LoggingServer
+  LoggingServerConfig
   LiveLogHandler
 ```
 
-`Logging` owns JUL/backend and sink composition. `LoggingServer` is the separate
-client-facing live-log socket. These reusable classes live in `event-timing-framework`; the
-framework still selects no SLF4J provider. The default executable supplies `slf4j-jdk14` at
-runtime and starts/stops the framework-provided logging component.
+`Logging` owns JUL/backend, console/file sinks and global log-level control. `LoggingServer` is a
+separate infrastructure component with its own package and lifecycle; it attaches only the
+best-effort live-diagnostics handler and uses the narrow `LoggingControl` contract for temporary
+level changes. Both components live in `event-timing-framework`; the framework still selects no
+SLF4J provider. The default executable supplies `slf4j-jdk14` at runtime and composes/starts the
+two components separately.
 
 `ApplicationBootstrap` consumes the validated framework configuration model and
 owns concrete composition plus presentation/startup wiring. The default IF-11 YAML parser/mapping and embedded build-identity interpretation are framework
@@ -169,13 +177,13 @@ logging:
     port: 8030
 ```
 
-The framework still logs only through SLF4J. Executable infrastructure `Logging` maps the
+The framework still logs only through SLF4J. Framework infrastructure `Logging` maps the
 semantic startup level to `slf4j-jdk14 -> java.util.logging`, applies the same compact formatter
 to console output, and writes retained rotating file logs under timestamped names such as
 `20250514-101657.txt`. Retained file records use
 `HH:mm:ss.SSS - [LEVEL] - message - [sourceClass.sourceMethod]`, while the executable optionally
 exposes a dedicated best-effort live-log TCP listener. The JavaFX
-`LoggingServer` owns that live socket; the engineering client initiates the connection and its
+`LoggingServer` owns that live socket; the separate JavaFX engineering client initiates the connection and its
 **Logs** tab can inspect new records and
 temporarily change the process-wide log level. A runtime level change is not persisted to YAML and
 restart restores the configured level. The live diagnostics stream is separate from IF-03
