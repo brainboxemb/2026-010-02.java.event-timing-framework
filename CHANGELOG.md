@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Start the Step-4 shared IF-05 boundary with a Java-8 `event-timing-data-api` reactor artifact and the first real interchange value type, `TimingDataRecordKey`; keep SI-01 `TimingNodeId` in the framework Domain model and represent the IF-05 record identity value as a validated string.
+
 - Document `test-client/` consistently as the standalone **Engineering Client**, including its current UI/boundaries, Step-4 Timing/DebugConnector direction and planned deterministic CI screenshot workflow while keeping the module name and code unchanged.
 
 - Rename SI-01 to **Timing Point Application**, move SI-01 framework/app Java packages under `io.github.brainboxemb.eventtiming.timingpoint`, and split runtime `Logging` from the independently composed `infra.loggingserver.LoggingServer` package while preserving the external `logging.live` YAML shape.
