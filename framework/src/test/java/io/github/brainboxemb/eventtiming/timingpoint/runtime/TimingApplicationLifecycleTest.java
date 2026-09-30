@@ -1,6 +1,6 @@
-package io.github.brainboxemb.eventtiming.runtime;
+package io.github.brainboxemb.eventtiming.timingpoint.runtime;
 
-import io.github.brainboxemb.eventtiming.infra.BuildIdentity;
+import io.github.brainboxemb.eventtiming.timingpoint.infra.BuildIdentity;
 
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
