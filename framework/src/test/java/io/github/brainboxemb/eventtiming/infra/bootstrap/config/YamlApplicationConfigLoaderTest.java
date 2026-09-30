@@ -21,7 +21,7 @@ public class YamlApplicationConfigLoaderTest {
 
         assertEquals("timing-node-01", config.timingNodeId().value());
         assertNull(config.presentation().remoteShell());
-        assertNull(config.presentation().remoteApi());
+        assertNull(config.presentation().api());
         assertNull(config.logging());
     }
 
@@ -33,7 +33,7 @@ public class YamlApplicationConfigLoaderTest {
                         + "  remoteShell:\n"
                         + "    bindAddress: 127.0.0.1\n"
                         + "    port: 8023\n"
-                        + "  remoteApi:\n"
+                        + "  api:\n"
                         + "    http:\n"
                         + "      bindAddress: 127.0.0.1\n"
                         + "      port: 8081\n"
@@ -43,12 +43,12 @@ public class YamlApplicationConfigLoaderTest {
 
         assertEquals("127.0.0.1", config.presentation().remoteShell().bindAddress());
         assertEquals(8023, config.presentation().remoteShell().port());
-        assertEquals("127.0.0.1", config.presentation().remoteApi().http().bindAddress());
-        assertEquals(8081, config.presentation().remoteApi().http().port());
+        assertEquals("127.0.0.1", config.presentation().api().http().bindAddress());
+        assertEquals(8081, config.presentation().api().http().port());
         assertEquals(
                 "127.0.0.1",
-                config.presentation().remoteApi().webSocket().bindAddress());
-        assertEquals(8082, config.presentation().remoteApi().webSocket().port());
+                config.presentation().api().webSocket().bindAddress());
+        assertEquals(8082, config.presentation().api().webSocket().port());
     }
 
     @Test
@@ -107,7 +107,7 @@ public class YamlApplicationConfigLoaderTest {
         load(
                 "timingNodeId: timing-node-01\n"
                         + "presentation:\n"
-                        + "  remoteApi:\n"
+                        + "  api:\n"
                         + "    http:\n"
                         + "      bindAddress: 127.0.0.1\n"
                         + "      port: 8081\n"
@@ -119,7 +119,7 @@ public class YamlApplicationConfigLoaderTest {
         load(
                 "timingNodeId: timing-node-01\n"
                         + "presentation:\n"
-                        + "  remoteApi:\n"
+                        + "  api:\n"
                         + "    http:\n"
                         + "      port: 8081\n");
     }
@@ -129,18 +129,18 @@ public class YamlApplicationConfigLoaderTest {
         load(
                 "timingNodeId: timing-node-01\n"
                         + "presentation:\n"
-                        + "  remoteApi:\n"
+                        + "  api:\n"
                         + "    http:\n"
                         + "      bindAddress: 127.0.0.1\n"
                         + "      port: 70000\n");
     }
 
     @Test(expected = IllegalArgumentException.class)
-    public void rejectsEmptyRemoteApi() throws Exception {
+    public void rejectsEmptyApi() throws Exception {
         load(
                 "timingNodeId: timing-node-01\n"
                         + "presentation:\n"
-                        + "  remoteApi: {}\n");
+                        + "  api: {}\n");
     }
 
     private ApplicationConfig load(String yaml) throws Exception {

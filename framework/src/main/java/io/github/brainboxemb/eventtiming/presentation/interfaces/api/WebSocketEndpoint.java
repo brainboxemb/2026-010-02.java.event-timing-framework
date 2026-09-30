@@ -1,4 +1,4 @@
-package io.github.brainboxemb.eventtiming.presentation.interfaces.remoteapi;
+package io.github.brainboxemb.eventtiming.presentation.interfaces.api;
 
 import io.github.brainboxemb.eventtiming.application.CommandHandler;
 import java.io.IOException;
@@ -21,7 +21,7 @@ import org.java_websocket.server.WebSocketServer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/** WebSocket transport for IF-03 Remote API events. */
+/** WebSocket transport for IF-03 API events. */
 public final class WebSocketEndpoint implements AutoCloseable {
     public static final String EVENTS_PATH = "/api/v1/events";
 

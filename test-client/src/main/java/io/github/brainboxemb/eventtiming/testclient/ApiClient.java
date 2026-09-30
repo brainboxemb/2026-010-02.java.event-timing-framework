@@ -13,17 +13,17 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Independent IF-03 Remote API HTTP client.
+ * Independent IF-03 API HTTP client.
  *
  * <p>This project deliberately has no dependency on SI-01 implementation classes.</p>
  */
-public final class RemoteApiClient {
+public final class ApiClient {
     private static final ObjectMapper JSON = new ObjectMapper();
 
     private final URI endpoint;
     private final HttpClient httpClient;
 
-    public RemoteApiClient(URI endpoint) {
+    public ApiClient(URI endpoint) {
         if (endpoint == null || endpoint.getScheme() == null || endpoint.getHost() == null) {
             throw new IllegalArgumentException("endpoint must be an absolute HTTP URI");
         }
