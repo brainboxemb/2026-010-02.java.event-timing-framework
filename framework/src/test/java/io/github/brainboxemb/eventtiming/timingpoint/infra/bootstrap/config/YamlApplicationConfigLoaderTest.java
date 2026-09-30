@@ -23,6 +23,7 @@ public class YamlApplicationConfigLoaderTest {
         assertNull(config.presentation().remoteShell());
         assertNull(config.presentation().api());
         assertNull(config.logging());
+        assertNull(config.loggingServer());
     }
 
     @Test
@@ -71,8 +72,8 @@ public class YamlApplicationConfigLoaderTest {
         assertEquals("logs", config.logging().file().path());
         assertEquals(1048576, config.logging().file().rotateBytes());
         assertEquals(5, config.logging().file().retainedFiles());
-        assertEquals("127.0.0.1", config.logging().server().bindAddress());
-        assertEquals(8030, config.logging().server().port());
+        assertEquals("127.0.0.1", config.loggingServer().bindAddress());
+        assertEquals(8030, config.loggingServer().port());
     }
 
     @Test(expected = IllegalArgumentException.class)

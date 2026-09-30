@@ -8,18 +8,18 @@ import java.time.format.DateTimeFormatter;
 import java.util.logging.Formatter;
 import java.util.logging.LogRecord;
 
-/** Compact operator-facing formatter shared by console, retained file and live logging. */
-final class CompactLogFormatter extends Formatter {
+/** Compact operator-facing formatter shared by retained, console and live diagnostics output. */
+public final class CompactLogFormatter extends Formatter {
     private static final DateTimeFormatter TIME_FORMAT =
             DateTimeFormatter.ofPattern("HH:mm:ss.SSS");
 
     private final ZoneId zoneId;
 
-    CompactLogFormatter() {
+    public CompactLogFormatter() {
         this(ZoneId.systemDefault());
     }
 
-    CompactLogFormatter(ZoneId zoneId) {
+    public CompactLogFormatter(ZoneId zoneId) {
         if (zoneId == null) {
             throw new IllegalArgumentException("zoneId must not be null");
         }
@@ -51,11 +51,11 @@ final class CompactLogFormatter extends Formatter {
         return line.toString();
     }
 
-    String message(LogRecord record) {
+    public String message(LogRecord record) {
         return formatMessage(record);
     }
 
-    static String source(LogRecord record) {
+    public static String source(LogRecord record) {
         String className = record.getSourceClassName();
         String methodName = record.getSourceMethodName();
         if (className == null || className.trim().isEmpty()) {

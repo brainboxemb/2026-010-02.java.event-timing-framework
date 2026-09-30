@@ -1,4 +1,4 @@
-package io.github.brainboxemb.eventtiming.timingpoint.infra.logging;
+package io.github.brainboxemb.eventtiming.timingpoint.infra.loggingserver;
 
 import java.util.logging.Handler;
 import java.util.logging.LogRecord;
@@ -26,6 +26,6 @@ final class LiveLogHandler extends Handler {
 
     @Override
     public void close() {
-        // Server lifecycle is owned by Logging.
+        // Server lifecycle is owned by LoggingServer.
     }
 }

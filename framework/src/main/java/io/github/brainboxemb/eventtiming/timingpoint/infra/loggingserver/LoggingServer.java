@@ -1,4 +1,8 @@
-package io.github.brainboxemb.eventtiming.timingpoint.infra.logging;
+package io.github.brainboxemb.eventtiming.timingpoint.infra.loggingserver;
+
+import io.github.brainboxemb.eventtiming.timingpoint.infra.logging.CompactLogFormatter;
+import io.github.brainboxemb.eventtiming.timingpoint.infra.logging.LoggingControl;
+import io.github.brainboxemb.eventtiming.timingpoint.infra.logging.LoggingLevel;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -16,6 +20,7 @@ import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.LogRecord;
+import java.util.logging.Logger;
 
 /**
  * Small best-effort engineering log listener.
@@ -24,12 +29,14 @@ import java.util.logging.LogRecord;
  * they only offer records to a bounded queue, so a slow/disconnected client cannot block normal
  * application execution.</p>
  */
-final class LoggingServer implements AutoCloseable {
+public final class LoggingServer implements AutoCloseable {
     private static final int QUEUE_CAPACITY = 512;
 
     private final String bindAddress;
     private final int port;
     private final LoggingControl control;
+    private final Logger rootLogger;
+    private final LiveLogHandler liveHandler;
     private final CompactLogFormatter formatter = new CompactLogFormatter();
     private final BlockingQueue<String> outbound =
             new ArrayBlockingQueue<String>(QUEUE_CAPACITY);
@@ -39,19 +46,41 @@ final class LoggingServer implements AutoCloseable {
     private volatile Socket activeClient;
     private Thread acceptThread;
 
-    LoggingServer(LoggingServerConfig config, LoggingControl control) {
+    private LoggingServer(
+            LoggingServerConfig config,
+            LoggingControl control,
+            Logger rootLogger) {
         if (config == null) {
             throw new IllegalArgumentException("logging server config must not be null");
         }
         if (control == null) {
             throw new IllegalArgumentException("logging control must not be null");
         }
+        if (rootLogger == null) {
+            throw new IllegalArgumentException("root logger must not be null");
+        }
         this.bindAddress = config.bindAddress();
         this.port = config.port();
         this.control = control;
+        this.rootLogger = rootLogger;
+        this.liveHandler = new LiveLogHandler(this);
     }
 
-    synchronized void start() throws IOException {
+    public static LoggingServer start(
+            LoggingServerConfig config,
+            LoggingControl control) throws IOException {
+        LoggingServer server = new LoggingServer(config, control, Logger.getLogger(""));
+        try {
+            server.startListener();
+            server.rootLogger.addHandler(server.liveHandler);
+            return server;
+        } catch (IOException | RuntimeException ex) {
+            server.close();
+            throw ex;
+        }
+    }
+
+    private synchronized void startListener() throws IOException {
         if (serverSocket != null) {
             throw new IllegalStateException("logging server is already started");
         }
@@ -65,7 +94,7 @@ final class LoggingServer implements AutoCloseable {
         thread.start();
     }
 
-    int boundPort() {
+    public int boundPort() {
         ServerSocket socket = serverSocket;
         if (socket == null) {
             throw new IllegalStateException("logging server is not started");
@@ -235,6 +264,8 @@ final class LoggingServer implements AutoCloseable {
 
     @Override
     public synchronized void close() {
+        rootLogger.removeHandler(liveHandler);
+        liveHandler.close();
         closed = true;
         closeSocket(activeClient);
         activeClient = null;

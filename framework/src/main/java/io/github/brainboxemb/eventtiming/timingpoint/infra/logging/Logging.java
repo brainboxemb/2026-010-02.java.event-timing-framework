@@ -17,8 +17,6 @@ public final class Logging implements AutoCloseable {
     private final Map<Handler, java.util.logging.Level> previousHandlerLevels;
     private final Map<Handler, Formatter> previousHandlerFormatters;
     private final TimestampedFileLogHandler fileHandler;
-    private final LoggingServer liveServer;
-    private final LiveLogHandler liveHandler;
     private final LoggingControl control;
 
     private Logging(
@@ -27,16 +25,12 @@ public final class Logging implements AutoCloseable {
             Map<Handler, java.util.logging.Level> previousHandlerLevels,
             Map<Handler, Formatter> previousHandlerFormatters,
             TimestampedFileLogHandler fileHandler,
-            LoggingServer liveServer,
-            LiveLogHandler liveHandler,
             LoggingControl control) {
         this.rootLogger = rootLogger;
         this.previousRootLevel = previousRootLevel;
         this.previousHandlerLevels = previousHandlerLevels;
         this.previousHandlerFormatters = previousHandlerFormatters;
         this.fileHandler = fileHandler;
-        this.liveServer = liveServer;
-        this.liveHandler = liveHandler;
         this.control = control;
     }
 
@@ -62,8 +56,6 @@ public final class Logging implements AutoCloseable {
         }
 
         TimestampedFileLogHandler fileHandler = null;
-        LoggingServer liveServer = null;
-        LiveLogHandler liveHandler = null;
         try {
             LoggingControl control = new LoggingControl(root, config.level());
 
@@ -75,30 +67,14 @@ public final class Logging implements AutoCloseable {
                     file.retainedFiles());
             root.addHandler(fileHandler);
 
-            LoggingServerConfig serverConfig = config.server();
-            if (serverConfig != null) {
-                liveServer = new LoggingServer(serverConfig, control);
-                liveServer.start();
-                liveHandler = new LiveLogHandler(liveServer);
-                root.addHandler(liveHandler);
-            }
-
             return new Logging(
                     root,
                     previousRoot,
                     previousHandlers,
                     previousFormatters,
                     fileHandler,
-                    liveServer,
-                    liveHandler,
                     control);
         } catch (IOException | RuntimeException ex) {
-            if (liveHandler != null) {
-                root.removeHandler(liveHandler);
-            }
-            if (liveServer != null) {
-                liveServer.close();
-            }
             if (fileHandler != null) {
                 root.removeHandler(fileHandler);
                 fileHandler.close();
@@ -108,25 +84,13 @@ public final class Logging implements AutoCloseable {
         }
     }
 
-    public int livePort() {
-        if (liveServer == null) {
-            throw new IllegalStateException("live logging is not configured");
-        }
-        return liveServer.boundPort();
-    }
-
-    LoggingLevel level() {
-        return control.level();
+    /** Runtime control shared with optional infrastructure components such as LoggingServer. */
+    public LoggingControl control() {
+        return control;
     }
 
     @Override
     public void close() {
-        if (liveHandler != null) {
-            rootLogger.removeHandler(liveHandler);
-        }
-        if (liveServer != null) {
-            liveServer.close();
-        }
         rootLogger.removeHandler(fileHandler);
         fileHandler.close();
         restore(

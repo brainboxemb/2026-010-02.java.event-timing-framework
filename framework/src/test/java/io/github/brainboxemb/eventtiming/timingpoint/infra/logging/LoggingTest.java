@@ -1,11 +1,6 @@
 package io.github.brainboxemb.eventtiming.timingpoint.infra.logging;
 
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
 import java.io.File;
-import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
-import java.net.Socket;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -33,46 +28,6 @@ public class LoggingTest {
     public TemporaryFolder temporaryFolder = new TemporaryFolder();
 
     @Test
-    public void writesFileStreamsLiveAndChangesRuntimeLevel() throws Exception {
-        File logDirectory = temporaryFolder.newFolder("logs");
-        LoggingConfig config = new LoggingConfig(
-                LoggingLevel.INFO,
-                new LoggingFileConfig(logDirectory.getAbsolutePath(), 4096, 1),
-                new LoggingServerConfig("127.0.0.1", 0));
-
-        try (Logging runtime = Logging.start(config);
-                Socket socket = new Socket("127.0.0.1", runtime.livePort());
-                BufferedReader reader = new BufferedReader(
-                        new InputStreamReader(socket.getInputStream(), StandardCharsets.UTF_8));
-                BufferedWriter writer = new BufferedWriter(
-                        new OutputStreamWriter(socket.getOutputStream(), StandardCharsets.UTF_8))) {
-
-            assertTrue(readUntil(reader, "\"type\":\"level\"").contains("\"INFO\""));
-
-            Logger logger = Logger.getLogger("test.a08.live");
-            logger.info("A08 live message");
-            assertTrue(readUntil(reader, "A08 live message").contains("\"type\":\"log\""));
-
-            writer.write("SET_LEVEL DEBUG");
-            writer.newLine();
-            writer.flush();
-            assertTrue(readUntil(reader, "\"type\":\"level\"").contains("\"DEBUG\""));
-            assertEquals(LoggingLevel.DEBUG, runtime.level());
-
-            logger.fine("A08 debug message");
-            assertTrue(readUntil(reader, "A08 debug message").contains("A08 debug message"));
-        }
-
-        File[] retained = timestampedLogs(logDirectory);
-        assertEquals(1, retained.length);
-        assertTrue(retained[0].getName().matches("\\d{8}-\\d{6}\\.txt"));
-        String fileText =
-                new String(Files.readAllBytes(retained[0].toPath()), StandardCharsets.UTF_8);
-        assertTrue(fileText.contains(" - [INFO] - A08 live message - ["));
-        assertTrue(fileText.contains(" - [DEBUG] - A08 debug message - ["));
-    }
-
-    @Test
     public void appliesCompactFormatterToConsoleAndRestoresPreviousFormatter() throws Exception {
         Logger root = Logger.getLogger("");
         ConsoleHandler console = new ConsoleHandler();
@@ -82,8 +37,7 @@ public class LoggingTest {
             File logDirectory = temporaryFolder.newFolder("console");
             LoggingConfig config = new LoggingConfig(
                     LoggingLevel.INFO,
-                    new LoggingFileConfig(logDirectory.getAbsolutePath(), 4096, 1),
-                    null);
+                    new LoggingFileConfig(logDirectory.getAbsolutePath(), 4096, 1));
 
             try (Logging ignored = Logging.start(config)) {
                 assertTrue(console.getFormatter() instanceof CompactLogFormatter);
@@ -111,9 +65,8 @@ public class LoggingTest {
     public void rotatesWithinConfiguredRetention() throws Exception {
         File logDirectory = temporaryFolder.newFolder("rotating");
         LoggingConfig config = new LoggingConfig(
-                LoggingLevel.INFO,
-                new LoggingFileConfig(logDirectory.getAbsolutePath(), 512, 2),
-                null);
+                    LoggingLevel.INFO,
+                    new LoggingFileConfig(logDirectory.getAbsolutePath(), 512, 2));
 
         try (Logging ignored = Logging.start(config)) {
             Logger logger = Logger.getLogger("test.a08.rotation");

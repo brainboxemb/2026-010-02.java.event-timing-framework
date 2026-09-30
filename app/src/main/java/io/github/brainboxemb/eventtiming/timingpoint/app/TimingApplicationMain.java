@@ -1,18 +1,19 @@
 package io.github.brainboxemb.eventtiming.timingpoint.app;
 
-import io.github.brainboxemb.eventtiming.timingpoint.infra.EmbeddedBuildIdentityLoader;
-import io.github.brainboxemb.eventtiming.timingpoint.infra.bootstrap.config.YamlApplicationConfigLoader;
-import io.github.brainboxemb.eventtiming.timingpoint.infra.logging.Logging;
 import io.github.brainboxemb.eventtiming.timingpoint.infra.BuildIdentity;
+import io.github.brainboxemb.eventtiming.timingpoint.infra.EmbeddedBuildIdentityLoader;
 import io.github.brainboxemb.eventtiming.timingpoint.infra.bootstrap.ApplicationBootstrap;
 import io.github.brainboxemb.eventtiming.timingpoint.infra.bootstrap.config.ApplicationConfig;
+import io.github.brainboxemb.eventtiming.timingpoint.infra.bootstrap.config.YamlApplicationConfigLoader;
+import io.github.brainboxemb.eventtiming.timingpoint.infra.logging.Logging;
+import io.github.brainboxemb.eventtiming.timingpoint.infra.loggingserver.LoggingServer;
 import io.github.brainboxemb.eventtiming.timingpoint.runtime.TimingApplication;
 import io.github.brainboxemb.eventtiming.timingpoint.runtime.TimingApplicationLifecycle;
 
 import java.io.IOException;
 import java.nio.file.Paths;
 
-/** Thin default executable launcher for the reusable SI-01 framework runtime. */
+/** Thin default executable launcher for the reusable SI-01 Timing Point runtime. */
 public final class TimingApplicationMain {
     private TimingApplicationMain() {
     }
@@ -33,12 +34,25 @@ public final class TimingApplicationMain {
             ApplicationConfig config =
                     YamlApplicationConfigLoader.load(Paths.get(args[0]));
             Logging logging = null;
+            LoggingServer loggingServer = null;
             try {
                 if (config.logging() != null) {
                     logging = Logging.start(config.logging());
                 }
+                if (config.loggingServer() != null) {
+                    if (logging == null) {
+                        throw new IllegalStateException(
+                                "LoggingServer requires the Logging component");
+                    }
+                    loggingServer = LoggingServer.start(
+                            config.loggingServer(),
+                            logging.control());
+                }
                 ApplicationBootstrap.run(buildIdentity, config);
             } finally {
+                if (loggingServer != null) {
+                    loggingServer.close();
+                }
                 if (logging != null) {
                     logging.close();
                 }

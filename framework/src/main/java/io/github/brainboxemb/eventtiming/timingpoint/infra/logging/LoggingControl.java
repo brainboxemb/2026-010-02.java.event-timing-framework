@@ -3,7 +3,7 @@ package io.github.brainboxemb.eventtiming.timingpoint.infra.logging;
 import java.util.logging.Logger;
 
 /** Owns the configured global logging level plus a temporary runtime override. */
-final class LoggingControl {
+public final class LoggingControl {
     private final Logger rootLogger;
     private LoggingLevel level;
 
@@ -12,11 +12,11 @@ final class LoggingControl {
         setLevel(initialLevel);
     }
 
-    synchronized LoggingLevel level() {
+    public synchronized LoggingLevel level() {
         return level;
     }
 
-    synchronized void setLevel(LoggingLevel newLevel) {
+    public synchronized void setLevel(LoggingLevel newLevel) {
         if (newLevel == null) {
             throw new IllegalArgumentException("logging level must not be null");
         }
@@ -41,7 +41,7 @@ final class LoggingControl {
         }
     }
 
-    static String semanticLevel(java.util.logging.Level level) {
+    public static String semanticLevel(java.util.logging.Level level) {
         int value = level.intValue();
         if (value >= java.util.logging.Level.SEVERE.intValue()) {
             return "ERROR";
