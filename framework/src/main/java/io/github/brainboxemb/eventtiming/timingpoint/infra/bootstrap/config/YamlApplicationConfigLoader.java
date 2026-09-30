@@ -1,10 +1,10 @@
-package io.github.brainboxemb.eventtiming.infra.bootstrap.config;
+package io.github.brainboxemb.eventtiming.timingpoint.infra.bootstrap.config;
 
-import io.github.brainboxemb.eventtiming.domain.timing.TimingNodeId;
-import io.github.brainboxemb.eventtiming.infra.logging.LoggingConfig;
-import io.github.brainboxemb.eventtiming.infra.logging.LoggingFileConfig;
-import io.github.brainboxemb.eventtiming.infra.logging.LoggingLevel;
-import io.github.brainboxemb.eventtiming.infra.logging.LoggingServerConfig;
+import io.github.brainboxemb.eventtiming.timingpoint.domain.timing.TimingNodeId;
+import io.github.brainboxemb.eventtiming.timingpoint.infra.logging.LoggingConfig;
+import io.github.brainboxemb.eventtiming.timingpoint.infra.logging.LoggingFileConfig;
+import io.github.brainboxemb.eventtiming.timingpoint.infra.logging.LoggingLevel;
+import io.github.brainboxemb.eventtiming.timingpoint.infra.logging.LoggingServerConfig;
 
 import java.io.IOException;
 import java.io.InputStream;

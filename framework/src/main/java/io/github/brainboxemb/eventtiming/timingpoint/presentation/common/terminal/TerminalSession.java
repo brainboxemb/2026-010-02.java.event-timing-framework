@@ -1,8 +1,8 @@
-package io.github.brainboxemb.eventtiming.presentation.common.terminal;
+package io.github.brainboxemb.eventtiming.timingpoint.presentation.common.terminal;
 
-import io.github.brainboxemb.eventtiming.application.ApplicationStatus;
-import io.github.brainboxemb.eventtiming.application.CommandHandler;
-import io.github.brainboxemb.eventtiming.infra.BuildIdentity;
+import io.github.brainboxemb.eventtiming.timingpoint.application.ApplicationStatus;
+import io.github.brainboxemb.eventtiming.timingpoint.application.CommandHandler;
+import io.github.brainboxemb.eventtiming.timingpoint.infra.BuildIdentity;
 
 import java.io.BufferedReader;
 import java.io.IOException;

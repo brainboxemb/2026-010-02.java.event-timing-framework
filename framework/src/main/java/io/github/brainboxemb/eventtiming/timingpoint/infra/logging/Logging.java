@@ -1,4 +1,4 @@
-package io.github.brainboxemb.eventtiming.infra.logging;
+package io.github.brainboxemb.eventtiming.timingpoint.infra.logging;
 
 import java.io.IOException;
 import java.nio.file.Path;
