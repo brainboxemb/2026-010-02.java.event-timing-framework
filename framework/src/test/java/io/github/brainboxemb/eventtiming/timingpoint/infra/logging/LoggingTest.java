@@ -50,7 +50,7 @@ public class LoggingTest {
                 assertTrue(line.matches(
                         "\\d{2}:\\d{2}:\\d{2}\\.\\d{3} - \\[INFO\\] - "
                                 + "Application lifecycle state=RUNNING - "
-                                + "\\[io\\.github\\.brainboxemb\\.eventtiming\\.runtime"
+                                + "\\[io\\.github\\.brainboxemb\\.eventtiming\\.timingpoint\\.runtime"
                                 + "\\.TimingApplicationLifecycle\\.start\\]\\R"));
             }
 
