@@ -159,7 +159,7 @@ public class FileTimingDataStoreTest {
         FileTimingDataStore store = store(file());
 
         try {
-            store.append(data("timing-node-02", 1L));
+            store.append(data(new TimingNodeId("timing-node-02"), 1L));
             fail("expected wrong TimingNode rejection");
         } catch (TimingDataStore.StoreException expected) {
             assertTrue(expected.getMessage().contains("but store owns " + NODE_ID));
