@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Add the default/reference IF-05 v1 TimingData JSON codec using Jackson streaming only, with canonical writer ordering, compatible extra-member reads and explicit invalid/version/record-type failures.
+
 - Compact the shared TimingData API by grouping registration variants, manual time source and record key under `TimingData`, construction context under `TimingDataFactory`, and codec failures under `TimingDataCodec`; keep `RegistrationId` and `TimingTimestamp` as standalone value types.
 
 - Clarify SerialWorker usage in Javadoc and distinguish queue `AdmissionResult` from the later `futureResult()` returned for accepted result-bearing work.
