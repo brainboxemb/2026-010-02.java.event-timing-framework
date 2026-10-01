@@ -22,6 +22,7 @@ import java.io.OutputStream;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.nio.charset.StandardCharsets;
+import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -37,6 +38,7 @@ import org.slf4j.LoggerFactory;
 public final class HttpEndpoint implements AutoCloseable {
     private static final Logger LOG = LoggerFactory.getLogger(HttpEndpoint.class);
     private static final int MAX_REQUEST_BODY_BYTES = 64 * 1024;
+    private static final int MAX_LOGBOOK_LIMIT = 1000;
 
     private final String bindAddress;
     private final int port;
@@ -132,10 +134,7 @@ public final class HttpEndpoint implements AutoCloseable {
         }
         if ("/api/v1/status".equals(path)) {
             requireMethod(exchange, "GET");
-            sendJson(
-                    exchange,
-                    200,
-                    MessageWriter.status(commandHandler.version(), commandHandler.status()));
+            sendJson(exchange, 200, MessageWriter.status(commandHandler.status()));
             return;
         }
         if ("/api/v1/capabilities".equals(path)) {
@@ -143,41 +142,15 @@ public final class HttpEndpoint implements AutoCloseable {
             sendJson(
                     exchange,
                     200,
-                    MessageWriter.capabilities(
-                            commandHandler.version(),
-                            commandHandler.capabilities()));
+                    MessageWriter.capabilities(commandHandler.capabilities()));
             return;
         }
-        if ("/api/v1/timing-node/location".equals(path)) {
-            requireMethod(exchange, "PUT");
-            handleSetLocation(exchange);
+        if (path.startsWith("/api/v1/node/")) {
+            routeNode(exchange, path.substring("/api/v1/node/".length()));
             return;
         }
-        if ("/api/v1/timing-node/open".equals(path)) {
-            requireMethod(exchange, "POST");
-            requireEmptyBody(exchange);
-            handleOpen(exchange);
-            return;
-        }
-        if ("/api/v1/timing-node/close".equals(path)) {
-            requireMethod(exchange, "POST");
-            requireEmptyBody(exchange);
-            sendJson(
-                    exchange,
-                    200,
-                    MessageWriter.result(
-                            commandHandler.version(),
-                            commandHandler.close().name()));
-            return;
-        }
-        if ("/api/v1/dev/auto-reg".equals(path)) {
-            requireMethod(exchange, "POST");
-            handleAutoRegistration(exchange);
-            return;
-        }
-        if ("/api/v1/timing-data".equals(path)) {
-            requireMethod(exchange, "GET");
-            handleHistory(exchange);
+        if (path.startsWith("/api/v1/dev/node/")) {
+            routeDevNode(exchange, path.substring("/api/v1/dev/node/".length()));
             return;
         }
 
@@ -185,6 +158,96 @@ public final class HttpEndpoint implements AutoCloseable {
                 exchange,
                 404,
                 MessageWriter.error("NOT_FOUND", "Unknown IF-03 resource"));
+    }
+
+    private void routeNode(HttpExchange exchange, String remainder) throws IOException {
+        NodeRoute route = nodeRoute(remainder);
+        if (route == null) {
+            sendJson(
+                    exchange,
+                    404,
+                    MessageWriter.error("NOT_FOUND", "Unknown TimingNode resource"));
+            return;
+        }
+        requireCurrentNode(exchange, route.nodeId);
+
+        if ("/location".equals(route.resource)) {
+            requireMethod(exchange, "PUT");
+            handleSetLocation(exchange);
+            return;
+        }
+        if ("/open".equals(route.resource)) {
+            requireMethod(exchange, "POST");
+            requireEmptyBody(exchange);
+            handleOpen(exchange);
+            return;
+        }
+        if ("/close".equals(route.resource)) {
+            requireMethod(exchange, "POST");
+            requireEmptyBody(exchange);
+            sendJson(
+                    exchange,
+                    200,
+                    MessageWriter.result(commandHandler.close().name()));
+            return;
+        }
+        if ("/logbook".equals(route.resource)) {
+            requireMethod(exchange, "GET");
+            handleLogBook(exchange);
+            return;
+        }
+
+        sendJson(
+                exchange,
+                404,
+                MessageWriter.error("NOT_FOUND", "Unknown TimingNode resource"));
+    }
+
+    private void routeDevNode(HttpExchange exchange, String remainder) throws IOException {
+        NodeRoute route = nodeRoute(remainder);
+        if (route == null) {
+            sendJson(
+                    exchange,
+                    404,
+                    MessageWriter.error("NOT_FOUND", "Unknown IF-03 dev resource"));
+            return;
+        }
+        requireCurrentNode(exchange, route.nodeId);
+
+        if ("/auto-reg".equals(route.resource)) {
+            requireMethod(exchange, "POST");
+            handleAutoRegistration(exchange);
+            return;
+        }
+
+        sendJson(
+                exchange,
+                404,
+                MessageWriter.error("NOT_FOUND", "Unknown IF-03 dev resource"));
+    }
+
+    private static NodeRoute nodeRoute(String remainder) {
+        int slash = remainder.indexOf('/');
+        if (slash <= 0 || slash == remainder.length() - 1) {
+            return null;
+        }
+        return new NodeRoute(
+                remainder.substring(0, slash),
+                remainder.substring(slash));
+    }
+
+    private void requireCurrentNode(HttpExchange exchange, String nodeId)
+            throws IOException {
+        if (commandHandler.status().timingNodeId().value().equals(nodeId)) {
+            return;
+        }
+        sendJson(
+                exchange,
+                404,
+                MessageWriter.error(
+                        "NODE_NOT_FOUND",
+                        "Unknown TimingNode id"));
+        throw ResponseAlreadySent.INSTANCE;
     }
 
     private void handleSetLocation(HttpExchange exchange) throws IOException {
@@ -209,7 +272,7 @@ public final class HttpEndpoint implements AutoCloseable {
         sendJson(
                 exchange,
                 200,
-                MessageWriter.result(commandHandler.version(), result.name()));
+                MessageWriter.result(result.name()));
     }
 
     private void handleOpen(HttpExchange exchange) throws IOException {
@@ -226,7 +289,7 @@ public final class HttpEndpoint implements AutoCloseable {
         sendJson(
                 exchange,
                 200,
-                MessageWriter.result(commandHandler.version(), result.name()));
+                MessageWriter.result(result.name()));
     }
 
     private void handleAutoRegistration(HttpExchange exchange) throws IOException {
@@ -266,23 +329,117 @@ public final class HttpEndpoint implements AutoCloseable {
                 exchange,
                 200,
                 MessageWriter.committedRegistration(
-                        commandHandler.version(),
                         result.timingData()));
     }
 
-    private void handleHistory(HttpExchange exchange) throws IOException {
+    private void handleLogBook(HttpExchange exchange) throws IOException {
+        String query = exchange.getRequestURI().getRawQuery();
+        if (query == null || query.isEmpty()) {
+            sendJson(
+                    exchange,
+                    200,
+                    MessageWriter.logBookInfo(commandHandler.logBookCount()));
+            return;
+        }
+
+        LogBookQuery request = readLogBookQuery(query);
+        final List<TimingData> records;
+        if (request.last != null) {
+            records = commandHandler.latestLogBook(request.last.intValue());
+        } else {
+            records = commandHandler.logBookFrom(
+                    request.from.longValue(),
+                    request.limit.intValue());
+        }
+
+        int count = commandHandler.logBookCount();
+        Long next = null;
+        if (request.from != null && !records.isEmpty()) {
+            long candidate =
+                    records.get(records.size() - 1).sequenceNumber() + 1L;
+            if (candidate <= count) {
+                next = Long.valueOf(candidate);
+            }
+        }
+
         try {
             sendJson(
                     exchange,
                     200,
-                    MessageWriter.history(
-                            commandHandler.version(),
-                            commandHandler.status().timingNodeId(),
-                            commandHandler.timingDataHistory(),
+                    MessageWriter.logBookPage(
+                            count,
+                            next,
+                            records,
                             timingDataCodec));
         } catch (TimingDataCodec.CodecException ex) {
-            throw new IllegalStateException("Could not encode committed TimingData history", ex);
+            throw new IllegalStateException("Could not encode LogBook records", ex);
         }
+    }
+
+    private LogBookQuery readLogBookQuery(String query) {
+        Long from = null;
+        Integer limit = null;
+        Integer last = null;
+
+        String[] pairs = query.split("&");
+        for (String pair : pairs) {
+            int equals = pair.indexOf('=');
+            if (equals <= 0 || equals == pair.length() - 1) {
+                throw invalidValue("LogBook query parameters require a value");
+            }
+            String name = pair.substring(0, equals);
+            String value = pair.substring(equals + 1);
+
+            if ("from".equals(name)) {
+                if (from != null) {
+                    throw invalidValue("Duplicate LogBook query field: from");
+                }
+                from = Long.valueOf(parsePositiveLong("from", value));
+            } else if ("limit".equals(name)) {
+                if (limit != null) {
+                    throw invalidValue("Duplicate LogBook query field: limit");
+                }
+                limit = Integer.valueOf(parseLogBookLimit("limit", value));
+            } else if ("last".equals(name)) {
+                if (last != null) {
+                    throw invalidValue("Duplicate LogBook query field: last");
+                }
+                last = Integer.valueOf(parseLogBookLimit("last", value));
+            } else {
+                throw invalidValue("Unsupported LogBook query field: " + name);
+            }
+        }
+
+        if (last != null) {
+            if (from != null || limit != null) {
+                throw invalidValue("last cannot be combined with from or limit");
+            }
+            return new LogBookQuery(null, null, last);
+        }
+        if (from == null || limit == null) {
+            throw invalidValue("LogBook range requires both from and limit");
+        }
+        return new LogBookQuery(from, limit, null);
+    }
+
+    private static long parsePositiveLong(String name, String value) {
+        try {
+            long parsed = Long.parseLong(value);
+            if (parsed < 1L) {
+                throw invalidValue(name + " must be >= 1");
+            }
+            return parsed;
+        } catch (NumberFormatException ex) {
+            throw invalidValue(name + " must be a positive integer");
+        }
+    }
+
+    private static int parseLogBookLimit(String name, String value) {
+        long parsed = parsePositiveLong(name, value);
+        if (parsed > MAX_LOGBOOK_LIMIT) {
+            throw invalidValue(name + " must be <= " + MAX_LOGBOOK_LIMIT);
+        }
+        return (int) parsed;
     }
 
     private void sendOperationFailure(
@@ -472,6 +629,28 @@ public final class HttpEndpoint implements AutoCloseable {
         if (executor != null) {
             executor.shutdownNow();
             executor = null;
+        }
+    }
+
+    private static final class NodeRoute {
+        private final String nodeId;
+        private final String resource;
+
+        private NodeRoute(String nodeId, String resource) {
+            this.nodeId = nodeId;
+            this.resource = resource;
+        }
+    }
+
+    private static final class LogBookQuery {
+        private final Long from;
+        private final Integer limit;
+        private final Integer last;
+
+        private LogBookQuery(Long from, Integer limit, Integer last) {
+            this.from = from;
+            this.limit = limit;
+            this.last = last;
         }
     }
 
