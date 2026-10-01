@@ -4,7 +4,7 @@ import io.github.brainboxemb.eventtiming.timingpoint.domain.timing.TimingNodeId;
 import io.github.brainboxemb.eventtiming.timingpoint.infra.logging.LoggingConfig;
 import io.github.brainboxemb.eventtiming.timingpoint.infra.loggingserver.LoggingServerConfig;
 
-/** Effective deployment configuration consumed by the framework bootstrap. */
+/** Effective deployment configuration consumed by the application-core bootstrap. */
 public final class ApplicationConfig {
     private final TimingNodeId timingNodeId;
     private final PresentationConfig presentation;
