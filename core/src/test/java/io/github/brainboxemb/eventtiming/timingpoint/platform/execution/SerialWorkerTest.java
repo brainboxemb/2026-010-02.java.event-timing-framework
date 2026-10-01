@@ -22,7 +22,7 @@ public class SerialWorkerTest {
         SerialWorker worker = new SerialWorker(1, "serial-worker-test");
 
         assertEquals(
-                SerialWorker.SubmissionResult.NOT_RUNNING,
+                SerialWorker.AdmissionResult.NOT_RUNNING,
                 worker.offer(() -> { }));
 
         worker.start();
@@ -30,7 +30,7 @@ public class SerialWorkerTest {
 
         assertEquals(SerialWorker.State.STOPPED, worker.state());
         assertEquals(
-                SerialWorker.SubmissionResult.NOT_RUNNING,
+                SerialWorker.AdmissionResult.NOT_RUNNING,
                 worker.offer(() -> { }));
     }
 
@@ -43,7 +43,7 @@ public class SerialWorkerTest {
 
         worker.start();
         try {
-            SerialWorker.Submission<Integer> first = worker.submit(() -> {
+            SerialWorker.SubmitResult<Integer> first = worker.submit(() -> {
                 firstStarted.countDown();
                 releaseFirst.await();
                 order.add(1);
@@ -51,14 +51,14 @@ public class SerialWorkerTest {
             });
             assertTrue(firstStarted.await(1, TimeUnit.SECONDS));
 
-            SerialWorker.Submission<Integer> second = worker.submit(() -> {
+            SerialWorker.SubmitResult<Integer> second = worker.submit(() -> {
                 order.add(2);
                 return 20;
             });
             releaseFirst.countDown();
 
-            assertEquals(Integer.valueOf(10), first.future().get(1, TimeUnit.SECONDS));
-            assertEquals(Integer.valueOf(20), second.future().get(1, TimeUnit.SECONDS));
+            assertEquals(Integer.valueOf(10), first.futureResult().get(1, TimeUnit.SECONDS));
+            assertEquals(Integer.valueOf(20), second.futureResult().get(1, TimeUnit.SECONDS));
             assertEquals(Arrays.asList(1, 2), order);
         } finally {
             releaseFirst.countDown();
@@ -82,10 +82,10 @@ public class SerialWorkerTest {
             assertTrue(firstStarted.await(1, TimeUnit.SECONDS));
 
             assertEquals(
-                    SerialWorker.SubmissionResult.ACCEPTED,
+                    SerialWorker.AdmissionResult.ACCEPTED,
                     worker.offer(() -> { }));
             assertEquals(
-                    SerialWorker.SubmissionResult.FULL,
+                    SerialWorker.AdmissionResult.FULL,
                     worker.offer(() -> { }));
             assertTrue(worker.highWaterMark() >= 1);
         } finally {
@@ -130,19 +130,19 @@ public class SerialWorkerTest {
         SerialWorker worker = new SerialWorker(2, "serial-worker-test");
         worker.start();
         try {
-            SerialWorker.Submission<Integer> failing = worker.submit(() -> {
+            SerialWorker.SubmitResult<Integer> failing = worker.submit(() -> {
                 throw new IllegalStateException("expected");
             });
-            SerialWorker.Submission<Integer> next = worker.submit(() -> 42);
+            SerialWorker.SubmitResult<Integer> next = worker.submit(() -> 42);
 
             try {
-                failing.future().get(1, TimeUnit.SECONDS);
+                failing.futureResult().get(1, TimeUnit.SECONDS);
                 fail("expected ExecutionException");
             } catch (ExecutionException expected) {
                 assertTrue(expected.getCause() instanceof IllegalStateException);
             }
 
-            assertEquals(Integer.valueOf(42), next.future().get(1, TimeUnit.SECONDS));
+            assertEquals(Integer.valueOf(42), next.futureResult().get(1, TimeUnit.SECONDS));
             assertEquals(SerialWorker.State.RUNNING, worker.state());
         } finally {
             worker.close();
@@ -156,17 +156,17 @@ public class SerialWorkerTest {
         CountDownLatch releaseFatal = new CountDownLatch(1);
         worker.start();
 
-        SerialWorker.Submission<Void> fatal = worker.submit(() -> {
+        SerialWorker.SubmitResult<Void> fatal = worker.submit(() -> {
             fatalStarted.countDown();
             releaseFatal.await();
             throw new AssertionError("fatal");
         });
         assertTrue(fatalStarted.await(1, TimeUnit.SECONDS));
-        SerialWorker.Submission<Integer> queued = worker.submit(() -> 42);
+        SerialWorker.SubmitResult<Integer> queued = worker.submit(() -> 42);
         releaseFatal.countDown();
 
         try {
-            fatal.future().get(1, TimeUnit.SECONDS);
+            fatal.futureResult().get(1, TimeUnit.SECONDS);
             fail("expected ExecutionException");
         } catch (ExecutionException expected) {
             assertTrue(expected.getCause() instanceof AssertionError);
@@ -180,7 +180,7 @@ public class SerialWorkerTest {
         assertTrue(worker.failure() instanceof AssertionError);
 
         try {
-            queued.future().get();
+            queued.futureResult().get();
             fail("expected queued work to be cancelled");
         } catch (CancellationException expected) {
             // Expected after worker fault.

@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Clarify SerialWorker usage in Javadoc and distinguish queue `AdmissionResult` from the later `futureResult()` returned for accepted result-bearing work.
+
 - Add the first manual TimingData commit path on the TimingNode serial lane with commit-time sequence allocation, TimeSource-based recorded time, store-before-LogBook ordering and failure blocking.
 
 - Add the passive per-TimingNode LogBook and TimingDataStore append boundary as the foundation for ordered durable TimingData commits.
