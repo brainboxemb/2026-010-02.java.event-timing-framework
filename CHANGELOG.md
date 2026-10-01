@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Add the first manual TimingData commit path on the TimingNode serial lane with commit-time sequence allocation, TimeSource-based recorded time, store-before-LogBook ordering and failure blocking.
+
 - Add the passive per-TimingNode LogBook and TimingDataStore append boundary as the foundation for ordered durable TimingData commits.
 
 - Add the first serialized TimingNode state slice: bounded per-node execution, LocationId, CLOSED/OPEN lifecycle, processed state-operation results, timeout-as-unknown-outcome semantics and ordered status snapshots.
