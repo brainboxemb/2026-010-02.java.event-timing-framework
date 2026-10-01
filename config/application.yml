@@ -1,4 +1,4 @@
-# Step-3 development configuration: one TimingNode plus presentation interfaces.
+# Step-4 development configuration: one TimingNode, TimingData storage and presentation interfaces.
 timingNodeId: timing-node-01
 
 io:
