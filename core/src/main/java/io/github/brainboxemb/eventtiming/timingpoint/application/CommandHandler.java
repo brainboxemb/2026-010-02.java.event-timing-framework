@@ -152,10 +152,22 @@ public final class CommandHandler {
                 .registerAccepted(registrationId, observationTime);
     }
 
-    /** Returns a stable committed TimingData history snapshot. */
-    public List<TimingData> timingDataHistory() {
-        return requireOperationalTimingNode("timingDataHistory")
-                .timingDataSnapshot();
+    /** Returns the number of committed records in the current node LogBook. */
+    public int logBookCount() {
+        return requireOperationalTimingNode("logBookCount")
+                .timingDataCount();
+    }
+
+    /** Returns a bounded committed LogBook range starting at an inclusive sequence. */
+    public List<TimingData> logBookFrom(long fromSequence, int limit) {
+        return requireOperationalTimingNode("logBookFrom")
+                .timingDataRange(fromSequence, limit);
+    }
+
+    /** Returns a bounded newest LogBook range in committed source order. */
+    public List<TimingData> latestLogBook(int limit) {
+        return requireOperationalTimingNode("latestLogBook")
+                .latestTimingData(limit);
     }
 
     /** Subscribes to authoritative status changes caused through this application boundary. */
