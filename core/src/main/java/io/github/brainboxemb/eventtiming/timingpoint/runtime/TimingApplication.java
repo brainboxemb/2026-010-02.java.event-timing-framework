@@ -33,7 +33,13 @@ public final class TimingApplication implements AutoCloseable {
     }
 
     public void start() {
-        lifecycle.start();
+        timingNode.start();
+        try {
+            lifecycle.start();
+        } catch (RuntimeException ex) {
+            timingNode.stop();
+            throw ex;
+        }
     }
 
     public CommandHandler commandHandler() {
@@ -63,6 +69,7 @@ public final class TimingApplication implements AutoCloseable {
 
     @Override
     public void close() {
+        timingNode.stop();
         lifecycle.close();
     }
 
@@ -99,9 +106,12 @@ public final class TimingApplication implements AutoCloseable {
             TimingApplicationLifecycle lifecycle = new TimingApplicationLifecycle(buildIdentity);
             CommandHandler commandHandler = new CommandHandler(
                     buildIdentity,
-                    () -> new ApplicationStatus(
-                            timingNode.timingNodeId(),
-                            timingNode.lifecycle()));
+                    () -> {
+                        TimingNode.Status status = timingNode.status();
+                        return new ApplicationStatus(
+                                status.timingNodeId(),
+                                status.lifecycle());
+                    });
             return new TimingApplication(
                     buildIdentity,
                     timingNode,
