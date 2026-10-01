@@ -104,10 +104,10 @@ public class HttpEndpointTest {
             Response registration = request(
                     server.boundPort(),
                     "POST",
-                    "/api/v1/engineering/accepted-registration",
+                    "/api/v1/dev/auto-reg",
                     "{"
-                            + "\"registrationId\":\"sample-001\","
-                            + "\"observationTime\":"
+                            + "\"id\":\"sample-001\","
+                            + "\"time\":"
                             + "\"2026-10-01T12:00:00.000000000Z\""
                             + "}");
             assertEquals(200, registration.status);
