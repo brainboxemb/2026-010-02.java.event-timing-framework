@@ -34,8 +34,8 @@ artifact. The root `event-timing-parent` POM is build/aggregation metadata rathe
 product component.
 
 The shared TimingData library models committed registrations with a small common
-`TimingData` contract plus type-safe `AutomaticRegistrationTimingData` and
-`ManualRegistrationTimingData` variants. One immutable `TimingDataContext`
+`TimingData` contract plus type-safe nested `TimingData.AutomaticRegistration` and
+`TimingData.ManualRegistration` variants. One immutable `TimingDataFactory.Context`
 carries the common source/sequence/location/time values. A configured
 `TimingDataFactory` returns the typed variant and a matching `TimingDataCodec`
 handles representation. `RegistrationId` is the canonical ID carried by
