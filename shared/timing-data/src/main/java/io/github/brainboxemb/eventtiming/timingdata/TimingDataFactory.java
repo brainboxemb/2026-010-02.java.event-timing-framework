@@ -27,14 +27,14 @@ public interface TimingDataFactory {
     final class Context {
         private final String timingNodeId;
         private final long sequenceNumber;
-        private final int locationId;
+        private final LocationId locationId;
         private final TimingTimestamp effectiveTime;
         private final TimingTimestamp recordedAt;
 
         public Context(
                 String timingNodeId,
                 long sequenceNumber,
-                int locationId,
+                LocationId locationId,
                 TimingTimestamp effectiveTime,
                 TimingTimestamp recordedAt) {
             if (timingNodeId == null || timingNodeId.trim().isEmpty()) {
@@ -45,8 +45,8 @@ public interface TimingDataFactory {
                         "sequenceNumber must be in range 1.."
                                 + TimingData.MAX_SEQUENCE_NUMBER);
             }
-            if (locationId < TimingData.MIN_LOCATION_ID) {
-                throw new IllegalArgumentException("locationId must be positive");
+            if (locationId == null) {
+                throw new IllegalArgumentException("locationId must not be null");
             }
             if (effectiveTime == null) {
                 throw new IllegalArgumentException("effectiveTime must not be null");
@@ -69,7 +69,7 @@ public interface TimingDataFactory {
             return sequenceNumber;
         }
 
-        public int locationId() {
+        public LocationId locationId() {
             return locationId;
         }
 

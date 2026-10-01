@@ -34,7 +34,7 @@ public interface TimingDataCodec {
         private final Reason reason;
         private final Integer version;
         private final TimingData.RecordKey key;
-        private final Integer locationId;
+        private final LocationId locationId;
         private final String recordType;
         private final TimingTimestamp effectiveTime;
         private final TimingTimestamp recordedAt;
@@ -53,7 +53,7 @@ public interface TimingDataCodec {
                 Throwable cause,
                 Integer version,
                 TimingData.RecordKey key,
-                Integer locationId,
+                LocationId locationId,
                 String recordType,
                 TimingTimestamp effectiveTime,
                 TimingTimestamp recordedAt) {
@@ -92,7 +92,7 @@ public interface TimingDataCodec {
         public static CodecException unsupportedRecordType(
                 int version,
                 TimingData.RecordKey key,
-                int locationId,
+                LocationId locationId,
                 String recordType,
                 TimingTimestamp effectiveTime,
                 TimingTimestamp recordedAt,
@@ -100,8 +100,8 @@ public interface TimingDataCodec {
             if (key == null) {
                 throw new IllegalArgumentException("key must not be null");
             }
-            if (locationId < TimingData.MIN_LOCATION_ID) {
-                throw new IllegalArgumentException("locationId must be positive");
+            if (locationId == null) {
+                throw new IllegalArgumentException("locationId must not be null");
             }
             if (recordType == null || recordType.trim().isEmpty()) {
                 throw new IllegalArgumentException("recordType must not be blank");
@@ -136,7 +136,7 @@ public interface TimingDataCodec {
             return key;
         }
 
-        public Integer locationId() {
+        public LocationId locationId() {
             return locationId;
         }
 

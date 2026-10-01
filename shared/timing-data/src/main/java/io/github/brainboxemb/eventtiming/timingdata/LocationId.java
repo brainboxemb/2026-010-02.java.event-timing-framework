@@ -1,6 +1,15 @@
-package io.github.brainboxemb.eventtiming.timingpoint.domain.timing;
+package io.github.brainboxemb.eventtiming.timingdata;
 
-/** Positive configured identity of one timing location. */
+import java.util.Objects;
+
+/**
+ * Positive identity of one timing location.
+ *
+ * <p>LocationId is part of the common IF-05 TimingData envelope and is also used
+ * directly by TimingNode and deployment/profile configuration. Keeping one shared
+ * value type prevents the application domain and interchange model from assigning
+ * different meaning to the same location identifier.</p>
+ */
 public final class LocationId {
     private final int value;
 
@@ -29,7 +38,7 @@ public final class LocationId {
 
     @Override
     public int hashCode() {
-        return Integer.valueOf(value).hashCode();
+        return Objects.hash(value);
     }
 
     @Override

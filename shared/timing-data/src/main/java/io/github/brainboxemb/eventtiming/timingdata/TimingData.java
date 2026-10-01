@@ -24,9 +24,6 @@ import java.util.Objects;
  * }</pre>
  */
 public interface TimingData {
-    /** Smallest valid public IF-05 LocationId value. */
-    int MIN_LOCATION_ID = 1;
-
     /** Largest JSON-safe IF-05 sequence value: 2^53 - 1. */
     long MAX_SEQUENCE_NUMBER = 9007199254740991L;
 
@@ -34,7 +31,7 @@ public interface TimingData {
 
     long sequenceNumber();
 
-    int locationId();
+    LocationId locationId();
 
     TimingTimestamp effectiveTime();
 

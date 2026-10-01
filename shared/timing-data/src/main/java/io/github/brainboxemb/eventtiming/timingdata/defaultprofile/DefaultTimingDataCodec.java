@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonToken;
+import io.github.brainboxemb.eventtiming.timingdata.LocationId;
 import io.github.brainboxemb.eventtiming.timingdata.RegistrationId;
 import io.github.brainboxemb.eventtiming.timingdata.TimingData;
 import io.github.brainboxemb.eventtiming.timingdata.TimingDataCodec;
@@ -92,7 +93,7 @@ public final class DefaultTimingDataCodec implements TimingDataCodec {
                 generator.writeNumberField("version", VERSION);
                 generator.writeStringField("timingNodeId", data.timingNodeId());
                 generator.writeNumberField("sequenceNumber", data.sequenceNumber());
-                generator.writeNumberField("locationId", data.locationId());
+                generator.writeNumberField("locationId", data.locationId().value());
                 generator.writeStringField("recordType", RECORD_TYPE_REGISTRATION);
                 generator.writeStringField("effectiveTime", data.effectiveTime().toString());
                 generator.writeStringField("recordedAt", data.recordedAt().toString());
@@ -374,7 +375,7 @@ public final class DefaultTimingDataCodec implements TimingDataCodec {
             return new TimingDataFactory.Context(
                     fields.timingNodeId,
                     fields.sequenceNumber,
-                    fields.locationId,
+                    new LocationId(fields.locationId),
                     TimingTimestamp.parse(fields.effectiveTimeText),
                     TimingTimestamp.parse(fields.recordedAtText));
         } catch (RuntimeException ex) {
