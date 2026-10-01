@@ -1,4 +1,4 @@
-package io.github.brainboxemb.eventtiming.timingpoint.domain.timing;
+package io.github.brainboxemb.eventtiming.timingdata;
 
 import org.junit.Test;
 
@@ -6,7 +6,7 @@ import static org.junit.Assert.assertEquals;
 
 public class LocationIdTest {
     @Test
-    public void keepsPositiveConfiguredValue() {
+    public void keepsPositiveValue() {
         LocationId id = new LocationId(24);
 
         assertEquals(24, id.value());

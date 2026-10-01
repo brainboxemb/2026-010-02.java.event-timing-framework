@@ -1,5 +1,6 @@
 package io.github.brainboxemb.eventtiming.timingdata.defaultprofile;
 
+import io.github.brainboxemb.eventtiming.timingdata.LocationId;
 import io.github.brainboxemb.eventtiming.timingdata.RegistrationId;
 import io.github.brainboxemb.eventtiming.timingdata.TimingData;
 import io.github.brainboxemb.eventtiming.timingdata.TimingDataFactory;
@@ -52,7 +53,7 @@ public final class DefaultTimingDataFactory implements TimingDataFactory {
         }
 
         @Override
-        public int locationId() {
+        public LocationId locationId() {
             return context.locationId();
         }
 
@@ -102,7 +103,7 @@ public final class DefaultTimingDataFactory implements TimingDataFactory {
         }
 
         @Override
-        public int locationId() {
+        public LocationId locationId() {
             return context.locationId();
         }
 

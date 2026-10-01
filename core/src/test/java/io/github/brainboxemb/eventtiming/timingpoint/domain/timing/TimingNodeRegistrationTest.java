@@ -2,6 +2,7 @@ package io.github.brainboxemb.eventtiming.timingpoint.domain.timing;
 
 import io.github.brainboxemb.eventtiming.timingdata.TimingData.ManualTimeSource;
 import io.github.brainboxemb.eventtiming.timingdata.TimingData.ManualRegistration;
+import io.github.brainboxemb.eventtiming.timingdata.LocationId;
 import io.github.brainboxemb.eventtiming.timingdata.RegistrationId;
 import io.github.brainboxemb.eventtiming.timingdata.TimingData;
 import io.github.brainboxemb.eventtiming.timingdata.TimingDataFactory.Context;
@@ -58,7 +59,7 @@ public class TimingNodeRegistrationTest {
                     (ManualRegistration) result.timingData();
             assertEquals("timing-node-01", data.timingNodeId());
             assertEquals(1L, data.sequenceNumber());
-            assertEquals(24, data.locationId());
+            assertEquals(new LocationId(24), data.locationId());
             assertEquals(EFFECTIVE_TIME, data.effectiveTime());
             assertEquals(RECORDED_AT, data.recordedAt());
             assertEquals(new RegistrationId("1001"), data.registrationId());
@@ -273,7 +274,7 @@ public class TimingNodeRegistrationTest {
                 new Context(
                         "timing-node-01",
                         sequence,
-                        locationId,
+                        new LocationId(locationId),
                         EFFECTIVE_TIME,
                         RECORDED_AT),
                 new RegistrationId("recovered-" + sequence),

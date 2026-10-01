@@ -1,6 +1,18 @@
-package io.github.brainboxemb.eventtiming.timingpoint.domain.timing;
+package io.github.brainboxemb.eventtiming.timingdata;
 
-/** Positive configured identity of one timing location. */
+import java.util.Objects;
+
+/**
+ * Shared representation of a timing-location identity.
+ *
+ * <p>The numeric shape is part of the common TimingData/IF-05 contract. The
+ * semantic meaning and the set of LocationIds that are valid for a concrete
+ * event or deployment belong to that event/profile configuration, not to this
+ * value type.</p>
+ *
+ * <p>This class therefore enforces only the structural invariant shared by the
+ * current protocol: the value is positive.</p>
+ */
 public final class LocationId {
     private final int value;
 
@@ -29,7 +41,7 @@ public final class LocationId {
 
     @Override
     public int hashCode() {
-        return Integer.valueOf(value).hashCode();
+        return Objects.hash(value);
     }
 
     @Override
