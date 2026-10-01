@@ -39,7 +39,7 @@ public class TimingDataCodecTest {
                 TimingDataCodec.CodecException.unsupportedRecordType(
                         1,
                         key,
-                        12,
+                        new LocationId(12),
                         "FUTURE_RECORD",
                         EFFECTIVE,
                         RECORDED,
