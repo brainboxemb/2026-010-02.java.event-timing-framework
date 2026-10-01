@@ -9,7 +9,7 @@ package io.github.brainboxemb.eventtiming.timingdata;
  */
 public interface TimingDataCodec {
 
-    byte[] encode(TimingDataRecord record) throws TimingDataCodecException;
+    byte[] encode(TimingData data) throws TimingDataCodecException;
 
-    TimingDataRecord decode(byte[] encodedRecord) throws TimingDataCodecException;
+    TimingData decode(byte[] encodedRecord) throws TimingDataCodecException;
 }
