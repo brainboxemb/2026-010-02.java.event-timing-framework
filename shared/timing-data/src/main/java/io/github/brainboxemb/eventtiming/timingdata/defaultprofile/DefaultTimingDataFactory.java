@@ -1,44 +1,41 @@
 package io.github.brainboxemb.eventtiming.timingdata.defaultprofile;
 
-import io.github.brainboxemb.eventtiming.timingdata.AutomaticRegistrationTimingData;
-import io.github.brainboxemb.eventtiming.timingdata.ManualRegistrationTimeSource;
-import io.github.brainboxemb.eventtiming.timingdata.ManualRegistrationTimingData;
 import io.github.brainboxemb.eventtiming.timingdata.RegistrationId;
-import io.github.brainboxemb.eventtiming.timingdata.TimingDataContext;
+import io.github.brainboxemb.eventtiming.timingdata.TimingData;
 import io.github.brainboxemb.eventtiming.timingdata.TimingDataFactory;
 import io.github.brainboxemb.eventtiming.timingdata.TimingTimestamp;
 
 /**
  * Default/reference profile TimingData factory.
  *
- * <p>The concrete default values are implementation details of this factory.
- * Consumers depend on the public semantic TimingData interfaces instead.</p>
+ * <p>The concrete default values are private implementation details. Consumers
+ * depend on the grouped public semantic contracts under {@link TimingData}.</p>
  */
 public final class DefaultTimingDataFactory implements TimingDataFactory {
 
     @Override
-    public AutomaticRegistrationTimingData createAutomaticRegistration(
-            TimingDataContext context,
+    public TimingData.AutomaticRegistration createAutomaticRegistration(
+            Context context,
             RegistrationId registrationId) {
         return new AutomaticRegistration(context, registrationId);
     }
 
     @Override
-    public ManualRegistrationTimingData createManualRegistration(
-            TimingDataContext context,
+    public TimingData.ManualRegistration createManualRegistration(
+            Context context,
             RegistrationId registrationId,
-            ManualRegistrationTimeSource timeSource) {
+            TimingData.ManualTimeSource timeSource) {
         return new ManualRegistration(context, registrationId, timeSource);
     }
 
     private static final class AutomaticRegistration
-            implements AutomaticRegistrationTimingData {
+            implements TimingData.AutomaticRegistration {
 
-        private final TimingDataContext context;
+        private final Context context;
         private final RegistrationId registrationId;
 
         private AutomaticRegistration(
-                TimingDataContext context,
+                Context context,
                 RegistrationId registrationId) {
             this.context = requireContext(context);
             this.registrationId = requireRegistrationId(registrationId);
@@ -76,16 +73,16 @@ public final class DefaultTimingDataFactory implements TimingDataFactory {
     }
 
     private static final class ManualRegistration
-            implements ManualRegistrationTimingData {
+            implements TimingData.ManualRegistration {
 
-        private final TimingDataContext context;
+        private final Context context;
         private final RegistrationId registrationId;
-        private final ManualRegistrationTimeSource timeSource;
+        private final TimingData.ManualTimeSource timeSource;
 
         private ManualRegistration(
-                TimingDataContext context,
+                Context context,
                 RegistrationId registrationId,
-                ManualRegistrationTimeSource timeSource) {
+                TimingData.ManualTimeSource timeSource) {
             this.context = requireContext(context);
             this.registrationId = requireRegistrationId(registrationId);
             if (timeSource == null) {
@@ -125,12 +122,12 @@ public final class DefaultTimingDataFactory implements TimingDataFactory {
         }
 
         @Override
-        public ManualRegistrationTimeSource timeSource() {
+        public TimingData.ManualTimeSource timeSource() {
             return timeSource;
         }
     }
 
-    private static TimingDataContext requireContext(TimingDataContext context) {
+    private static Context requireContext(Context context) {
         if (context == null) {
             throw new IllegalArgumentException("context must not be null");
         }

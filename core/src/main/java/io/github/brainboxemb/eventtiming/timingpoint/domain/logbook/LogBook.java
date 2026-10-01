@@ -1,7 +1,6 @@
 package io.github.brainboxemb.eventtiming.timingpoint.domain.logbook;
 
 import io.github.brainboxemb.eventtiming.timingdata.TimingData;
-import io.github.brainboxemb.eventtiming.timingdata.TimingDataContext;
 import io.github.brainboxemb.eventtiming.timingpoint.domain.timing.TimingNodeId;
 
 import java.util.ArrayList;
@@ -33,7 +32,7 @@ public final class LogBook {
             return 1L;
         }
         long last = records.get(records.size() - 1).sequenceNumber();
-        if (last >= TimingDataContext.MAX_SEQUENCE_NUMBER) {
+        if (last >= TimingData.MAX_SEQUENCE_NUMBER) {
             throw new IllegalStateException("TimingData sequence space is exhausted");
         }
         return last + 1L;

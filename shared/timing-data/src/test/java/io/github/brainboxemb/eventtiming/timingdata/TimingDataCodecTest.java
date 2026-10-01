@@ -6,7 +6,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertSame;
 
-public class TimingDataCodecExceptionTest {
+public class TimingDataCodecTest {
     private static final TimingTimestamp EFFECTIVE =
             TimingTimestamp.parse("2026-09-30T20:01:39.123000000Z");
     private static final TimingTimestamp RECORDED =
@@ -14,10 +14,14 @@ public class TimingDataCodecExceptionTest {
 
     @Test
     public void unsupportedVersionCarriesVersionWithoutPretendingV1Envelope() {
-        TimingDataCodecException failure =
-                TimingDataCodecException.unsupportedVersion(2, "unsupported version");
+        TimingDataCodec.CodecException failure =
+                TimingDataCodec.CodecException.unsupportedVersion(
+                        2,
+                        "unsupported version");
 
-        assertSame(TimingDataCodecException.Reason.UNSUPPORTED_VERSION, failure.reason());
+        assertSame(
+                TimingDataCodec.CodecException.Reason.UNSUPPORTED_VERSION,
+                failure.reason());
         assertEquals(Integer.valueOf(2), failure.version());
         assertNull(failure.key());
         assertNull(failure.locationId());
@@ -28,11 +32,11 @@ public class TimingDataCodecExceptionTest {
 
     @Test
     public void unsupportedV1RecordTypeCarriesReadableCommonEnvelope() {
-        TimingDataRecordKey key =
-                new TimingDataRecordKey("timing-node-01", 7);
+        TimingData.RecordKey key =
+                new TimingData.RecordKey("timing-node-01", 7);
 
-        TimingDataCodecException failure =
-                TimingDataCodecException.unsupportedRecordType(
+        TimingDataCodec.CodecException failure =
+                TimingDataCodec.CodecException.unsupportedRecordType(
                         1,
                         key,
                         12,
@@ -42,7 +46,7 @@ public class TimingDataCodecExceptionTest {
                         "unsupported record type");
 
         assertSame(
-                TimingDataCodecException.Reason.UNSUPPORTED_RECORD_TYPE,
+                TimingDataCodec.CodecException.Reason.UNSUPPORTED_RECORD_TYPE,
                 failure.reason());
         assertEquals(Integer.valueOf(1), failure.version());
         assertEquals(key, failure.key());
@@ -54,7 +58,7 @@ public class TimingDataCodecExceptionTest {
 
     @Test(expected = IllegalArgumentException.class)
     public void unsupportedRecordTypeRequiresKey() {
-        TimingDataCodecException.unsupportedRecordType(
+        TimingDataCodec.CodecException.unsupportedRecordType(
                 1,
                 null,
                 12,

@@ -14,50 +14,81 @@ public class TimingDataFactoryTest {
             TimingTimestamp.parse("2026-09-30T20:01:40.000000000Z");
 
     @Test
+    public void contextCarriesCommonTimingDataConstructionValues() {
+        TimingDataFactory.Context context = context();
+
+        assertEquals("timing-node-01", context.timingNodeId());
+        assertEquals(7L, context.sequenceNumber());
+        assertEquals(12, context.locationId());
+        assertSame(EFFECTIVE, context.effectiveTime());
+        assertSame(RECORDED, context.recordedAt());
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void contextRejectsZeroSequence() {
+        new TimingDataFactory.Context("timing-node-01", 0L, 12, EFFECTIVE, RECORDED);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void contextRejectsNonPositiveLocationId() {
+        new TimingDataFactory.Context("timing-node-01", 1L, 0, EFFECTIVE, RECORDED);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void contextRejectsSequenceAboveJsonSafeRange() {
+        new TimingDataFactory.Context(
+                "timing-node-01",
+                TimingData.MAX_SEQUENCE_NUMBER + 1L,
+                12,
+                EFFECTIVE,
+                RECORDED);
+    }
+
+    @Test
     public void defaultFactoryReturnsTypedAutomaticRegistration() {
-        TimingDataContext context = context();
+        TimingDataFactory.Context context = context();
         RegistrationId registrationId = new RegistrationId("registration-0042");
 
-        AutomaticRegistrationTimingData autoRegTD =
+        TimingData.AutomaticRegistration automatic =
                 new DefaultTimingDataFactory()
                         .createAutomaticRegistration(context, registrationId);
 
-        assertCommonFields(autoRegTD);
-        assertSame(registrationId, autoRegTD.registrationId());
+        assertCommonFields(automatic);
+        assertSame(registrationId, automatic.registrationId());
     }
 
     @Test
     public void defaultFactoryReturnsTypedManualRegistration() {
-        TimingDataContext context = context();
+        TimingDataFactory.Context context = context();
         RegistrationId registrationId = new RegistrationId("registration-0042");
 
-        ManualRegistrationTimingData manRegTD =
+        TimingData.ManualRegistration manual =
                 new DefaultTimingDataFactory().createManualRegistration(
                         context,
                         registrationId,
-                        ManualRegistrationTimeSource.OPERATOR_ENTERED);
+                        TimingData.ManualTimeSource.OPERATOR_ENTERED);
 
-        assertCommonFields(manRegTD);
-        assertSame(registrationId, manRegTD.registrationId());
-        assertSame(ManualRegistrationTimeSource.OPERATOR_ENTERED, manRegTD.timeSource());
+        assertCommonFields(manual);
+        assertSame(registrationId, manual.registrationId());
+        assertSame(TimingData.ManualTimeSource.OPERATOR_ENTERED, manual.timeSource());
     }
 
     @Test
     public void alternateProfileCanReturnDifferentConcreteClassesThroughSameTypedApi() {
-        TimingDataContext context = context();
+        TimingDataFactory.Context context = context();
         RegistrationId registrationId = new RegistrationId("registration-0042");
         TimingDataFactory defaultFactory = new DefaultTimingDataFactory();
         TimingDataFactory dummyFactory = new DummyEventTimingDataFactory();
 
-        AutomaticRegistrationTimingData defaultAuto =
+        TimingData.AutomaticRegistration defaultAutomatic =
                 defaultFactory.createAutomaticRegistration(context, registrationId);
-        AutomaticRegistrationTimingData dummyAuto =
+        TimingData.AutomaticRegistration dummyAutomatic =
                 dummyFactory.createAutomaticRegistration(context, registrationId);
 
-        assertNotEquals(defaultAuto.getClass(), dummyAuto.getClass());
-        assertEquals(defaultAuto.timingNodeId(), dummyAuto.timingNodeId());
-        assertEquals(defaultAuto.sequenceNumber(), dummyAuto.sequenceNumber());
-        assertSame(registrationId, dummyAuto.registrationId());
+        assertNotEquals(defaultAutomatic.getClass(), dummyAutomatic.getClass());
+        assertEquals(defaultAutomatic.timingNodeId(), dummyAutomatic.timingNodeId());
+        assertEquals(defaultAutomatic.sequenceNumber(), dummyAutomatic.sequenceNumber());
+        assertSame(registrationId, dummyAutomatic.registrationId());
     }
 
     @Test(expected = IllegalArgumentException.class)
@@ -68,8 +99,13 @@ public class TimingDataFactoryTest {
                 null);
     }
 
-    private static TimingDataContext context() {
-        return new TimingDataContext("timing-node-01", 7L, 12, EFFECTIVE, RECORDED);
+    private static TimingDataFactory.Context context() {
+        return new TimingDataFactory.Context(
+                "timing-node-01",
+                7L,
+                12,
+                EFFECTIVE,
+                RECORDED);
     }
 
     private static void assertCommonFields(TimingData data) {
@@ -82,28 +118,28 @@ public class TimingDataFactoryTest {
 
     private static final class DummyEventTimingDataFactory implements TimingDataFactory {
         @Override
-        public AutomaticRegistrationTimingData createAutomaticRegistration(
-                TimingDataContext context,
+        public TimingData.AutomaticRegistration createAutomaticRegistration(
+                Context context,
                 RegistrationId registrationId) {
-            return new DummyAutomaticRegistrationTimingData(context, registrationId);
+            return new DummyAutomaticRegistration(context, registrationId);
         }
 
         @Override
-        public ManualRegistrationTimingData createManualRegistration(
-                TimingDataContext context,
+        public TimingData.ManualRegistration createManualRegistration(
+                Context context,
                 RegistrationId registrationId,
-                ManualRegistrationTimeSource timeSource) {
-            return new DummyManualRegistrationTimingData(context, registrationId, timeSource);
+                TimingData.ManualTimeSource timeSource) {
+            return new DummyManualRegistration(context, registrationId, timeSource);
         }
     }
 
-    private static final class DummyAutomaticRegistrationTimingData
-            implements AutomaticRegistrationTimingData {
-        private final TimingDataContext context;
+    private static final class DummyAutomaticRegistration
+            implements TimingData.AutomaticRegistration {
+        private final TimingDataFactory.Context context;
         private final RegistrationId registrationId;
 
-        private DummyAutomaticRegistrationTimingData(
-                TimingDataContext context,
+        private DummyAutomaticRegistration(
+                TimingDataFactory.Context context,
                 RegistrationId registrationId) {
             this.context = context;
             this.registrationId = registrationId;
@@ -140,16 +176,16 @@ public class TimingDataFactoryTest {
         }
     }
 
-    private static final class DummyManualRegistrationTimingData
-            implements ManualRegistrationTimingData {
-        private final TimingDataContext context;
+    private static final class DummyManualRegistration
+            implements TimingData.ManualRegistration {
+        private final TimingDataFactory.Context context;
         private final RegistrationId registrationId;
-        private final ManualRegistrationTimeSource timeSource;
+        private final TimingData.ManualTimeSource timeSource;
 
-        private DummyManualRegistrationTimingData(
-                TimingDataContext context,
+        private DummyManualRegistration(
+                TimingDataFactory.Context context,
                 RegistrationId registrationId,
-                ManualRegistrationTimeSource timeSource) {
+                TimingData.ManualTimeSource timeSource) {
             this.context = context;
             this.registrationId = registrationId;
             this.timeSource = timeSource;
@@ -186,7 +222,7 @@ public class TimingDataFactoryTest {
         }
 
         @Override
-        public ManualRegistrationTimeSource timeSource() {
+        public TimingData.ManualTimeSource timeSource() {
             return timeSource;
         }
     }
