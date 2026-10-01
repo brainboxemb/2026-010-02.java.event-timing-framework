@@ -151,7 +151,7 @@ public class DefaultTimingDataCodecTest {
                     TimingDataCodec.CodecException.Reason.UNSUPPORTED_RECORD_TYPE,
                     expected.reason());
             assertEquals(
-                    new TimingData.RecordKey("timing-node-01", 9L),
+                    new TimingData.RecordKey(new TimingNodeId("timing-node-01"), 9L),
                     expected.key());
             assertEquals(new LocationId(7), expected.locationId());
             assertEquals("FUTURE_RECORD", expected.recordType());
@@ -198,7 +198,7 @@ public class DefaultTimingDataCodecTest {
 
     private static TimingDataFactory.Context context(long sequence) {
         return new TimingDataFactory.Context(
-                "timing-node-01",
+                new TimingNodeId("timing-node-01"),
                 sequence,
                 new LocationId(7),
                 EFFECTIVE,
@@ -210,7 +210,7 @@ public class DefaultTimingDataCodecTest {
     }
 
     private static void assertCommon(TimingData data, long sequence) {
-        assertEquals("timing-node-01", data.timingNodeId());
+        assertEquals(new TimingNodeId("timing-node-01"), data.timingNodeId());
         assertEquals(sequence, data.sequenceNumber());
         assertEquals(new LocationId(7), data.locationId());
         assertEquals(EFFECTIVE, data.effectiveTime());
