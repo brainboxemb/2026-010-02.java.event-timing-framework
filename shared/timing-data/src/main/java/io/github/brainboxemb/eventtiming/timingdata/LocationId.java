@@ -3,12 +3,15 @@ package io.github.brainboxemb.eventtiming.timingdata;
 import java.util.Objects;
 
 /**
- * Positive identity of one timing location.
+ * Shared representation of a timing-location identity.
  *
- * <p>LocationId is part of the common IF-05 TimingData envelope and is also used
- * directly by TimingNode and deployment/profile configuration. Keeping one shared
- * value type prevents the application domain and interchange model from assigning
- * different meaning to the same location identifier.</p>
+ * <p>The numeric shape is part of the common TimingData/IF-05 contract. The
+ * semantic meaning and the set of LocationIds that are valid for a concrete
+ * event or deployment belong to that event/profile configuration, not to this
+ * value type.</p>
+ *
+ * <p>This class therefore enforces only the structural invariant shared by the
+ * current protocol: the value is positive.</p>
  */
 public final class LocationId {
     private final int value;
