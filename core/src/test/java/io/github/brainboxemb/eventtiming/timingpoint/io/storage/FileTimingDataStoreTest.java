@@ -3,6 +3,7 @@ package io.github.brainboxemb.eventtiming.timingpoint.io.storage;
 import io.github.brainboxemb.eventtiming.timingdata.LocationId;
 import io.github.brainboxemb.eventtiming.timingdata.RegistrationId;
 import io.github.brainboxemb.eventtiming.timingdata.TimingData;
+import io.github.brainboxemb.eventtiming.timingdata.TimingNodeId;
 import io.github.brainboxemb.eventtiming.timingdata.TimingDataFactory;
 import io.github.brainboxemb.eventtiming.timingdata.TimingTimestamp;
 import io.github.brainboxemb.eventtiming.timingdata.defaultprofile.DefaultTimingDataCodec;
@@ -25,7 +26,7 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 public class FileTimingDataStoreTest {
-    private static final String NODE_ID = "timing-node-01";
+    private static final TimingNodeId NODE_ID = new TimingNodeId("timing-node-01");
     private static final TimingTimestamp EFFECTIVE =
             TimingTimestamp.parse("2026-10-01T12:00:00.000000000Z");
     private static final TimingTimestamp RECORDED =
@@ -139,7 +140,7 @@ public class FileTimingDataStoreTest {
         Files.write(
                 file,
                 concat(
-                        codec.encode(data("timing-node-02", 1L)),
+                        codec.encode(data(new TimingNodeId("timing-node-02"), 1L)),
                         new byte[] {'\n'}));
 
         assertLoadFails(file, "but store owns " + NODE_ID);
@@ -173,7 +174,7 @@ public class FileTimingDataStoreTest {
         return new FileTimingDataStore(file, NODE_ID, codec);
     }
 
-    private TimingData data(String nodeId, long sequence) {
+    private TimingData data(TimingNodeId nodeId, long sequence) {
         return factory.createManualRegistration(
                 new TimingDataFactory.Context(
                         nodeId,
