@@ -137,7 +137,7 @@ jobs:
           verify-signature: true
           cache: maven
 
-      - name: Run VC-ST1-001 black-box system verification
+      - name: Run VC-ST1 black-box system verification
         shell: bash
         run: ./mvnw --batch-mode --no-transfer-progress verify -Psystem-test
 
@@ -315,7 +315,7 @@ jobs:
           verify-signature: true
           cache: maven
 
-      - name: Run VC-ST1-001 black-box system verification
+      - name: Run VC-ST1 black-box system verification
         shell: bash
         run: ./mvnw --batch-mode --no-transfer-progress verify -Psystem-test
 
@@ -356,7 +356,7 @@ jobs:
           verify-signature: true
           cache: maven
 
-      - name: Run VC-ST1-001 black-box system verification
+      - name: Run VC-ST1 black-box system verification
         shell: pwsh
         run: .\mvnw.cmd --batch-mode --no-transfer-progress verify -Psystem-test
 
