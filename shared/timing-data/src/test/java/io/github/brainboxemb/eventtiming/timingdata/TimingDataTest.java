@@ -35,7 +35,7 @@ public class TimingDataTest {
     }
 
     @Test
-    public void recordKeyPreservesSerializedTimingNodeIdentityWithoutNormalizingIt() {
+    public void recordKeyUsesSharedNormalizedTimingNodeIdentity() {
         TimingData.RecordKey key = new TimingData.RecordKey(new TimingNodeId(" timing-node-01 "), 1L);
         assertEquals(new TimingNodeId("timing-node-01"), key.timingNodeId());
     }
