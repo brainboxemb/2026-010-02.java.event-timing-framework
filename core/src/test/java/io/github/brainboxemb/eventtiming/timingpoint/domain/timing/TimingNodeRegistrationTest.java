@@ -16,6 +16,7 @@ import java.util.List;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
@@ -172,6 +173,82 @@ public class TimingNodeRegistrationTest {
     }
 
     @Test
+    public void startupRecoversCommittedLogBookAndContinuesSequence() {
+        RecordingStore store = new RecordingStore();
+        store.loaded.add(recoveredData(1L, 11));
+        store.loaded.add(recoveredData(2L, 12));
+        TimingNode node = node(store);
+
+        node.start();
+        try {
+            TimingNode.Status status = node.status();
+            assertEquals(TimingNode.Lifecycle.CLOSED, status.lifecycle());
+            assertFalse(status.hasLocation());
+            assertFalse(status.timingDataTailRecovered());
+            assertEquals(2, node.timingDataSnapshot().size());
+
+            assertEquals(TimingNode.OpenResult.NO_LOCATION, node.open());
+
+            node.setLocation(new LocationId(24));
+            node.open();
+            TimingNode.RegistrationResult committed = node.registerManual(
+                    new RegistrationId("1003"),
+                    EFFECTIVE_TIME,
+                    ManualTimeSource.SYSTEM_ASSIGNED);
+
+            assertEquals(3L, committed.timingData().sequenceNumber());
+        } finally {
+            node.stop();
+        }
+    }
+
+    @Test
+    public void startupReportsRepairedIncompleteTailInStatus() {
+        RecordingStore store = new RecordingStore();
+        store.loaded.add(recoveredData(1L, 11));
+        store.repairedIncompleteTail = true;
+        TimingNode node = node(store);
+
+        node.start();
+        try {
+            assertTrue(node.status().timingDataTailRecovered());
+            assertEquals(1, node.timingDataSnapshot().size());
+        } finally {
+            node.stop();
+        }
+    }
+
+    @Test
+    public void recoveryFailureLeavesWorkerUnavailableAndNodeCannotRetryStart() {
+        RecordingStore store = new RecordingStore();
+        store.failLoad = true;
+        TimingNode node = node(store);
+
+        try {
+            node.start();
+            fail("expected startup recovery failure");
+        } catch (TimingNode.StartupException expected) {
+            assertTrue(expected.getCause() instanceof TimingDataStore.StoreException);
+        }
+
+        try {
+            node.status();
+            fail("expected worker to remain unavailable");
+        } catch (TimingNode.OperationException expected) {
+            assertEquals(
+                    TimingNode.OperationException.Reason.UNAVAILABLE,
+                    expected.reason());
+        }
+
+        try {
+            node.start();
+            fail("expected failed node not to restart");
+        } catch (TimingNode.StartupException expected) {
+            assertTrue(expected.getCause() instanceof TimingDataStore.StoreException);
+        }
+    }
+
+    @Test
     public void lifecycleOnlyNodeReportsTimingDataUnavailable() {
         TimingNode node = new TimingNode(new TimingNodeId("timing-node-01"));
 
@@ -190,6 +267,18 @@ public class TimingNodeRegistrationTest {
         }
     }
 
+    private static TimingData recoveredData(long sequence, int locationId) {
+        return new DefaultTimingDataFactory().createManualRegistration(
+                new io.github.brainboxemb.eventtiming.timingdata.TimingDataFactory.Context(
+                        "timing-node-01",
+                        sequence,
+                        locationId,
+                        EFFECTIVE_TIME,
+                        RECORDED_AT),
+                new RegistrationId("recovered-" + sequence),
+                ManualTimeSource.SYSTEM_ASSIGNED);
+    }
+
     private static TimingNode node(RecordingStore store) {
         TimeSource timeSource = () -> RECORDED_AT;
         return new TimingNode(
@@ -203,12 +292,18 @@ public class TimingNodeRegistrationTest {
 
     private static final class RecordingStore implements TimingDataStore {
         private final List<TimingData> appended = new ArrayList<>();
+        private final List<TimingData> loaded = new ArrayList<>();
         private int attempts;
         private boolean failNext;
+        private boolean failLoad;
+        private boolean repairedIncompleteTail;
 
         @Override
-        public LoadResult load() {
-            return new LoadResult(new ArrayList<>(), false);
+        public LoadResult load() throws StoreException {
+            if (failLoad) {
+                throw new StoreException("expected recovery failure");
+            }
+            return new LoadResult(loaded, repairedIncompleteTail);
         }
 
         @Override
