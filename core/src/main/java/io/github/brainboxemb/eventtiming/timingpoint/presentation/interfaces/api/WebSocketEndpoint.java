@@ -188,7 +188,6 @@ public final class WebSocketEndpoint implements AutoCloseable {
                     MessageWriter.statusEvent(
                             "STATUS_CHANGED",
                             clock.instant(),
-                            commandHandler.version(),
                             status));
         }
     }
@@ -202,7 +201,6 @@ public final class WebSocketEndpoint implements AutoCloseable {
             current.broadcast(
                     MessageWriter.timingDataEvent(
                             clock.instant(),
-                            commandHandler.version(),
                             data,
                             timingDataCodec));
         } catch (TimingDataCodec.CodecException ex) {
@@ -223,7 +221,6 @@ public final class WebSocketEndpoint implements AutoCloseable {
         return MessageWriter.statusEvent(
                 "STATUS_SNAPSHOT",
                 clock.instant(),
-                commandHandler.version(),
                 commandHandler.status());
     }
 
