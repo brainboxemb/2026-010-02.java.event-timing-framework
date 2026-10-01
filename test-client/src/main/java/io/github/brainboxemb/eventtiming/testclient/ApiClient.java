@@ -2,12 +2,15 @@ package io.github.brainboxemb.eventtiming.testclient;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import java.io.IOException;
 import java.net.URI;
+import java.net.URLEncoder;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
@@ -38,43 +41,227 @@ public final class ApiClient {
     }
 
     public VersionResult getVersion() throws IOException, InterruptedException {
-        String rawJson = get("/api/v1/version");
+        String rawJson = request("GET", "/api/v1/version", null);
         JsonNode root = JSON.readTree(rawJson);
         return new VersionResult(readBuild(root), rawJson);
     }
 
     public StatusResult getStatus() throws IOException, InterruptedException {
-        return parseStatus(get("/api/v1/status"));
+        return parseStatus(request("GET", "/api/v1/status", null));
+    }
+
+    public CapabilitiesResult getCapabilities() throws IOException, InterruptedException {
+        return parseCapabilities(request("GET", "/api/v1/capabilities", null));
+    }
+
+    public OperationResult setLocation(String nodeId, int locationId)
+            throws IOException, InterruptedException {
+        ObjectNode body = JSON.createObjectNode();
+        body.put("locationId", locationId);
+        return parseOperation(request(
+                "PUT",
+                nodePath(nodeId, "/location"),
+                JSON.writeValueAsString(body)));
+    }
+
+    public OperationResult open(String nodeId) throws IOException, InterruptedException {
+        return parseOperation(request("POST", nodePath(nodeId, "/open"), ""));
+    }
+
+    public OperationResult close(String nodeId) throws IOException, InterruptedException {
+        return parseOperation(request("POST", nodePath(nodeId, "/close"), ""));
+    }
+
+    public AutoRegResult autoReg(String nodeId, String registrationId, String time)
+            throws IOException, InterruptedException {
+        if (registrationId == null || registrationId.trim().isEmpty()) {
+            throw new IllegalArgumentException("registrationId must not be blank");
+        }
+        if (time == null || time.trim().isEmpty()) {
+            throw new IllegalArgumentException("time must not be blank");
+        }
+        ObjectNode body = JSON.createObjectNode();
+        body.put("id", registrationId);
+        body.put("time", time);
+        String rawJson = request(
+                "POST",
+                "/api/v1/dev/node/" + pathSegment(nodeId) + "/auto-reg",
+                JSON.writeValueAsString(body));
+        JsonNode root = JSON.readTree(rawJson);
+        return new AutoRegResult(requiredLong(root, "seq"), rawJson);
+    }
+
+    public LogBookInfo getLogBookInfo(String nodeId)
+            throws IOException, InterruptedException {
+        String rawJson = request("GET", nodePath(nodeId, "/logbook"), null);
+        JsonNode root = JSON.readTree(rawJson);
+        return new LogBookInfo(
+                requiredLong(root, "count"),
+                optionalLong(root, "first"),
+                optionalLong(root, "last"),
+                rawJson);
+    }
+
+    public LogBookPage getLogBookFrom(String nodeId, long from, int limit)
+            throws IOException, InterruptedException {
+        if (from < 1L) {
+            throw new IllegalArgumentException("from must be >= 1");
+        }
+        requireLimit(limit);
+        return parseLogBookPage(request(
+                "GET",
+                nodePath(nodeId, "/logbook")
+                        + "?from=" + from + "&limit=" + limit,
+                null));
+    }
+
+    public LogBookPage getLogBookLast(String nodeId, int last)
+            throws IOException, InterruptedException {
+        requireLimit(last);
+        return parseLogBookPage(request(
+                "GET",
+                nodePath(nodeId, "/logbook") + "?last=" + last,
+                null));
     }
 
     static StatusResult parseStatus(String rawJson) throws IOException {
         JsonNode root = JSON.readTree(rawJson);
-        List<TimingNodeInfo> timingNodes = new ArrayList<>();
-        for (JsonNode node : required(root, "timingNodes")) {
-            timingNodes.add(new TimingNodeInfo(
-                    requiredText(node, "timingNodeId"),
-                    requiredText(node, "lifecycle")));
+        List<TimingNodeInfo> nodes = new ArrayList<>();
+        JsonNode nodeArray = required(root, "nodes");
+        if (!nodeArray.isArray()) {
+            throw new IllegalArgumentException("IF-03 field is not an array: nodes");
         }
+        for (JsonNode node : nodeArray) {
+            nodes.add(new TimingNodeInfo(
+                    requiredText(node, "id"),
+                    optionalInt(node, "locationId"),
+                    requiredText(node, "state")));
+        }
+
+        List<ProblemInfo> problems = new ArrayList<>();
+        JsonNode problemArray = required(root, "problems");
+        if (!problemArray.isArray()) {
+            throw new IllegalArgumentException("IF-03 field is not an array: problems");
+        }
+        for (JsonNode problem : problemArray) {
+            problems.add(new ProblemInfo(
+                    requiredText(problem, "code"),
+                    requiredText(problem, "severity"),
+                    requiredText(problem, "message")));
+        }
+
         return new StatusResult(
-                readBuild(required(root, "build")),
-                List.copyOf(timingNodes),
+                List.copyOf(nodes),
+                List.copyOf(problems),
                 rawJson);
     }
 
-    private String get(String path) throws IOException, InterruptedException {
-        URI uri = endpoint.resolve(path);
-        HttpRequest request = HttpRequest.newBuilder(uri)
-                .timeout(Duration.ofSeconds(5))
-                .header("Accept", "application/json")
-                .GET()
-                .build();
-        HttpResponse<String> response =
-                httpClient.send(request, HttpResponse.BodyHandlers.ofString());
-        if (response.statusCode() != 200) {
-            throw new IOException(
-                    "HTTP " + response.statusCode() + " from " + uri + ": " + response.body());
+    static TimingDataInfo parseTimingData(JsonNode root) {
+        return new TimingDataInfo(
+                requiredText(root, "timingNodeId"),
+                requiredLong(root, "sequenceNumber"),
+                requiredInt(root, "locationId"),
+                requiredText(root, "recordType"),
+                requiredText(root, "effectiveTime"),
+                requiredText(root, "recordedAt"),
+                requiredText(root, "registrationId"),
+                requiredText(root, "origin"),
+                requiredText(root, "timeSource"));
+    }
+
+    private static CapabilitiesResult parseCapabilities(String rawJson) throws IOException {
+        JsonNode root = JSON.readTree(rawJson);
+        JsonNode values = required(root, "capabilities");
+        if (!values.isArray()) {
+            throw new IllegalArgumentException("IF-03 field is not an array: capabilities");
         }
-        return response.body();
+        List<CapabilityInfo> capabilities = new ArrayList<>();
+        for (JsonNode value : values) {
+            capabilities.add(new CapabilityInfo(
+                    requiredText(value, "id"),
+                    requiredBoolean(value, "supported"),
+                    requiredBoolean(value, "enabled")));
+        }
+        return new CapabilitiesResult(List.copyOf(capabilities), rawJson);
+    }
+
+    private static OperationResult parseOperation(String rawJson) throws IOException {
+        JsonNode root = JSON.readTree(rawJson);
+        return new OperationResult(requiredText(root, "result"), rawJson);
+    }
+
+    private static LogBookPage parseLogBookPage(String rawJson) throws IOException {
+        JsonNode root = JSON.readTree(rawJson);
+        JsonNode values = required(root, "records");
+        if (!values.isArray()) {
+            throw new IllegalArgumentException("IF-03 field is not an array: records");
+        }
+        List<TimingDataInfo> records = new ArrayList<>();
+        for (JsonNode value : values) {
+            records.add(parseTimingData(value));
+        }
+        return new LogBookPage(
+                requiredLong(root, "count"),
+                optionalLong(root, "next"),
+                List.copyOf(records),
+                rawJson);
+    }
+
+    private String request(String method, String path, String body)
+            throws IOException, InterruptedException {
+        URI uri = endpoint.resolve(path);
+        HttpRequest.Builder builder = HttpRequest.newBuilder(uri)
+                .timeout(Duration.ofSeconds(5))
+                .header("Accept", "application/json");
+
+        if (body == null) {
+            builder.method(method, HttpRequest.BodyPublishers.noBody());
+        } else {
+            builder.header("Content-Type", "application/json; charset=utf-8")
+                    .method(method, HttpRequest.BodyPublishers.ofString(body));
+        }
+
+        HttpResponse<String> response =
+                httpClient.send(builder.build(), HttpResponse.BodyHandlers.ofString());
+        if (response.statusCode() >= 200 && response.statusCode() < 300) {
+            return response.body();
+        }
+        throw parseApiException(response.statusCode(), response.body(), uri);
+    }
+
+    private static ApiException parseApiException(int statusCode, String rawJson, URI uri) {
+        try {
+            JsonNode root = JSON.readTree(rawJson);
+            JsonNode error = required(root, "error");
+            return new ApiException(
+                    statusCode,
+                    requiredText(error, "code"),
+                    requiredText(error, "message"),
+                    rawJson);
+        } catch (Exception ex) {
+            return new ApiException(
+                    statusCode,
+                    "HTTP_" + statusCode,
+                    "HTTP " + statusCode + " from " + uri,
+                    rawJson);
+        }
+    }
+
+    private static String nodePath(String nodeId, String suffix) {
+        return "/api/v1/node/" + pathSegment(nodeId) + suffix;
+    }
+
+    private static String pathSegment(String value) {
+        if (value == null || value.trim().isEmpty()) {
+            throw new IllegalArgumentException("nodeId must not be blank");
+        }
+        return URLEncoder.encode(value, StandardCharsets.UTF_8).replace("+", "%20");
+    }
+
+    private static void requireLimit(int value) {
+        if (value < 1 || value > 1000) {
+            throw new IllegalArgumentException("LogBook limit must be between 1 and 1000");
+        }
     }
 
     private static BuildInfo readBuild(JsonNode root) {
@@ -84,7 +271,7 @@ public final class ApiClient {
                 requiredText(root, "revision"),
                 requiredText(root, "sourceRef"),
                 requiredText(root, "buildOrigin"),
-                required(root, "dirty").asBoolean(),
+                requiredBoolean(root, "dirty"),
                 requiredText(root, "apiVersion"));
     }
 
@@ -104,6 +291,52 @@ public final class ApiClient {
         return value.asText();
     }
 
+    private static boolean requiredBoolean(JsonNode root, String field) {
+        JsonNode value = required(root, field);
+        if (!value.isBoolean()) {
+            throw new IllegalArgumentException("IF-03 field is not boolean: " + field);
+        }
+        return value.asBoolean();
+    }
+
+    private static int requiredInt(JsonNode root, String field) {
+        JsonNode value = required(root, field);
+        if (!value.isIntegralNumber() || !value.canConvertToInt()) {
+            throw new IllegalArgumentException("IF-03 field is not an integer: " + field);
+        }
+        return value.intValue();
+    }
+
+    private static long requiredLong(JsonNode root, String field) {
+        JsonNode value = required(root, field);
+        if (!value.isIntegralNumber() || !value.canConvertToLong()) {
+            throw new IllegalArgumentException("IF-03 field is not an integer: " + field);
+        }
+        return value.longValue();
+    }
+
+    private static Integer optionalInt(JsonNode root, String field) {
+        JsonNode value = root.get(field);
+        if (value == null || value.isNull()) {
+            return null;
+        }
+        if (!value.isIntegralNumber() || !value.canConvertToInt()) {
+            throw new IllegalArgumentException("IF-03 field is not an integer: " + field);
+        }
+        return Integer.valueOf(value.intValue());
+    }
+
+    private static Long optionalLong(JsonNode root, String field) {
+        JsonNode value = root.get(field);
+        if (value == null || value.isNull()) {
+            return null;
+        }
+        if (!value.isIntegralNumber() || !value.canConvertToLong()) {
+            throw new IllegalArgumentException("IF-03 field is not an integer: " + field);
+        }
+        return Long.valueOf(value.longValue());
+    }
+
     public record BuildInfo(
             String application,
             String version,
@@ -117,12 +350,94 @@ public final class ApiClient {
     public record VersionResult(BuildInfo build, String rawJson) {
     }
 
-    public record TimingNodeInfo(String timingNodeId, String lifecycle) {
+    public record TimingNodeInfo(String id, Integer locationId, String state) {
+    }
+
+    public record ProblemInfo(String code, String severity, String message) {
     }
 
     public record StatusResult(
-            BuildInfo build,
-            List<TimingNodeInfo> timingNodes,
+            List<TimingNodeInfo> nodes,
+            List<ProblemInfo> problems,
             String rawJson) {
+    }
+
+    public record CapabilityInfo(String id, boolean supported, boolean enabled) {
+    }
+
+    public record CapabilitiesResult(
+            List<CapabilityInfo> capabilities,
+            String rawJson) {
+        public boolean enabled(String id) {
+            for (CapabilityInfo capability : capabilities) {
+                if (capability.id().equals(id)) {
+                    return capability.supported() && capability.enabled();
+                }
+            }
+            return false;
+        }
+    }
+
+    public record OperationResult(String result, String rawJson) {
+    }
+
+    public record AutoRegResult(long seq, String rawJson) {
+    }
+
+    public record LogBookInfo(long count, Long first, Long last, String rawJson) {
+    }
+
+    public record TimingDataKey(String timingNodeId, long sequenceNumber) {
+    }
+
+    public record TimingDataInfo(
+            String timingNodeId,
+            long sequenceNumber,
+            int locationId,
+            String recordType,
+            String effectiveTime,
+            String recordedAt,
+            String registrationId,
+            String origin,
+            String timeSource) {
+        public TimingDataKey key() {
+            return new TimingDataKey(timingNodeId, sequenceNumber);
+        }
+    }
+
+    public record LogBookPage(
+            long count,
+            Long next,
+            List<TimingDataInfo> records,
+            String rawJson) {
+    }
+
+    public static final class ApiException extends IOException {
+        private final int statusCode;
+        private final String code;
+        private final String rawJson;
+
+        private ApiException(
+                int statusCode,
+                String code,
+                String message,
+                String rawJson) {
+            super(message);
+            this.statusCode = statusCode;
+            this.code = code;
+            this.rawJson = rawJson;
+        }
+
+        public int statusCode() {
+            return statusCode;
+        }
+
+        public String code() {
+            return code;
+        }
+
+        public String rawJson() {
+            return rawJson;
+        }
     }
 }
