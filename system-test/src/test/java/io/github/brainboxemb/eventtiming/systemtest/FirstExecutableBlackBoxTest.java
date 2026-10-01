@@ -343,20 +343,6 @@ public class FirstExecutableBlackBoxTest {
         return value;
     }
 
-    private static String extractJsonString(String json, String field) {
-        String marker = "\"" + field + "\":\"";
-        int start = json.indexOf(marker);
-        if (start < 0) {
-            fail("Missing JSON string field " + field + " in " + json);
-        }
-        start += marker.length();
-        int end = json.indexOf('"', start);
-        if (end < 0) {
-            fail("Unterminated JSON string field " + field + " in " + json);
-        }
-        return json.substring(start, end);
-    }
-
     private static void assertContains(String actual, String expected) {
         assertTrue("Expected <" + expected + "> in <" + actual + ">", actual.contains(expected));
     }
