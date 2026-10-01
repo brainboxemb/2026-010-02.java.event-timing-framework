@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Move the shared TimingData library to `shared/timing-data` and rename its artifact from `event-timing-data-api` to `event-timing-data`; keep semantic contracts, default/reference profile, codec and factory/provider in one JAR.
+
 - Refine the IF-05 TimingData API around `TagId` / `TeamId` -> `RegistrationId`, one common `TimingDataContext`, and type-safe `AutomaticRegistrationTimingData` / `ManualRegistrationTimingData` factory returns; remove the premature universal state/revocation record model.
 
 - Rename the reusable SI-01 Maven module from `framework/` to `core/` and the artifact from `event-timing-framework` to `event-timing-core`; keep `app/` as the thin executable boundary and keep Core out of the architecture-layer model.
@@ -10,7 +12,7 @@
 
 - Complete the first semantic IF-05 model slice with a provider-neutral `RegistrationIdentity`, positive configured `LocationID`, registration origin/time-source enums, exact nine-digit UTC `TimingTimestamp`, and immutable record-family factories for `TimingDataRecord` including revocation-reference validation.
 
-- Start the Step-4 shared IF-05 boundary with a Java-8 `event-timing-data-api` reactor artifact and the first real interchange value type, `TimingDataRecordKey`; keep SI-01 `TimingNodeId` in the framework Domain model and represent the IF-05 record identity value as a validated string.
+- Start the Step-4 shared IF-05 boundary with a Java-8 shared TimingData reactor artifact (introduced as `event-timing-data-api`, later renamed to `event-timing-data`) and the first real interchange value type, `TimingDataRecordKey`; keep SI-01 `TimingNodeId` in the framework Domain model and represent the IF-05 record identity value as a validated string.
 
 - Document `test-client/` consistently as the standalone **Engineering Client**, including its current UI/boundaries, Step-4 Timing/DebugConnector direction and planned deterministic CI screenshot workflow while keeping the module name and code unchanged.
 

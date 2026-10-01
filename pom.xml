@@ -13,7 +13,7 @@
   <description>Build parent and reactor for the event-timing application core and applications.</description>
 
   <modules>
-    <module>timing-data-api</module>
+    <module>shared/timing-data</module>
     <module>core</module>
     <module>app</module>
   </modules>
