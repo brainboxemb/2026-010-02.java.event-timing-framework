@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- Add the Step-4 Engineering Client Timing view for the compact node-addressed IF-03 contract, including node selection, location/open/close control, capability-gated dev `auto-reg`, bounded LogBook loading, live committed TimingData merge/deduplication and stale/reconnect handling.
+
+
 - Expose the Step-4 first-registration IF-03 application/transport slice: compact node-addressed status/control, capabilities, bounded LogBook queries, dev `auto-reg` injection and live committed/status WebSocket events.
 
 - Compose the reference TimingData persistence stack in the real executable from `io.storage.timingData.path`, including startup recovery, default factory/codec and UTC recorded-time source.

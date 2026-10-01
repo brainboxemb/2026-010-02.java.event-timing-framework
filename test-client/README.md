@@ -88,11 +88,9 @@ can be inspected before every field has a dedicated UI control.
 ### Events
 
 The **Events** tab uses Java 17's built-in WebSocket client. It shows connection state,
-event type/time, the first TimingNode identity/lifecycle and every raw event. Connecting or
-reconnecting should immediately produce a complete `STATUS_SNAPSHOT`.
-
-The current Step-3 application has no public status-changing command, so a normal manual
-session does not yet produce `STATUS_CHANGED`.
+event type/time, the addressed TimingNode where applicable, and every raw event.
+`STATUS_SNAPSHOT` / `STATUS_CHANGED` and `TIMING_DATA_COMMITTED` are parsed
+separately while unknown future event types remain visible as raw diagnostics.
 
 ### Terminal
 
@@ -110,61 +108,52 @@ live; the selected global runtime level can be queried/changed temporarily.
 That override is process state only and is not written back to `application.yml`. The
 live stream is separate from IF-03 status/events and does not provide retained history.
 
-## Step-4 direction
+## Step-4 Timing view
 
-Step 4 uses this Engineering Client as the primary manual inspection tool. The optional
-lightweight browser/web test client is **not** being introduced in this step.
+The **Timing** tab implements the first-registration Step-4 slice against the compact
+IF-03 contract:
 
-The working UI direction adds enough inspection/control to exercise the Step-4 slice:
+- reads the 1..N \`nodes[]\` status model and addresses one selected TimingNode;
+- shows current node state and LocationId;
+- enables LocationId changes only while CLOSED;
+- opens/closes the selected node through node-addressed IF-03 commands;
+- discovers \`DIRECT_REGISTRATION_SIMULATION\` before enabling dev \`auto-reg\`;
+- submits only short \`id\` + canonical \`time\` input for auto-reg (for example
+  \`N001\`); the prefix is an example convention, not RegistrationId syntax;
+- shows the returned source \`seq\` as the operation result;
+- queries LogBook metadata without downloading the full LogBook;
+- loads bounded LogBook pages and merges live committed TimingData by stable
+  \`TimingNodeId + sequenceNumber\` key;
+- marks cached data stale during disconnect/reconnect and disables mutating controls
+  until status/LogBook recovery is complete.
 
-- TimingSystem/TimingNode selection when several are present;
-- TimingNode lifecycle/status;
-- StageStartTimes;
-- NextUpTeams;
-- RaceData/reference state;
-- registration/LogBook history;
-- TimingData identity/records;
-- upstream engineering capabilities and DebugConnector test control.
+The current SI-01 runtime may compose one TimingNode, but the client model does not
+hard-code that limitation. With one node selection is implicit; with multiple reported
+nodes the same Timing view addresses the selected node.
 
-These items are a UI direction, not a frozen API contract. Final IF-03 resources and
-UpstreamProtocol message schemas are defined by the applicable Step-4 interface/protocol
-documents after the use cases and existing web-application compatibility have been
-reviewed.
+The Step-4 slice deliberately does **not** add RFID/tag/filter controls,
+StageStartTimes/NextUpTeams/RaceData editors or Upstream/DebugConnector simulation UI.
+Those remain later increments.
 
-### API-controlled DebugConnector
+### Current IF-03 resources used
 
-The Engineering Client is expected to use IF-03 as the **control plane** for upstream
-simulation.
+\`\`\`text
+GET  /api/v1/version
+GET  /api/v1/status
+GET  /api/v1/capabilities
 
-Conceptually:
+PUT  /api/v1/node/{id}/location
+POST /api/v1/node/{id}/open
+POST /api/v1/node/{id}/close
 
-```text
-Engineering Client
-       |
-       | IF-03 capability / test control
-       v
-SI-01 DebugConnector
-       |
-       v
-UpstreamGateway
-       |
-       v
-UpstreamProtocol
-       |
-       v
-TimingSystem / TimingNode
-```
+GET  /api/v1/node/{id}/logbook
+GET  /api/v1/node/{id}/logbook?from=...&limit=...
+GET  /api/v1/node/{id}/logbook?last=...
 
-The client does not write directly into RaceData, StageStartTimes or other domain state.
-A test message must enter through DebugConnector and the normal upstream semantic path.
+POST /api/v1/dev/node/{id}/auto-reg
 
-DebugConnector may be the only upstream connector in a development composition or may
-coexist with a real connector such as RabbitMqConnector. This makes targeted synthetic
-input useful even while production-shaped messaging is active.
-
-The Engineering Client should first query public capabilities and enable test controls
-only when the running SI-01 advertises that the corresponding engineering capability is
-supported and enabled.
+WS   /api/v1/events
+\`\`\`
 
 ## Documentation screenshots
 

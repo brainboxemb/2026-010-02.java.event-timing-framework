@@ -12,23 +12,48 @@ import java.time.Instant;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 
-/** Independent IF-03 API event client used by the JavaFX development tool. */
+/** Independent IF-03 API event client used by the JavaFX Engineering Client. */
 public final class ApiEventClient implements AutoCloseable {
     public interface Listener {
         void onConnected();
 
-        void onEvent(StatusEvent event);
+        void onEvent(ApiEvent event);
 
         void onClosed(int statusCode, String reason);
 
         void onError(String message);
     }
 
+    public interface ApiEvent {
+        String eventType();
+
+        Instant occurredAt();
+
+        String rawJson();
+    }
+
     public record StatusEvent(
             String eventType,
             Instant occurredAt,
             ApiClient.StatusResult status,
-            String rawJson) {
+            String rawJson)
+            implements ApiEvent {
+    }
+
+    public record TimingDataEvent(
+            String eventType,
+            Instant occurredAt,
+            ApiClient.TimingDataInfo timingData,
+            String rawJson)
+            implements ApiEvent {
+    }
+
+    public record UnknownEvent(
+            String eventType,
+            Instant occurredAt,
+            String payloadJson,
+            String rawJson)
+            implements ApiEvent {
     }
 
     private static final ObjectMapper JSON = new ObjectMapper();
@@ -91,17 +116,34 @@ public final class ApiEventClient implements AutoCloseable {
         }
     }
 
-    static StatusEvent parseEvent(String rawJson) throws IOException {
+    static ApiEvent parseEvent(String rawJson) throws IOException {
         JsonNode root = JSON.readTree(rawJson);
         String eventType = ApiClient.requiredText(root, "eventType");
         Instant occurredAt = Instant.parse(
                 ApiClient.requiredText(root, "occurredAt"));
         JsonNode payload = ApiClient.required(root, "payload");
-        String payloadJson = JSON.writeValueAsString(payload);
-        return new StatusEvent(
+
+        if ("STATUS_SNAPSHOT".equals(eventType)
+                || "STATUS_CHANGED".equals(eventType)) {
+            return new StatusEvent(
+                    eventType,
+                    occurredAt,
+                    ApiClient.parseStatus(JSON.writeValueAsString(payload)),
+                    rawJson);
+        }
+
+        if ("TIMING_DATA_COMMITTED".equals(eventType)) {
+            return new TimingDataEvent(
+                    eventType,
+                    occurredAt,
+                    ApiClient.parseTimingData(payload),
+                    rawJson);
+        }
+
+        return new UnknownEvent(
                 eventType,
                 occurredAt,
-                ApiClient.parseStatus(payloadJson),
+                JSON.writeValueAsString(payload),
                 rawJson);
     }
 

@@ -88,6 +88,8 @@ public final class TestClientFxApplication extends Application {
     private final Button terminalSend = new Button("Send");
     private final Label terminalStatus = new Label("Disconnected");
 
+    private TimingPane timingPane;
+
     @Override
     public void start(Stage stage) {
         endpoint.setPrefColumnCount(40);
@@ -123,11 +125,18 @@ public final class TestClientFxApplication extends Application {
         statusTab.setClosable(false);
         Tab eventsTab = new Tab("Events", eventsPane());
         eventsTab.setClosable(false);
+        timingPane = new TimingPane(
+                this::client,
+                requests,
+                this::connectEvents,
+                this::disconnectEvents);
+        Tab timingTab = new Tab("Timing", timingPane);
+        timingTab.setClosable(false);
         Tab terminalTab = new Tab("Terminal", terminalPane());
         terminalTab.setClosable(false);
         Tab logsTab = new Tab("Logs", logsPane());
         logsTab.setClosable(false);
-        TabPane tabs = new TabPane(statusTab, eventsTab, terminalTab, logsTab);
+        TabPane tabs = new TabPane(statusTab, eventsTab, timingTab, terminalTab, logsTab);
 
         MenuItem about = new MenuItem("About");
         about.setOnAction(event -> showAbout(stage));
@@ -144,7 +153,7 @@ public final class TestClientFxApplication extends Application {
         BorderPane.setMargin(feedback, new Insets(0, 12, 12, 12));
 
         stage.setTitle(clientBuild.application() + " — " + clientBuild.version());
-        stage.setScene(new Scene(root, 900, 700));
+        stage.setScene(new Scene(root, 1180, 790));
         stage.show();
     }
 
@@ -177,7 +186,7 @@ public final class TestClientFxApplication extends Application {
     private GridPane statusGrid() {
         GridPane grid = grid();
         addRow(grid, 0, "Timing node", timingNodeId);
-        addRow(grid, 1, "Lifecycle", timingNodeLifecycle);
+        addRow(grid, 1, "State", timingNodeLifecycle);
         return grid;
     }
 
@@ -197,7 +206,7 @@ public final class TestClientFxApplication extends Application {
         addRow(values, 0, "Event type", eventType);
         addRow(values, 1, "Occurred at", eventOccurredAt);
         addRow(values, 2, "Timing node", eventTimingNodeId);
-        addRow(values, 3, "Lifecycle", eventTimingNodeLifecycle);
+        addRow(values, 3, "State", eventTimingNodeLifecycle);
 
         eventLog.setEditable(false);
         eventLog.setWrapText(false);
@@ -310,17 +319,23 @@ public final class TestClientFxApplication extends Application {
         runRequest(
                 () -> client().getStatus(),
                 result -> {
-                    showBuild(result.build());
-                    if (result.timingNodes().isEmpty()) {
-                        timingNodeId.setText("-");
-                        timingNodeLifecycle.setText("-");
-                    } else {
-                        var node = result.timingNodes().get(0);
-                        timingNodeId.setText(node.timingNodeId());
-                        timingNodeLifecycle.setText(node.lifecycle());
+                    showStatus(result);
+                    if (timingPane != null) {
+                        timingPane.applyStatus(result);
                     }
                     rawJson.setText(result.rawJson());
                 });
+    }
+
+    private void showStatus(ApiClient.StatusResult result) {
+        if (result.nodes().isEmpty()) {
+            timingNodeId.setText("-");
+            timingNodeLifecycle.setText("-");
+        } else {
+            var node = result.nodes().get(0);
+            timingNodeId.setText(node.id());
+            timingNodeLifecycle.setText(node.state());
+        }
     }
 
     private void connectEvents() {
@@ -340,18 +355,27 @@ public final class TestClientFxApplication extends Application {
             eventClient.connect(uri, new ApiEventClient.Listener() {
                 @Override
                 public void onConnected() {
-                    Platform.runLater(() -> setEventConnected(true, "Connected"));
+                    Platform.runLater(() -> {
+                        setEventConnected(true, "Connected");
+                        if (timingPane != null) {
+                            timingPane.connected();
+                        }
+                    });
                 }
 
                 @Override
-                public void onEvent(ApiEventClient.StatusEvent event) {
+                public void onEvent(ApiEventClient.ApiEvent event) {
                     Platform.runLater(() -> showEvent(event));
                 }
 
                 @Override
                 public void onClosed(int statusCode, String reason) {
-                    Platform.runLater(() ->
-                            setEventConnected(false, "Disconnected (" + statusCode + ")"));
+                    Platform.runLater(() -> {
+                        setEventConnected(false, "Disconnected (" + statusCode + ")");
+                        if (timingPane != null) {
+                            timingPane.disconnected(true);
+                        }
+                    });
                 }
 
                 @Override
@@ -360,6 +384,9 @@ public final class TestClientFxApplication extends Application {
                         eventConnectionStatus.setText("Error: " + message);
                         if (!eventClient.isConnected()) {
                             setEventConnected(false, "Error: " + message);
+                            if (timingPane != null) {
+                                timingPane.disconnected(true);
+                            }
                         }
                     });
                 }
@@ -368,6 +395,9 @@ public final class TestClientFxApplication extends Application {
                     Platform.runLater(() -> {
                         Throwable cause = error.getCause() == null ? error : error.getCause();
                         setEventConnected(false, "Error: " + cause.getMessage());
+                        if (timingPane != null) {
+                            timingPane.disconnected(true);
+                        }
                     });
                 }
             });
@@ -381,20 +411,37 @@ public final class TestClientFxApplication extends Application {
         eventClient.disconnect();
         if (!eventClient.isConnected()) {
             setEventConnected(false, "Disconnected");
+            if (timingPane != null) {
+                timingPane.disconnected(true);
+            }
         }
     }
 
-    private void showEvent(ApiEventClient.StatusEvent event) {
+    private void showEvent(ApiEventClient.ApiEvent event) {
         eventType.setText(event.eventType());
         eventOccurredAt.setText(event.occurredAt().toString());
 
-        if (event.status().timingNodes().isEmpty()) {
+        if (event instanceof ApiEventClient.StatusEvent statusEvent) {
+            if (statusEvent.status().nodes().isEmpty()) {
+                eventTimingNodeId.setText("-");
+                eventTimingNodeLifecycle.setText("-");
+            } else {
+                var node = statusEvent.status().nodes().get(0);
+                eventTimingNodeId.setText(node.id());
+                eventTimingNodeLifecycle.setText(node.state());
+            }
+            if (timingPane != null) {
+                timingPane.applyStatusEvent(statusEvent);
+            }
+        } else if (event instanceof ApiEventClient.TimingDataEvent dataEvent) {
+            eventTimingNodeId.setText(dataEvent.timingData().timingNodeId());
+            eventTimingNodeLifecycle.setText("-");
+            if (timingPane != null) {
+                timingPane.applyTimingDataEvent(dataEvent);
+            }
+        } else {
             eventTimingNodeId.setText("-");
             eventTimingNodeLifecycle.setText("-");
-        } else {
-            var node = event.status().timingNodes().get(0);
-            eventTimingNodeId.setText(node.timingNodeId());
-            eventTimingNodeLifecycle.setText(node.lifecycle());
         }
 
         if (!eventLog.getText().isEmpty()) {
