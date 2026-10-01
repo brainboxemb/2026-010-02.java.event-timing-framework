@@ -14,6 +14,7 @@ import io.github.brainboxemb.eventtiming.timingpoint.platform.execution.SerialWo
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Consumer;
 
 import org.junit.Test;
 
@@ -174,13 +175,12 @@ public class TimingNodeRegistrationTest {
         }
     }
 
-
     @Test
     public void emitsOnlyAfterSuccessfulCommitAndSupportsUnsubscribe() {
         RecordingStore store = new RecordingStore();
         TimingNode node = node(store);
         List<TimingData> delivered = new ArrayList<>();
-        java.util.function.Consumer<TimingData> listener = delivered::add;
+        Consumer<TimingData> listener = delivered::add;
 
         assertTrue(node.subscribeNewTimingData(listener));
 
