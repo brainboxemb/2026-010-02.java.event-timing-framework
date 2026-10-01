@@ -170,9 +170,9 @@ public final class HttpEndpoint implements AutoCloseable {
                             commandHandler.close().name()));
             return;
         }
-        if ("/api/v1/engineering/accepted-registration".equals(path)) {
+        if ("/api/v1/dev/auto-reg".equals(path)) {
             requireMethod(exchange, "POST");
-            handleAcceptedRegistration(exchange);
+            handleAutoRegistration(exchange);
             return;
         }
         if ("/api/v1/timing-data".equals(path)) {
@@ -229,14 +229,14 @@ public final class HttpEndpoint implements AutoCloseable {
                 MessageWriter.result(commandHandler.version(), result.name()));
     }
 
-    private void handleAcceptedRegistration(HttpExchange exchange) throws IOException {
-        AcceptedRegistrationRequest request = readAcceptedRegistrationRequest(exchange);
+    private void handleAutoRegistration(HttpExchange exchange) throws IOException {
+        AutoRegistrationRequest request = readAutoRegistrationRequest(exchange);
 
         final RegistrationId registrationId;
         final TimingTimestamp observationTime;
         try {
-            registrationId = new RegistrationId(request.registrationId);
-            observationTime = TimingTimestamp.parse(request.observationTime);
+            registrationId = new RegistrationId(request.id);
+            observationTime = TimingTimestamp.parse(request.time);
         } catch (IllegalArgumentException ex) {
             throw invalidValue(ex.getMessage());
         }
@@ -373,7 +373,7 @@ public final class HttpEndpoint implements AutoCloseable {
         }
     }
 
-    private AcceptedRegistrationRequest readAcceptedRegistrationRequest(
+    private AutoRegistrationRequest readAutoRegistrationRequest(
             HttpExchange exchange)
             throws IOException {
         byte[] body = readBody(exchange);
@@ -381,24 +381,24 @@ public final class HttpEndpoint implements AutoCloseable {
             if (parser.nextToken() != JsonToken.START_OBJECT) {
                 throw malformed("Request must be one JSON object");
             }
-            String registrationId = null;
-            String observationTime = null;
+            String id = null;
+            String time = null;
             while (parser.nextToken() != JsonToken.END_OBJECT) {
                 if (parser.currentToken() != JsonToken.FIELD_NAME) {
                     throw malformed("Expected JSON member name");
                 }
                 String name = parser.currentName();
                 JsonToken value = parser.nextToken();
-                if ("registrationId".equals(name)) {
-                    if (registrationId != null || value != JsonToken.VALUE_STRING) {
-                        throw invalidValue("registrationId must be one JSON string");
+                if ("id".equals(name)) {
+                    if (id != null || value != JsonToken.VALUE_STRING) {
+                        throw invalidValue("id must be one JSON string");
                     }
-                    registrationId = parser.getText();
-                } else if ("observationTime".equals(name)) {
-                    if (observationTime != null || value != JsonToken.VALUE_STRING) {
-                        throw invalidValue("observationTime must be one JSON string");
+                    id = parser.getText();
+                } else if ("time".equals(name)) {
+                    if (time != null || value != JsonToken.VALUE_STRING) {
+                        throw invalidValue("time must be one JSON string");
                     }
-                    observationTime = parser.getText();
+                    time = parser.getText();
                 } else {
                     throw invalidValue("Unsupported request field: " + name);
                 }
@@ -406,13 +406,13 @@ public final class HttpEndpoint implements AutoCloseable {
             if (parser.nextToken() != null) {
                 throw malformed("Unexpected data after request object");
             }
-            if (registrationId == null) {
-                throw invalidValue("Missing required field: registrationId");
+            if (id == null) {
+                throw invalidValue("Missing required field: id");
             }
-            if (observationTime == null) {
-                throw invalidValue("Missing required field: observationTime");
+            if (time == null) {
+                throw invalidValue("Missing required field: time");
             }
-            return new AcceptedRegistrationRequest(registrationId, observationTime);
+            return new AutoRegistrationRequest(id, time);
         } catch (RequestException ex) {
             throw ex;
         } catch (IOException | RuntimeException ex) {
@@ -475,15 +475,15 @@ public final class HttpEndpoint implements AutoCloseable {
         }
     }
 
-    private static final class AcceptedRegistrationRequest {
-        private final String registrationId;
-        private final String observationTime;
+    private static final class AutoRegistrationRequest {
+        private final String id;
+        private final String time;
 
-        private AcceptedRegistrationRequest(
-                String registrationId,
-                String observationTime) {
-            this.registrationId = registrationId;
-            this.observationTime = observationTime;
+        private AutoRegistrationRequest(
+                String id,
+                String time) {
+            this.id = id;
+            this.time = time;
         }
     }
 
