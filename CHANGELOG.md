@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- Add Step-4 VC-ST1-002 separate-process verification for the compact IF-03 registration flow, update VC-ST1-001 to the compact status contract, and add an explicit PR/manual black-box workflow that runs only when system-test verification itself changes.
+
+
 - Add the Step-4 Engineering Client Timing view for the compact node-addressed IF-03 contract, including node selection, location/open/close control, capability-gated dev `auto-reg`, bounded LogBook loading, live committed TimingData merge/deduplication and stale/reconnect handling.
 
 
