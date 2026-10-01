@@ -25,20 +25,20 @@ public interface TimingDataFactory {
      * remains with the owning application/domain component.</p>
      */
     final class Context {
-        private final String timingNodeId;
+        private final TimingNodeId timingNodeId;
         private final long sequenceNumber;
         private final LocationId locationId;
         private final TimingTimestamp effectiveTime;
         private final TimingTimestamp recordedAt;
 
         public Context(
-                String timingNodeId,
+                TimingNodeId timingNodeId,
                 long sequenceNumber,
                 LocationId locationId,
                 TimingTimestamp effectiveTime,
                 TimingTimestamp recordedAt) {
-            if (timingNodeId == null || timingNodeId.trim().isEmpty()) {
-                throw new IllegalArgumentException("timingNodeId must not be blank");
+            if (timingNodeId == null) {
+                throw new IllegalArgumentException("timingNodeId must not be null");
             }
             if (sequenceNumber < 1L || sequenceNumber > TimingData.MAX_SEQUENCE_NUMBER) {
                 throw new IllegalArgumentException(
@@ -61,7 +61,7 @@ public interface TimingDataFactory {
             this.recordedAt = recordedAt;
         }
 
-        public String timingNodeId() {
+        public TimingNodeId timingNodeId() {
             return timingNodeId;
         }
 

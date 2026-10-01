@@ -9,42 +9,42 @@ public class TimingDataTest {
 
     @Test
     public void recordKeyAcceptsFirstAndMaximumSequence() {
-        assertEquals(1L, new TimingData.RecordKey("timing-node-01", 1L).sequenceNumber());
+        assertEquals(1L, new TimingData.RecordKey(new TimingNodeId("timing-node-01"), 1L).sequenceNumber());
         assertEquals(
                 TimingData.MAX_SEQUENCE_NUMBER,
                 new TimingData.RecordKey(
-                        "timing-node-01",
+                        new TimingNodeId("timing-node-01"),
                         TimingData.MAX_SEQUENCE_NUMBER).sequenceNumber());
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void recordKeyRejectsReservedZeroSequence() {
-        new TimingData.RecordKey("timing-node-01", 0L);
+        new TimingData.RecordKey(new TimingNodeId("timing-node-01"), 0L);
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void recordKeyRejectsSequenceBeyondJsonSafeRange() {
         new TimingData.RecordKey(
-                "timing-node-01",
+                new TimingNodeId("timing-node-01"),
                 TimingData.MAX_SEQUENCE_NUMBER + 1L);
     }
 
     @Test(expected = IllegalArgumentException.class)
-    public void recordKeyRejectsBlankTimingNodeIdentity() {
-        new TimingData.RecordKey("   ", 1L);
+    public void recordKeyRejectsMissingTimingNodeIdentity() {
+        new TimingData.RecordKey(null, 1L);
     }
 
     @Test
-    public void recordKeyPreservesSerializedTimingNodeIdentityWithoutNormalizingIt() {
-        TimingData.RecordKey key = new TimingData.RecordKey(" timing-node-01 ", 1L);
-        assertEquals(" timing-node-01 ", key.timingNodeId());
+    public void recordKeyUsesSharedNormalizedTimingNodeIdentity() {
+        TimingData.RecordKey key = new TimingData.RecordKey(new TimingNodeId(" timing-node-01 "), 1L);
+        assertEquals(new TimingNodeId("timing-node-01"), key.timingNodeId());
     }
 
     @Test
     public void recordKeyEqualityUsesBothSourceAndSequence() {
-        TimingData.RecordKey key = new TimingData.RecordKey("timing-node-01", 7L);
-        assertEquals(key, new TimingData.RecordKey("timing-node-01", 7L));
-        assertNotEquals(key, new TimingData.RecordKey("timing-node-02", 7L));
-        assertNotEquals(key, new TimingData.RecordKey("timing-node-01", 8L));
+        TimingData.RecordKey key = new TimingData.RecordKey(new TimingNodeId("timing-node-01"), 7L);
+        assertEquals(key, new TimingData.RecordKey(new TimingNodeId("timing-node-01"), 7L));
+        assertNotEquals(key, new TimingData.RecordKey(new TimingNodeId("timing-node-02"), 7L));
+        assertNotEquals(key, new TimingData.RecordKey(new TimingNodeId("timing-node-01"), 8L));
     }
 }

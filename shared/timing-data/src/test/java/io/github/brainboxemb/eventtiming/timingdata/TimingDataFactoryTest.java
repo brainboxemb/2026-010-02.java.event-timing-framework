@@ -17,7 +17,7 @@ public class TimingDataFactoryTest {
     public void contextCarriesCommonTimingDataConstructionValues() {
         TimingDataFactory.Context context = context();
 
-        assertEquals("timing-node-01", context.timingNodeId());
+        assertEquals(new TimingNodeId("timing-node-01"), context.timingNodeId());
         assertEquals(7L, context.sequenceNumber());
         assertEquals(new LocationId(12), context.locationId());
         assertSame(EFFECTIVE, context.effectiveTime());
@@ -26,18 +26,18 @@ public class TimingDataFactoryTest {
 
     @Test(expected = IllegalArgumentException.class)
     public void contextRejectsZeroSequence() {
-        new TimingDataFactory.Context("timing-node-01", 0L, new LocationId(12), EFFECTIVE, RECORDED);
+        new TimingDataFactory.Context(new TimingNodeId("timing-node-01"), 0L, new LocationId(12), EFFECTIVE, RECORDED);
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void contextRejectsMissingLocationId() {
-        new TimingDataFactory.Context("timing-node-01", 1L, null, EFFECTIVE, RECORDED);
+        new TimingDataFactory.Context(new TimingNodeId("timing-node-01"), 1L, null, EFFECTIVE, RECORDED);
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void contextRejectsSequenceAboveJsonSafeRange() {
         new TimingDataFactory.Context(
-                "timing-node-01",
+                new TimingNodeId("timing-node-01"),
                 TimingData.MAX_SEQUENCE_NUMBER + 1L,
                 new LocationId(12),
                 EFFECTIVE,
@@ -101,7 +101,7 @@ public class TimingDataFactoryTest {
 
     private static TimingDataFactory.Context context() {
         return new TimingDataFactory.Context(
-                "timing-node-01",
+                new TimingNodeId("timing-node-01"),
                 7L,
                 new LocationId(12),
                 EFFECTIVE,
@@ -109,7 +109,7 @@ public class TimingDataFactoryTest {
     }
 
     private static void assertCommonFields(TimingData data) {
-        assertEquals("timing-node-01", data.timingNodeId());
+        assertEquals(new TimingNodeId("timing-node-01"), data.timingNodeId());
         assertEquals(7L, data.sequenceNumber());
         assertEquals(new LocationId(12), data.locationId());
         assertSame(EFFECTIVE, data.effectiveTime());
@@ -146,7 +146,7 @@ public class TimingDataFactoryTest {
         }
 
         @Override
-        public String timingNodeId() {
+        public TimingNodeId timingNodeId() {
             return context.timingNodeId();
         }
 
@@ -192,7 +192,7 @@ public class TimingDataFactoryTest {
         }
 
         @Override
-        public String timingNodeId() {
+        public TimingNodeId timingNodeId() {
             return context.timingNodeId();
         }
 

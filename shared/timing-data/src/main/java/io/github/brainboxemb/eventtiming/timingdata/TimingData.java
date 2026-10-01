@@ -27,7 +27,7 @@ public interface TimingData {
     /** Largest JSON-safe IF-05 sequence value: 2^53 - 1. */
     long MAX_SEQUENCE_NUMBER = 9007199254740991L;
 
-    String timingNodeId();
+    TimingNodeId timingNodeId();
 
     long sequenceNumber();
 
@@ -64,17 +64,16 @@ public interface TimingData {
      * Stable IF-05 record identity: serialized TimingNode identity plus source
      * sequence number.
      *
-     * <p>The shared interchange type deliberately stores TimingNode identity as
-     * its public string value. SI-01 retains its stronger domain TimingNodeId and
-     * maps that value at the TimingData boundary.</p>
+     * <p>The record key uses the same shared TimingNodeId value type as the
+     * TimingData envelope. JSON serialization remains the public string value.</p>
      */
     final class RecordKey {
-        private final String timingNodeId;
+        private final TimingNodeId timingNodeId;
         private final long sequenceNumber;
 
-        public RecordKey(String timingNodeId, long sequenceNumber) {
-            if (timingNodeId == null || timingNodeId.trim().isEmpty()) {
-                throw new IllegalArgumentException("timingNodeId must not be blank");
+        public RecordKey(TimingNodeId timingNodeId, long sequenceNumber) {
+            if (timingNodeId == null) {
+                throw new IllegalArgumentException("timingNodeId must not be null");
             }
             if (sequenceNumber < 1L || sequenceNumber > MAX_SEQUENCE_NUMBER) {
                 throw new IllegalArgumentException(
@@ -84,7 +83,7 @@ public interface TimingData {
             this.sequenceNumber = sequenceNumber;
         }
 
-        public String timingNodeId() {
+        public TimingNodeId timingNodeId() {
             return timingNodeId;
         }
 

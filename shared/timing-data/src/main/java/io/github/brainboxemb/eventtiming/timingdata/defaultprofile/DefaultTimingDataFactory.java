@@ -5,6 +5,7 @@ import io.github.brainboxemb.eventtiming.timingdata.RegistrationId;
 import io.github.brainboxemb.eventtiming.timingdata.TimingData;
 import io.github.brainboxemb.eventtiming.timingdata.TimingDataFactory;
 import io.github.brainboxemb.eventtiming.timingdata.TimingTimestamp;
+import io.github.brainboxemb.eventtiming.timingdata.TimingNodeId;
 
 /**
  * Default/reference profile TimingData factory.
@@ -43,7 +44,7 @@ public final class DefaultTimingDataFactory implements TimingDataFactory {
         }
 
         @Override
-        public String timingNodeId() {
+        public TimingNodeId timingNodeId() {
             return context.timingNodeId();
         }
 
@@ -93,7 +94,7 @@ public final class DefaultTimingDataFactory implements TimingDataFactory {
         }
 
         @Override
-        public String timingNodeId() {
+        public TimingNodeId timingNodeId() {
             return context.timingNodeId();
         }
 

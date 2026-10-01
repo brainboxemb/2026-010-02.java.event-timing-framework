@@ -1,6 +1,13 @@
-package io.github.brainboxemb.eventtiming.timingpoint.domain.timing;
+package io.github.brainboxemb.eventtiming.timingdata;
 
-/** Stable software identity of one {@link TimingNode}. */
+/**
+ * Stable configured software/source identity of one TimingNode.
+ *
+ * <p>The shared library owns the value representation used by TimingData and
+ * other Java boundaries. Deployment configuration still chooses the actual
+ * TimingNode identity; this type does not define deployment topology or event
+ * policy.</p>
+ */
 public final class TimingNodeId {
     private final String value;
 

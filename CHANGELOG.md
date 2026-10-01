@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Move `TimingNodeId` into the shared TimingData library and use the same value type across TimingNode, TimingData, record keys, persistence, application status and configuration while keeping the IF-05 wire value a string.
+
 - Add `TimingNode.registerAccepted(...)` as the shared post-filter registration boundary used by Step-4 engineering simulation and later RFID processing; it creates automatic TimingData through the same ordered durable commit path.
 
 - Move `LocationId` into the shared TimingData library and use the same value type across TimingNode, TimingData construction and codec diagnostics; event/profile-specific allowed values remain outside the shared type.

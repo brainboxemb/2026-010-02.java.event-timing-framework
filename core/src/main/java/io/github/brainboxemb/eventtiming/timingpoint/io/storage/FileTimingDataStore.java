@@ -2,6 +2,7 @@ package io.github.brainboxemb.eventtiming.timingpoint.io.storage;
 
 import io.github.brainboxemb.eventtiming.timingdata.TimingData;
 import io.github.brainboxemb.eventtiming.timingdata.TimingDataCodec;
+import io.github.brainboxemb.eventtiming.timingdata.TimingNodeId;
 import io.github.brainboxemb.eventtiming.timingpoint.domain.timingdata.TimingDataStore;
 
 import java.io.IOException;
@@ -47,18 +48,18 @@ public final class FileTimingDataStore implements TimingDataStore {
     private static final byte CR = (byte) '\r';
 
     private final Path file;
-    private final String timingNodeId;
+    private final TimingNodeId timingNodeId;
     private final TimingDataCodec codec;
 
     public FileTimingDataStore(
             Path file,
-            String timingNodeId,
+            TimingNodeId timingNodeId,
             TimingDataCodec codec) {
         if (file == null) {
             throw new IllegalArgumentException("file must not be null");
         }
-        if (timingNodeId == null || timingNodeId.trim().isEmpty()) {
-            throw new IllegalArgumentException("timingNodeId must not be blank");
+        if (timingNodeId == null) {
+            throw new IllegalArgumentException("timingNodeId must not be null");
         }
         if (codec == null) {
             throw new IllegalArgumentException("codec must not be null");

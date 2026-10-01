@@ -7,6 +7,7 @@ import io.github.brainboxemb.eventtiming.timingdata.TimingData;
 import io.github.brainboxemb.eventtiming.timingdata.TimingDataFactory.Context;
 import io.github.brainboxemb.eventtiming.timingdata.TimingDataFactory;
 import io.github.brainboxemb.eventtiming.timingdata.TimingTimestamp;
+import io.github.brainboxemb.eventtiming.timingdata.TimingNodeId;
 import io.github.brainboxemb.eventtiming.timingpoint.domain.logbook.LogBook;
 import io.github.brainboxemb.eventtiming.timingpoint.domain.system.TimeSource;
 import io.github.brainboxemb.eventtiming.timingpoint.domain.timingdata.TimingDataStore;
@@ -478,7 +479,7 @@ public final class TimingNode {
      */
     private Context nextRegistrationContext(TimingTimestamp effectiveTime) {
         return new Context(
-                timingNodeId.value(),
+                timingNodeId,
                 logBook.nextSequence(),
                 locationId,
                 effectiveTime,
