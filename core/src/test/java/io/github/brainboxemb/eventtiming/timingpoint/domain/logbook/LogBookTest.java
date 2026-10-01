@@ -6,8 +6,8 @@ import io.github.brainboxemb.eventtiming.timingdata.RegistrationId;
 import io.github.brainboxemb.eventtiming.timingdata.TimingData;
 import io.github.brainboxemb.eventtiming.timingdata.TimingDataFactory.Context;
 import io.github.brainboxemb.eventtiming.timingdata.TimingTimestamp;
+import io.github.brainboxemb.eventtiming.timingdata.TimingNodeId;
 import io.github.brainboxemb.eventtiming.timingdata.defaultprofile.DefaultTimingDataFactory;
-import io.github.brainboxemb.eventtiming.timingpoint.domain.timing.TimingNodeId;
 
 import java.util.List;
 
@@ -85,7 +85,7 @@ public class LogBookTest {
         TimingTimestamp recorded =
                 TimingTimestamp.parse("2026-10-01T12:00:01.000000000Z");
         Context context =
-                new Context(nodeId, sequence, new LocationId(24), effective, recorded);
+                new Context(new TimingNodeId(nodeId), sequence, new LocationId(24), effective, recorded);
         return factory.createManualRegistration(
                 context,
                 new RegistrationId(registrationId),
