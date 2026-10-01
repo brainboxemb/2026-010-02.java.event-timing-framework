@@ -10,7 +10,7 @@ import java.util.Objects;
  * that value at the TimingData boundary.</p>
  */
 public final class TimingDataRecordKey {
-    public static final long MAX_SEQUENCE_NUMBER = 9007199254740991L;
+    public static final long MAX_SEQUENCE_NUMBER = TimingDataContext.MAX_SEQUENCE_NUMBER;
 
     private final String timingNodeId;
     private final long sequenceNumber;
