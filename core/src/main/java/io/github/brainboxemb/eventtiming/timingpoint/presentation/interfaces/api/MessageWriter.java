@@ -1,9 +1,16 @@
 package io.github.brainboxemb.eventtiming.timingpoint.presentation.interfaces.api;
 
+import io.github.brainboxemb.eventtiming.timingdata.TimingData;
+import io.github.brainboxemb.eventtiming.timingdata.TimingDataCodec;
+import io.github.brainboxemb.eventtiming.timingdata.TimingNodeId;
 import io.github.brainboxemb.eventtiming.timingpoint.application.ApplicationStatus;
+import io.github.brainboxemb.eventtiming.timingpoint.application.CommandHandler;
 import io.github.brainboxemb.eventtiming.timingpoint.infra.BuildIdentity;
 
-/** Explicit JSON mapping for the IF-03 first-executable contract. */
+import java.nio.charset.StandardCharsets;
+import java.util.List;
+
+/** Explicit JSON mapping for the IF-03 v1 contract. */
 public final class MessageWriter {
     private MessageWriter() {
     }
@@ -21,15 +28,74 @@ public final class MessageWriter {
     }
 
     public static String status(BuildIdentity identity, ApplicationStatus status) {
+        String location = status.hasLocation()
+                ? Integer.toString(status.locationId().value())
+                : "null";
         return "{"
                 + "\"apiVersion\":" + quote(identity.apiVersion()) + ","
                 + "\"build\":" + version(identity) + ","
                 + "\"timingNodes\":[{"
                 + "\"timingNodeId\":" + quote(status.timingNodeId().value()) + ","
+                + "\"locationId\":" + location + ","
                 + "\"lifecycle\":" + quote(status.timingNodeLifecycle().name())
                 + "}],"
                 + "\"problems\":[]"
                 + "}";
+    }
+
+    public static String capabilities(
+            BuildIdentity identity,
+            CommandHandler.Capabilities capabilities) {
+        return "{"
+                + "\"apiVersion\":" + quote(identity.apiVersion()) + ","
+                + "\"capabilities\":[{"
+                + "\"id\":\"DIRECT_REGISTRATION_SIMULATION\","
+                + "\"supported\":"
+                + capabilities.directRegistrationSimulationSupported() + ","
+                + "\"enabled\":"
+                + capabilities.directRegistrationSimulationEnabled()
+                + "}]}";
+    }
+
+    public static String result(BuildIdentity identity, String result) {
+        return "{"
+                + "\"apiVersion\":" + quote(identity.apiVersion()) + ","
+                + "\"result\":" + quote(result)
+                + "}";
+    }
+
+    public static String committedRegistration(
+            BuildIdentity identity,
+            TimingData data) {
+        return "{"
+                + "\"apiVersion\":" + quote(identity.apiVersion()) + ","
+                + "\"result\":\"COMMITTED\","
+                + "\"recordKey\":{"
+                + "\"timingNodeId\":" + quote(data.timingNodeId().value()) + ","
+                + "\"sequenceNumber\":" + data.sequenceNumber()
+                + "}}";
+    }
+
+    public static String history(
+            BuildIdentity identity,
+            TimingNodeId timingNodeId,
+            List<TimingData> records,
+            TimingDataCodec codec)
+            throws TimingDataCodec.CodecException {
+        StringBuilder json = new StringBuilder();
+        json.append("{")
+                .append("\"apiVersion\":").append(quote(identity.apiVersion())).append(",")
+                .append("\"timingNodeId\":").append(quote(timingNodeId.value())).append(",")
+                .append("\"records\":[");
+
+        for (int i = 0; i < records.size(); i++) {
+            if (i > 0) {
+                json.append(',');
+            }
+            json.append(timingDataJson(records.get(i), codec));
+        }
+        json.append("]}");
+        return json.toString();
     }
 
     public static String statusEvent(
@@ -57,6 +123,23 @@ public final class MessageWriter {
                 + "}";
     }
 
+    public static String timingDataEvent(
+            java.time.Instant occurredAt,
+            BuildIdentity identity,
+            TimingData data,
+            TimingDataCodec codec)
+            throws TimingDataCodec.CodecException {
+        if (occurredAt == null) {
+            throw new IllegalArgumentException("occurredAt must not be null");
+        }
+        return "{"
+                + "\"apiVersion\":" + quote(identity.apiVersion()) + ","
+                + "\"eventType\":\"TIMING_DATA_COMMITTED\","
+                + "\"occurredAt\":" + quote(occurredAt.toString()) + ","
+                + "\"payload\":" + timingDataJson(data, codec)
+                + "}";
+    }
+
     public static String error(String code, String message) {
         return "{"
                 + "\"apiVersion\":\"1\","
@@ -64,6 +147,13 @@ public final class MessageWriter {
                 + "\"code\":" + quote(code) + ","
                 + "\"message\":" + quote(message)
                 + "}}";
+    }
+
+    private static String timingDataJson(
+            TimingData data,
+            TimingDataCodec codec)
+            throws TimingDataCodec.CodecException {
+        return new String(codec.encode(data), StandardCharsets.UTF_8);
     }
 
     private static String quote(String value) {
