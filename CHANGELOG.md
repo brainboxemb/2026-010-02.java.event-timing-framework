@@ -2,7 +2,7 @@
 
 ## Unreleased
 
-- Expose the Step-4 first-registration IF-03 application/transport slice: LocationId status, capabilities, location/open/close control, dev `auto-reg` injection, committed TimingData history and live committed/status WebSocket events.
+- Expose the Step-4 first-registration IF-03 application/transport slice: compact node-addressed status/control, capabilities, bounded LogBook queries, dev `auto-reg` injection and live committed/status WebSocket events.
 
 - Compose the reference TimingData persistence stack in the real executable from `io.storage.timingData.path`, including startup recovery, default factory/codec and UTC recorded-time source.
 
