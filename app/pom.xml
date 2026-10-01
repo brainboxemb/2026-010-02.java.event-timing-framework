@@ -13,7 +13,7 @@
   <dependencies>
     <dependency>
       <groupId>${project.groupId}</groupId>
-      <artifactId>event-timing-framework</artifactId>
+      <artifactId>event-timing-core</artifactId>
       <version>${project.version}</version>
     </dependency>
     <dependency>
