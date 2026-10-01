@@ -1,5 +1,6 @@
 package io.github.brainboxemb.eventtiming.timingpoint.domain.timing;
 
+import io.github.brainboxemb.eventtiming.timingdata.LocationId;
 import io.github.brainboxemb.eventtiming.timingpoint.platform.execution.SerialWorker;
 
 import java.util.concurrent.CountDownLatch;

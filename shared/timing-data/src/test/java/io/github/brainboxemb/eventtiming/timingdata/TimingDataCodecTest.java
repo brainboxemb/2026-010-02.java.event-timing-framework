@@ -50,7 +50,7 @@ public class TimingDataCodecTest {
                 failure.reason());
         assertEquals(Integer.valueOf(1), failure.version());
         assertEquals(key, failure.key());
-        assertEquals(Integer.valueOf(12), failure.locationId());
+        assertEquals(new LocationId(12), failure.locationId());
         assertEquals("FUTURE_RECORD", failure.recordType());
         assertEquals(EFFECTIVE, failure.effectiveTime());
         assertEquals(RECORDED, failure.recordedAt());
@@ -61,7 +61,7 @@ public class TimingDataCodecTest {
         TimingDataCodec.CodecException.unsupportedRecordType(
                 1,
                 null,
-                12,
+                new LocationId(12),
                 "FUTURE_RECORD",
                 EFFECTIVE,
                 RECORDED,

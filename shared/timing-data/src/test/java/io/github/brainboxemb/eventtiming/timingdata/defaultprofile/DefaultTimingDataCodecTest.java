@@ -1,5 +1,6 @@
 package io.github.brainboxemb.eventtiming.timingdata.defaultprofile;
 
+import io.github.brainboxemb.eventtiming.timingdata.LocationId;
 import io.github.brainboxemb.eventtiming.timingdata.RegistrationId;
 import io.github.brainboxemb.eventtiming.timingdata.TimingData;
 import io.github.brainboxemb.eventtiming.timingdata.TimingDataCodec;
@@ -152,7 +153,7 @@ public class DefaultTimingDataCodecTest {
             assertEquals(
                     new TimingData.RecordKey("timing-node-01", 9L),
                     expected.key());
-            assertEquals(Integer.valueOf(7), expected.locationId());
+            assertEquals(new LocationId(7), expected.locationId());
             assertEquals("FUTURE_RECORD", expected.recordType());
             assertEquals(EFFECTIVE, expected.effectiveTime());
             assertEquals(RECORDED, expected.recordedAt());
@@ -199,7 +200,7 @@ public class DefaultTimingDataCodecTest {
         return new TimingDataFactory.Context(
                 "timing-node-01",
                 sequence,
-                7,
+                new LocationId(7),
                 EFFECTIVE,
                 RECORDED);
     }
@@ -211,7 +212,7 @@ public class DefaultTimingDataCodecTest {
     private static void assertCommon(TimingData data, long sequence) {
         assertEquals("timing-node-01", data.timingNodeId());
         assertEquals(sequence, data.sequenceNumber());
-        assertEquals(7, data.locationId());
+        assertEquals(new LocationId(7), data.locationId());
         assertEquals(EFFECTIVE, data.effectiveTime());
         assertEquals(RECORDED, data.recordedAt());
     }

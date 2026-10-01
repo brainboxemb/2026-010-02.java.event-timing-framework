@@ -19,19 +19,19 @@ public class TimingDataFactoryTest {
 
         assertEquals("timing-node-01", context.timingNodeId());
         assertEquals(7L, context.sequenceNumber());
-        assertEquals(12, context.locationId());
+        assertEquals(new LocationId(12), context.locationId());
         assertSame(EFFECTIVE, context.effectiveTime());
         assertSame(RECORDED, context.recordedAt());
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void contextRejectsZeroSequence() {
-        new TimingDataFactory.Context("timing-node-01", 0L, 12, EFFECTIVE, RECORDED);
+        new TimingDataFactory.Context("timing-node-01", 0L, new LocationId(12), EFFECTIVE, RECORDED);
     }
 
     @Test(expected = IllegalArgumentException.class)
-    public void contextRejectsNonPositiveLocationId() {
-        new TimingDataFactory.Context("timing-node-01", 1L, 0, EFFECTIVE, RECORDED);
+    public void contextRejectsMissingLocationId() {
+        new TimingDataFactory.Context("timing-node-01", 1L, null, EFFECTIVE, RECORDED);
     }
 
     @Test(expected = IllegalArgumentException.class)
@@ -39,7 +39,7 @@ public class TimingDataFactoryTest {
         new TimingDataFactory.Context(
                 "timing-node-01",
                 TimingData.MAX_SEQUENCE_NUMBER + 1L,
-                12,
+                new LocationId(12),
                 EFFECTIVE,
                 RECORDED);
     }
@@ -103,7 +103,7 @@ public class TimingDataFactoryTest {
         return new TimingDataFactory.Context(
                 "timing-node-01",
                 7L,
-                12,
+                new LocationId(12),
                 EFFECTIVE,
                 RECORDED);
     }
@@ -111,7 +111,7 @@ public class TimingDataFactoryTest {
     private static void assertCommonFields(TimingData data) {
         assertEquals("timing-node-01", data.timingNodeId());
         assertEquals(7L, data.sequenceNumber());
-        assertEquals(12, data.locationId());
+        assertEquals(new LocationId(12), data.locationId());
         assertSame(EFFECTIVE, data.effectiveTime());
         assertSame(RECORDED, data.recordedAt());
     }
@@ -156,7 +156,7 @@ public class TimingDataFactoryTest {
         }
 
         @Override
-        public int locationId() {
+        public LocationId locationId() {
             return context.locationId();
         }
 
@@ -202,7 +202,7 @@ public class TimingDataFactoryTest {
         }
 
         @Override
-        public int locationId() {
+        public LocationId locationId() {
             return context.locationId();
         }
 

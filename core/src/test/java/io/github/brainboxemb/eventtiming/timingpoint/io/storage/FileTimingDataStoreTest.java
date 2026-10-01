@@ -1,5 +1,6 @@
 package io.github.brainboxemb.eventtiming.timingpoint.io.storage;
 
+import io.github.brainboxemb.eventtiming.timingdata.LocationId;
 import io.github.brainboxemb.eventtiming.timingdata.RegistrationId;
 import io.github.brainboxemb.eventtiming.timingdata.TimingData;
 import io.github.brainboxemb.eventtiming.timingdata.TimingDataFactory;
@@ -177,7 +178,7 @@ public class FileTimingDataStoreTest {
                 new TimingDataFactory.Context(
                         nodeId,
                         sequence,
-                        24,
+                        new LocationId(24),
                         EFFECTIVE,
                         RECORDED),
                 new RegistrationId("registration-" + sequence),
