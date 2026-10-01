@@ -33,7 +33,7 @@ public class TimingDataCodecTest {
     @Test
     public void unsupportedV1RecordTypeCarriesReadableCommonEnvelope() {
         TimingData.RecordKey key =
-                new TimingData.RecordKey("timing-node-01", 7);
+                new TimingData.RecordKey(new TimingNodeId("timing-node-01"), 7);
 
         TimingDataCodec.CodecException failure =
                 TimingDataCodec.CodecException.unsupportedRecordType(
