@@ -45,10 +45,13 @@ public class HttpEndpointTest {
 
             Response status = request(server.boundPort(), "GET", "/api/v1/status", null);
             assertEquals(200, status.status);
-            assertTrue(status.body.contains("\"timingNodeId\":\"timing-node-01\""));
+            assertTrue(status.body.contains("\"nodes\":[{"));
+            assertTrue(status.body.contains("\"id\":\"timing-node-01\""));
             assertTrue(status.body.contains("\"locationId\":null"));
-            assertTrue(status.body.contains("\"lifecycle\":\"CLOSED\""));
+            assertTrue(status.body.contains("\"state\":\"CLOSED\""));
             assertTrue(status.body.contains("\"problems\":[]"));
+            assertTrue(!status.body.contains("\"build\":"));
+            assertTrue(!status.body.contains("\"apiVersion\":"));
         } finally {
             server.close();
         }
@@ -71,14 +74,14 @@ public class HttpEndpointTest {
             assertTrue(capabilities.body.contains("\"enabled\":true"));
 
             Response openWithoutLocation =
-                    request(server.boundPort(), "POST", "/api/v1/timing-node/open", null);
+                    request(server.boundPort(), "POST", "/api/v1/node/timing-node-01/open", null);
             assertEquals(409, openWithoutLocation.status);
             assertTrue(openWithoutLocation.body.contains("\"code\":\"NO_LOCATION\""));
 
             Response setLocation = request(
                     server.boundPort(),
                     "PUT",
-                    "/api/v1/timing-node/location",
+                    "/api/v1/node/timing-node-01/location",
                     "{\"locationId\":24}");
             assertEquals(200, setLocation.status);
             assertTrue(setLocation.body.contains("\"result\":\"UPDATED\""));
@@ -88,14 +91,14 @@ public class HttpEndpointTest {
             assertTrue(locatedStatus.body.contains("\"locationId\":24"));
 
             Response opened =
-                    request(server.boundPort(), "POST", "/api/v1/timing-node/open", null);
+                    request(server.boundPort(), "POST", "/api/v1/node/timing-node-01/open", null);
             assertEquals(200, opened.status);
             assertTrue(opened.body.contains("\"result\":\"OPENED\""));
 
             Response changeWhileOpen = request(
                     server.boundPort(),
                     "PUT",
-                    "/api/v1/timing-node/location",
+                    "/api/v1/node/timing-node-01/location",
                     "{\"locationId\":25}");
             assertEquals(409, changeWhileOpen.status);
             assertTrue(changeWhileOpen.body.contains(
@@ -104,21 +107,31 @@ public class HttpEndpointTest {
             Response registration = request(
                     server.boundPort(),
                     "POST",
-                    "/api/v1/dev/auto-reg",
+                    "/api/v1/dev/node/timing-node-01/auto-reg",
                     "{"
                             + "\"id\":\"sample-001\","
                             + "\"time\":"
                             + "\"2026-10-01T12:00:00.000000000Z\""
                             + "}");
             assertEquals(200, registration.status);
-            assertTrue(registration.body.contains("\"result\":\"COMMITTED\""));
-            assertTrue(registration.body.contains(
-                    "\"timingNodeId\":\"timing-node-01\""));
-            assertTrue(registration.body.contains("\"sequenceNumber\":1"));
+            assertEquals("{\"seq\":1}", registration.body);
 
-            Response history =
-                    request(server.boundPort(), "GET", "/api/v1/timing-data", null);
+            Response logBookInfo = request(
+                    server.boundPort(),
+                    "GET",
+                    "/api/v1/node/timing-node-01/logbook",
+                    null);
+            assertEquals(200, logBookInfo.status);
+            assertEquals("{\"count\":1,\"first\":1,\"last\":1}", logBookInfo.body);
+
+            Response history = request(
+                    server.boundPort(),
+                    "GET",
+                    "/api/v1/node/timing-node-01/logbook?from=1&limit=100",
+                    null);
             assertEquals(200, history.status);
+            assertTrue(history.body.contains("\"count\":1"));
+            assertTrue(history.body.contains("\"next\":null"));
             assertTrue(history.body.contains("\"sequenceNumber\":1"));
             assertTrue(history.body.contains("\"locationId\":24"));
             assertTrue(history.body.contains("\"registrationId\":\"sample-001\""));
@@ -126,8 +139,24 @@ public class HttpEndpointTest {
             assertTrue(history.body.contains(
                     "\"effectiveTime\":\"2026-10-01T12:00:00.000000000Z\""));
 
+            Response latest = request(
+                    server.boundPort(),
+                    "GET",
+                    "/api/v1/node/timing-node-01/logbook?last=1",
+                    null);
+            assertEquals(200, latest.status);
+            assertTrue(latest.body.contains("\"sequenceNumber\":1"));
+
+            Response wrongNode = request(
+                    server.boundPort(),
+                    "GET",
+                    "/api/v1/node/other-node/logbook",
+                    null);
+            assertEquals(404, wrongNode.status);
+            assertTrue(wrongNode.body.contains("\"code\":\"NODE_NOT_FOUND\""));
+
             Response closed =
-                    request(server.boundPort(), "POST", "/api/v1/timing-node/close", null);
+                    request(server.boundPort(), "POST", "/api/v1/node/timing-node-01/close", null);
             assertEquals(200, closed.status);
             assertTrue(closed.body.contains("\"result\":\"CLOSED\""));
         } finally {
@@ -158,7 +187,7 @@ public class HttpEndpointTest {
             Response malformed = request(
                     server.boundPort(),
                     "PUT",
-                    "/api/v1/timing-node/location",
+                    "/api/v1/node/timing-node-01/location",
                     "{not-json}");
             assertEquals(400, malformed.status);
             assertTrue(malformed.body.contains("\"code\":\"MALFORMED_REQUEST\""));
@@ -166,7 +195,7 @@ public class HttpEndpointTest {
             Response invalid = request(
                     server.boundPort(),
                     "PUT",
-                    "/api/v1/timing-node/location",
+                    "/api/v1/node/timing-node-01/location",
                     "{\"locationId\":0}");
             assertEquals(400, invalid.status);
             assertTrue(invalid.body.contains("\"code\":\"INVALID_VALUE\""));
@@ -191,7 +220,7 @@ public class HttpEndpointTest {
                     request(server.boundPort(), "GET", "/api/v1/status", null);
             assertEquals(500, response.status);
             assertTrue(response.body.contains("\"code\":\"INTERNAL_ERROR\""));
-            assertTrue(response.body.contains("\"apiVersion\":\"1\""));
+            assertTrue(!response.body.contains("\"apiVersion\":"));
         } finally {
             server.close();
         }
