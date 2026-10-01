@@ -1,7 +1,7 @@
 package io.github.brainboxemb.eventtiming.timingpoint.domain.logbook;
 
 import io.github.brainboxemb.eventtiming.timingdata.TimingData;
-import io.github.brainboxemb.eventtiming.timingpoint.domain.timing.TimingNodeId;
+import io.github.brainboxemb.eventtiming.timingdata.TimingNodeId;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -45,7 +45,7 @@ public final class LogBook {
         if (data == null) {
             throw new IllegalArgumentException("data must not be null");
         }
-        if (!timingNodeId.value().equals(data.timingNodeId())) {
+        if (!timingNodeId.equals(data.timingNodeId())) {
             throw new IllegalArgumentException(
                     "TimingData belongs to a different TimingNode: " + data.timingNodeId());
         }
