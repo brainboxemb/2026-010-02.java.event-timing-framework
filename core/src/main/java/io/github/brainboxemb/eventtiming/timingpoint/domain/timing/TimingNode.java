@@ -1,9 +1,9 @@
 package io.github.brainboxemb.eventtiming.timingpoint.domain.timing;
 
-import io.github.brainboxemb.eventtiming.timingdata.ManualRegistrationTimeSource;
+import io.github.brainboxemb.eventtiming.timingdata.TimingData.ManualTimeSource;
 import io.github.brainboxemb.eventtiming.timingdata.RegistrationId;
 import io.github.brainboxemb.eventtiming.timingdata.TimingData;
-import io.github.brainboxemb.eventtiming.timingdata.TimingDataContext;
+import io.github.brainboxemb.eventtiming.timingdata.TimingDataFactory.Context;
 import io.github.brainboxemb.eventtiming.timingdata.TimingDataFactory;
 import io.github.brainboxemb.eventtiming.timingdata.TimingTimestamp;
 import io.github.brainboxemb.eventtiming.timingpoint.domain.logbook.LogBook;
@@ -274,7 +274,7 @@ public final class TimingNode {
     public RegistrationResult registerManual(
             RegistrationId registrationId,
             TimingTimestamp effectiveTime,
-            ManualRegistrationTimeSource registrationTimeSource) {
+            ManualTimeSource registrationTimeSource) {
         if (registrationId == null) {
             throw new IllegalArgumentException("registrationId must not be null");
         }
@@ -332,7 +332,7 @@ public final class TimingNode {
     private RegistrationResult doRegisterManual(
             RegistrationId registrationId,
             TimingTimestamp effectiveTime,
-            ManualRegistrationTimeSource registrationTimeSource)
+            ManualTimeSource registrationTimeSource)
             throws TimingDataStore.StoreException {
         if (lifecycle != Lifecycle.OPEN) {
             return RegistrationResult.nodeNotOpen();
@@ -344,7 +344,7 @@ public final class TimingNode {
         }
 
         long sequence = logBook.nextSequence();
-        TimingDataContext context = new TimingDataContext(
+        Context context = new Context(
                 timingNodeId.value(),
                 sequence,
                 locationId.value(),
