@@ -1,6 +1,5 @@
 package io.github.brainboxemb.eventtiming.timingpoint.runtime;
 
-import io.github.brainboxemb.eventtiming.timingpoint.application.ApplicationStatus;
 import io.github.brainboxemb.eventtiming.timingpoint.application.CommandHandler;
 import io.github.brainboxemb.eventtiming.timingpoint.domain.timing.TimingNode;
 import io.github.brainboxemb.eventtiming.timingpoint.infra.BuildIdentity;
@@ -104,14 +103,8 @@ public final class TimingApplication implements AutoCloseable {
                 throw new IllegalStateException("timingNode must be configured before build");
             }
             TimingApplicationLifecycle lifecycle = new TimingApplicationLifecycle(buildIdentity);
-            CommandHandler commandHandler = new CommandHandler(
-                    buildIdentity,
-                    () -> {
-                        TimingNode.Status status = timingNode.status();
-                        return new ApplicationStatus(
-                                status.timingNodeId(),
-                                status.lifecycle());
-                    });
+            CommandHandler commandHandler =
+                    new CommandHandler(buildIdentity, timingNode);
             return new TimingApplication(
                     buildIdentity,
                     timingNode,

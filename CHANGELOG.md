@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Expose the Step-4 first-registration IF-03 application/transport slice: compact node-addressed status/control, capabilities, bounded LogBook queries, dev `auto-reg` injection and live committed/status WebSocket events.
+
 - Compose the reference TimingData persistence stack in the real executable from `io.storage.timingData.path`, including startup recovery, default factory/codec and UTC recorded-time source.
 
 - Move `TimingNodeId` into the shared TimingData library and use the same value type across TimingNode, TimingData, record keys, persistence, application status and configuration while keeping the IF-05 wire value a string.

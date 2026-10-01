@@ -64,6 +64,40 @@ public final class LogBook {
     }
 
     /**
+     * Returns at most {@code limit} committed records starting at the inclusive
+     * source sequence.
+     */
+    public List<TimingData> range(long fromSequence, int limit) {
+        if (fromSequence < 1L) {
+            throw new IllegalArgumentException("fromSequence must be >= 1");
+        }
+        if (limit < 1) {
+            throw new IllegalArgumentException("limit must be >= 1");
+        }
+
+        long startLong = fromSequence - 1L;
+        if (startLong >= records.size()) {
+            return Collections.emptyList();
+        }
+        int start = (int) startLong;
+        int end = (int) Math.min((long) records.size(), startLong + limit);
+        return Collections.unmodifiableList(
+                new ArrayList<>(records.subList(start, end)));
+    }
+
+    /**
+     * Returns at most {@code limit} newest committed records in source order.
+     */
+    public List<TimingData> latest(int limit) {
+        if (limit < 1) {
+            throw new IllegalArgumentException("limit must be >= 1");
+        }
+        int start = Math.max(0, records.size() - limit);
+        return Collections.unmodifiableList(
+                new ArrayList<>(records.subList(start, records.size())));
+    }
+
+    /**
      * Returns a stable shallow immutable view for calculation outside the owner lane.
      */
     public List<TimingData> snapshot() {

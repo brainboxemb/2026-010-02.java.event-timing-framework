@@ -1,15 +1,21 @@
 package io.github.brainboxemb.eventtiming.timingpoint.presentation.interfaces.api;
 
+import io.github.brainboxemb.eventtiming.timingdata.TimingData;
+import io.github.brainboxemb.eventtiming.timingdata.TimingDataCodec;
+import io.github.brainboxemb.eventtiming.timingdata.defaultprofile.DefaultTimingDataCodec;
+import io.github.brainboxemb.eventtiming.timingpoint.application.ApplicationStatus;
 import io.github.brainboxemb.eventtiming.timingpoint.application.CommandHandler;
+
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
-import java.time.Clock;
 import java.nio.ByteBuffer;
+import java.time.Clock;
 import java.util.Collections;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Consumer;
 
 import org.java_websocket.WebSocket;
 import org.java_websocket.drafts.Draft;
@@ -21,7 +27,15 @@ import org.java_websocket.server.WebSocketServer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/** WebSocket transport for IF-03 API events. */
+/**
+ * Server-to-client IF-03 event stream.
+ *
+ * <p>The endpoint subscribes only to the transport-independent
+ * {@link CommandHandler}. It sends one complete STATUS_SNAPSHOT when a client
+ * connects, then broadcasts authoritative STATUS_CHANGED and
+ * TIMING_DATA_COMMITTED notifications. Historical TimingData is deliberately
+ * not replayed here; reconnect recovery uses the HTTP history resource.</p>
+ */
 public final class WebSocketEndpoint implements AutoCloseable {
     public static final String EVENTS_PATH = "/api/v1/events";
 
@@ -33,14 +47,26 @@ public final class WebSocketEndpoint implements AutoCloseable {
     private final int port;
     private final CommandHandler commandHandler;
     private final Clock clock;
+    private final TimingDataCodec timingDataCodec;
+    private final Consumer<ApplicationStatus> statusChangedListener =
+            this::broadcastStatusChanged;
+    private final Consumer<TimingData> timingDataListener =
+            this::broadcastTimingDataCommitted;
 
     private Server server;
+    private boolean statusSubscribed;
+    private boolean timingDataSubscribed;
 
     public WebSocketEndpoint(
             String bindAddress,
             int port,
             CommandHandler commandHandler) {
-        this(bindAddress, port, commandHandler, Clock.systemUTC());
+        this(
+                bindAddress,
+                port,
+                commandHandler,
+                Clock.systemUTC(),
+                new DefaultTimingDataCodec());
     }
 
     WebSocketEndpoint(
@@ -48,6 +74,20 @@ public final class WebSocketEndpoint implements AutoCloseable {
             int port,
             CommandHandler commandHandler,
             Clock clock) {
+        this(
+                bindAddress,
+                port,
+                commandHandler,
+                clock,
+                new DefaultTimingDataCodec());
+    }
+
+    WebSocketEndpoint(
+            String bindAddress,
+            int port,
+            CommandHandler commandHandler,
+            Clock clock,
+            TimingDataCodec timingDataCodec) {
         if (bindAddress == null || bindAddress.trim().isEmpty()) {
             throw new IllegalArgumentException("bindAddress must not be blank");
         }
@@ -60,15 +100,26 @@ public final class WebSocketEndpoint implements AutoCloseable {
         if (clock == null) {
             throw new IllegalArgumentException("clock must not be null");
         }
+        if (timingDataCodec == null) {
+            throw new IllegalArgumentException("timingDataCodec must not be null");
+        }
         this.bindAddress = bindAddress.trim();
         this.port = port;
         this.commandHandler = commandHandler;
         this.clock = clock;
+        this.timingDataCodec = timingDataCodec;
     }
 
+    /**
+     * Starts the listener and then subscribes it to application events.
+     *
+     * <p>Subscription is part of endpoint startup. If either subscription fails,
+     * the transport is stopped again so callers never observe a half-live event
+     * endpoint.</p>
+     */
     public synchronized void start() throws IOException {
         if (server != null) {
-            throw new IllegalStateException("WebSocket status server is already started");
+            throw new IllegalStateException("WebSocket IF-03 server is already started");
         }
 
         InetSocketAddress address =
@@ -79,53 +130,104 @@ public final class WebSocketEndpoint implements AutoCloseable {
         try {
             if (!candidate.awaitStarted(START_TIMEOUT_MILLIS, TimeUnit.MILLISECONDS)) {
                 stopCandidate(candidate);
-                throw new IOException("Timed out starting WebSocket status server");
+                throw new IOException("Timed out starting WebSocket IF-03 server");
             }
         } catch (InterruptedException ex) {
             Thread.currentThread().interrupt();
             stopCandidate(candidate);
-            throw new IOException("Interrupted while starting WebSocket status server", ex);
+            throw new IOException("Interrupted while starting WebSocket IF-03 server", ex);
         }
 
         Exception failure = candidate.startFailure();
         if (failure != null) {
             stopCandidate(candidate);
-            throw new IOException("Unable to start WebSocket status server", failure);
+            throw new IOException("Unable to start WebSocket IF-03 server", failure);
         }
 
         server = candidate;
-        LOG.info("WebSocket status listening on {}:{}{}", bindAddress, candidate.getPort(), EVENTS_PATH);
+        try {
+            statusSubscribed =
+                    commandHandler.subscribeStatusChanged(statusChangedListener);
+            timingDataSubscribed =
+                    commandHandler.subscribeNewTimingData(timingDataListener);
+        } catch (RuntimeException ex) {
+            unsubscribeApplicationEvents();
+            server = null;
+            stopCandidate(candidate);
+            throw ex;
+        }
+
+        LOG.info(
+                "WebSocket IF-03 listening on {}:{}{}",
+                bindAddress,
+                candidate.getPort(),
+                EVENTS_PATH);
     }
 
     public synchronized int boundPort() {
         if (server == null) {
-            throw new IllegalStateException("WebSocket status server is not started");
+            throw new IllegalStateException("WebSocket IF-03 server is not started");
         }
         return server.getPort();
     }
 
-    /** Broadcasts a complete current status after a real authoritative status change. */
+    /**
+     * Broadcasts the current complete status.
+     *
+     * <p>Kept as a small diagnostic/test hook. Normal Step-4 status changes are
+     * published automatically from the CommandHandler subscription.</p>
+     */
     public void publishStatusChanged() {
-        Server current;
-        synchronized (this) {
-            current = server;
-        }
-        if (current == null) {
-            throw new IllegalStateException("WebSocket status server is not started");
-        }
-        current.broadcast(eventJson("STATUS_CHANGED"));
+        broadcastStatusChanged(commandHandler.status());
     }
 
-    private String eventJson(String eventType) {
+    private void broadcastStatusChanged(ApplicationStatus status) {
+        Server current = currentServer();
+        if (current != null) {
+            current.broadcast(
+                    MessageWriter.statusEvent(
+                            "STATUS_CHANGED",
+                            clock.instant(),
+                            status));
+        }
+    }
+
+    private void broadcastTimingDataCommitted(TimingData data) {
+        Server current = currentServer();
+        if (current == null) {
+            return;
+        }
+        try {
+            current.broadcast(
+                    MessageWriter.timingDataEvent(
+                            clock.instant(),
+                            data,
+                            timingDataCodec));
+        } catch (TimingDataCodec.CodecException ex) {
+            // Turn codec failure into an ordinary listener RuntimeException.
+            // TimingNode's post-commit Event isolates/reports this without
+            // rolling back the already durable TimingData commit.
+            throw new IllegalStateException(
+                    "Could not encode committed TimingData for IF-03 event",
+                    ex);
+        }
+    }
+
+    private synchronized Server currentServer() {
+        return server;
+    }
+
+    private String snapshotJson() {
         return MessageWriter.statusEvent(
-                eventType,
+                "STATUS_SNAPSHOT",
                 clock.instant(),
-                commandHandler.version(),
                 commandHandler.status());
     }
 
     @Override
     public synchronized void close() {
+        unsubscribeApplicationEvents();
+
         Server current = server;
         server = null;
         if (current == null) {
@@ -135,6 +237,17 @@ public final class WebSocketEndpoint implements AutoCloseable {
             current.stop(1000);
         } catch (InterruptedException ex) {
             Thread.currentThread().interrupt();
+        }
+    }
+
+    private void unsubscribeApplicationEvents() {
+        if (statusSubscribed) {
+            commandHandler.unsubscribeStatusChanged(statusChangedListener);
+            statusSubscribed = false;
+        }
+        if (timingDataSubscribed) {
+            commandHandler.unsubscribeNewTimingData(timingDataListener);
+            timingDataSubscribed = false;
         }
     }
 
@@ -177,7 +290,7 @@ public final class WebSocketEndpoint implements AutoCloseable {
                 return;
             }
             try {
-                connection.send(eventJson("STATUS_SNAPSHOT"));
+                connection.send(snapshotJson());
             } catch (RuntimeException ex) {
                 LOG.warn("Unable to create initial IF-03 status snapshot", ex);
                 connection.close(
