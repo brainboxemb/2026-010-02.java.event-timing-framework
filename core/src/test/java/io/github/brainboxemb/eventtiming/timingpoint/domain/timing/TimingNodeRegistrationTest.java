@@ -8,6 +8,7 @@ import io.github.brainboxemb.eventtiming.timingdata.RegistrationId;
 import io.github.brainboxemb.eventtiming.timingdata.TimingData;
 import io.github.brainboxemb.eventtiming.timingdata.TimingDataFactory.Context;
 import io.github.brainboxemb.eventtiming.timingdata.TimingTimestamp;
+import io.github.brainboxemb.eventtiming.timingdata.TimingNodeId;
 import io.github.brainboxemb.eventtiming.timingdata.defaultprofile.DefaultTimingDataFactory;
 import io.github.brainboxemb.eventtiming.timingpoint.domain.system.TimeSource;
 import io.github.brainboxemb.eventtiming.timingpoint.domain.timingdata.TimingDataStore;
@@ -51,7 +52,7 @@ public class TimingNodeRegistrationTest {
             assertTrue(result.timingData() instanceof AutomaticRegistration);
             AutomaticRegistration data =
                     (AutomaticRegistration) result.timingData();
-            assertEquals("timing-node-01", data.timingNodeId());
+            assertEquals(new TimingNodeId("timing-node-01"), data.timingNodeId());
             assertEquals(1L, data.sequenceNumber());
             assertEquals(new LocationId(24), data.locationId());
             assertEquals(EFFECTIVE_TIME, data.effectiveTime());
@@ -464,7 +465,7 @@ public class TimingNodeRegistrationTest {
     private static TimingData recoveredData(long sequence, int locationId) {
         return new DefaultTimingDataFactory().createManualRegistration(
                 new Context(
-                        "timing-node-01",
+                        new TimingNodeId("timing-node-01"),
                         sequence,
                         new LocationId(locationId),
                         EFFECTIVE_TIME,
