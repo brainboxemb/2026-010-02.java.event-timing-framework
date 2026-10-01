@@ -89,8 +89,10 @@ public class CommandHandlerTest {
             assertTrue(registration.committed());
             assertEquals(1, committed.size());
             assertSame(registration.timingData(), committed.get(0));
-            assertEquals(1, handler.timingDataHistory().size());
-            assertSame(registration.timingData(), handler.timingDataHistory().get(0));
+            assertEquals(1, handler.logBookCount());
+            assertEquals(1, handler.logBookFrom(1L, 10).size());
+            assertSame(registration.timingData(), handler.logBookFrom(1L, 10).get(0));
+            assertSame(registration.timingData(), handler.latestLogBook(10).get(0));
 
             assertEquals(TimingNode.CloseResult.CLOSED, handler.close());
             assertEquals(3, statusChanges.size());
