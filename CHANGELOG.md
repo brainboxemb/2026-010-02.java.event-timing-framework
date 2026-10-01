@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Add `TimingNode.registerAccepted(...)` as the shared post-filter registration boundary used by Step-4 engineering simulation and later RFID processing; it creates automatic TimingData through the same ordered durable commit path.
+
 - Move `LocationId` into the shared TimingData library and use the same value type across TimingNode, TimingData construction and codec diagnostics; event/profile-specific allowed values remain outside the shared type.
 
 - Add a small typed local `Event<T>` primitive and publish newly committed TimingData after durable store append and LogBook visibility; listener RuntimeExceptions are isolated and reported without rolling back the commit.

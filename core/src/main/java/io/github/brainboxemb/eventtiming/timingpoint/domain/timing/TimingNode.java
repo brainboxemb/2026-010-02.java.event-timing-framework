@@ -327,6 +327,31 @@ public final class TimingNode {
         return execute(() -> doSetLocation(newLocationId), "setLocation");
     }
 
+    /**
+     * Commits one semantic registration that has already passed source-specific
+     * observation interpretation/filtering.
+     *
+     * <p>The caller supplies the resolved shared RegistrationId and accepted
+     * observation time only. TimingNode supplies its own identity, active
+     * LocationId, next committed sequence and recordedAt time on the serial
+     * lane. This is therefore the same domain boundary used by the later RFID
+     * path and by Step-4 direct-registration engineering simulation.</p>
+     */
+    public RegistrationResult registerAccepted(
+            RegistrationId registrationId,
+            TimingTimestamp observationTime) {
+        if (registrationId == null) {
+            throw new IllegalArgumentException("registrationId must not be null");
+        }
+        if (observationTime == null) {
+            throw new IllegalArgumentException("observationTime must not be null");
+        }
+        requireTimingDataSupport("registerAccepted");
+        return execute(
+                () -> doRegisterAccepted(registrationId, observationTime),
+                "registerAccepted");
+    }
+
     public RegistrationResult registerManual(
             RegistrationId registrationId,
             TimingTimestamp effectiveTime,
@@ -413,6 +438,21 @@ public final class TimingNode {
         return SetLocationResult.UPDATED;
     }
 
+    private RegistrationResult doRegisterAccepted(
+            RegistrationId registrationId,
+            TimingTimestamp observationTime)
+            throws TimingDataStore.StoreException {
+        if (lifecycle != Lifecycle.OPEN) {
+            return RegistrationResult.nodeNotOpen();
+        }
+        ensureTimingDataCommitAvailable();
+
+        TimingData data = timingDataFactory.createAutomaticRegistration(
+                nextRegistrationContext(observationTime),
+                registrationId);
+        return commitRegistration(data);
+    }
+
     private RegistrationResult doRegisterManual(
             RegistrationId registrationId,
             TimingTimestamp effectiveTime,
@@ -421,23 +461,47 @@ public final class TimingNode {
         if (lifecycle != Lifecycle.OPEN) {
             return RegistrationResult.nodeNotOpen();
         }
+        ensureTimingDataCommitAvailable();
+
+        TimingData data = timingDataFactory.createManualRegistration(
+                nextRegistrationContext(effectiveTime),
+                registrationId,
+                registrationTimeSource);
+        return commitRegistration(data);
+    }
+
+    /**
+     * Creates the next registration context from state owned by the serial lane.
+     *
+     * <p>Sequence is read from committed LogBook state here, immediately before
+     * persistence. Merely queueing a command therefore never consumes a sequence.</p>
+     */
+    private Context nextRegistrationContext(TimingTimestamp effectiveTime) {
+        return new Context(
+                timingNodeId.value(),
+                logBook.nextSequence(),
+                locationId,
+                effectiveTime,
+                timeSource.now());
+    }
+
+    private void ensureTimingDataCommitAvailable() {
         if (timingDataCommitFailure != null) {
             throw new IllegalStateException(
                     "TimingData commit is blocked after an earlier persistence failure",
                     timingDataCommitFailure);
         }
+    }
 
-        long sequence = logBook.nextSequence();
-        Context context = new Context(
-                timingNodeId.value(),
-                sequence,
-                locationId,
-                effectiveTime,
-                timeSource.now());
-        TimingData data = timingDataFactory.createManualRegistration(
-                context,
-                registrationId,
-                registrationTimeSource);
+    /**
+     * Shared durable commit path for every already-created TimingData variant.
+     *
+     * <p>This method is called only from the TimingNode serial lane. Durable
+     * store append precedes LogBook visibility, and the local event is emitted
+     * only after both have succeeded.</p>
+     */
+    private RegistrationResult commitRegistration(TimingData data)
+            throws TimingDataStore.StoreException {
         if (data == null) {
             throw new IllegalStateException("timingDataFactory returned null");
         }

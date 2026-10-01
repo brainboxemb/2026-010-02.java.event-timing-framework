@@ -1,6 +1,7 @@
 package io.github.brainboxemb.eventtiming.timingpoint.domain.timing;
 
 import io.github.brainboxemb.eventtiming.timingdata.TimingData.ManualTimeSource;
+import io.github.brainboxemb.eventtiming.timingdata.TimingData.AutomaticRegistration;
 import io.github.brainboxemb.eventtiming.timingdata.TimingData.ManualRegistration;
 import io.github.brainboxemb.eventtiming.timingdata.LocationId;
 import io.github.brainboxemb.eventtiming.timingdata.RegistrationId;
@@ -29,6 +30,73 @@ public class TimingNodeRegistrationTest {
             TimingTimestamp.parse("2026-10-01T12:00:00.000000000Z");
     private static final TimingTimestamp RECORDED_AT =
             TimingTimestamp.parse("2026-10-01T12:00:01.000000000Z");
+
+    @Test
+    public void commitsAcceptedRegistrationAsAutomaticTimingData() {
+        RecordingStore store = new RecordingStore();
+        TimingNode node = node(store);
+        List<TimingData> delivered = new ArrayList<>();
+        node.subscribeNewTimingData(delivered::add);
+
+        node.start();
+        try {
+            node.setLocation(new LocationId(24));
+            node.open();
+
+            RegistrationId registrationId = new RegistrationId("1001");
+            TimingNode.RegistrationResult result =
+                    node.registerAccepted(registrationId, EFFECTIVE_TIME);
+
+            assertTrue(result.committed());
+            assertTrue(result.timingData() instanceof AutomaticRegistration);
+            AutomaticRegistration data =
+                    (AutomaticRegistration) result.timingData();
+            assertEquals("timing-node-01", data.timingNodeId());
+            assertEquals(1L, data.sequenceNumber());
+            assertEquals(new LocationId(24), data.locationId());
+            assertEquals(EFFECTIVE_TIME, data.effectiveTime());
+            assertEquals(RECORDED_AT, data.recordedAt());
+            assertSame(registrationId, data.registrationId());
+
+            assertEquals(1, store.appended.size());
+            assertSame(data, store.appended.get(0));
+            assertEquals(1, node.timingDataSnapshot().size());
+            assertSame(data, delivered.get(0));
+        } finally {
+            node.stop();
+        }
+    }
+
+    @Test
+    public void acceptedRegistrationWhileClosedIsRejectedWithoutCommit() {
+        RecordingStore store = new RecordingStore();
+        TimingNode node = node(store);
+
+        node.start();
+        try {
+            node.setLocation(new LocationId(24));
+
+            TimingNode.RegistrationResult rejected =
+                    node.registerAccepted(
+                            new RegistrationId("1001"),
+                            EFFECTIVE_TIME);
+
+            assertEquals(
+                    TimingNode.RegistrationResult.Outcome.NODE_NOT_OPEN,
+                    rejected.outcome());
+            assertEquals(0, store.attempts);
+            assertTrue(node.timingDataSnapshot().isEmpty());
+
+            node.open();
+            TimingNode.RegistrationResult committed =
+                    node.registerAccepted(
+                            new RegistrationId("1002"),
+                            EFFECTIVE_TIME);
+            assertEquals(1L, committed.timingData().sequenceNumber());
+        } finally {
+            node.stop();
+        }
+    }
 
     @Test
     public void commitsManualRegistrationAfterStoreAppend() {
@@ -82,10 +150,9 @@ public class TimingNodeRegistrationTest {
             node.setLocation(new LocationId(24));
             node.open();
 
-            TimingNode.RegistrationResult first = node.registerManual(
+            TimingNode.RegistrationResult first = node.registerAccepted(
                     new RegistrationId("1001"),
-                    EFFECTIVE_TIME,
-                    ManualTimeSource.SYSTEM_ASSIGNED);
+                    EFFECTIVE_TIME);
             TimingNode.RegistrationResult second = node.registerManual(
                     new RegistrationId("1002"),
                     EFFECTIVE_TIME,
