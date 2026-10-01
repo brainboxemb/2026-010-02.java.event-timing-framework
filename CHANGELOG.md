@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Add a small typed local `Event<T>` primitive and publish newly committed TimingData after durable store append and LogBook visibility; listener RuntimeExceptions are isolated and reported without rolling back the commit.
+
 - Rebuild LogBook from committed TimingData before the TimingNode serial worker starts; preserve CLOSED/no-location restart policy and expose repaired incomplete-tail recovery in TimingNode status.
 
 - Add append-only `FileTimingDataStore` with canonical LF framing, `FileChannel.force(true)` append gating, contiguous-stream validation and explicit incomplete-tail recovery reporting.

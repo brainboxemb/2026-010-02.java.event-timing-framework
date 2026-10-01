@@ -10,15 +10,20 @@ import io.github.brainboxemb.eventtiming.timingdata.TimingTimestamp;
 import io.github.brainboxemb.eventtiming.timingpoint.domain.logbook.LogBook;
 import io.github.brainboxemb.eventtiming.timingpoint.domain.system.TimeSource;
 import io.github.brainboxemb.eventtiming.timingpoint.domain.timingdata.TimingDataStore;
+import io.github.brainboxemb.eventtiming.timingpoint.platform.events.Event;
 import io.github.brainboxemb.eventtiming.timingpoint.platform.execution.SerialWorker;
 
 import java.util.List;
+import java.util.function.Consumer;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Logical timing unit that owns its mutable state behind one serial execution lane.
@@ -28,6 +33,7 @@ import java.util.concurrent.TimeoutException;
  * recovery is the serial worker started and operational work accepted.</p>
  */
 public final class TimingNode {
+    private static final Logger LOG = LoggerFactory.getLogger(TimingNode.class);
     private static final int DEFAULT_QUEUE_CAPACITY = 32;
     private static final long DEFAULT_OPERATION_TIMEOUT_MILLIS = 2000L;
 
@@ -186,6 +192,7 @@ public final class TimingNode {
     private final TimingDataStore timingDataStore;
     private final TimingDataFactory timingDataFactory;
     private final TimeSource timeSource;
+    private final Event<TimingData> newTimingDataEvent = new Event<>();
 
     private Lifecycle lifecycle = Lifecycle.CLOSED;
     private LocationId locationId;
@@ -342,6 +349,34 @@ public final class TimingNode {
                 "registerManual");
     }
 
+    /**
+     * Subscribes to TimingData committed after this subscription.
+     *
+     * <p>No historical LogBook replay occurs here. The listener runs synchronously
+     * on the TimingNode serial lane after durable append and LogBook visibility.
+     * It must therefore return quickly. Network I/O, retry or other potentially
+     * blocking work must be handed to the listener's own bounded mechanism.</p>
+     *
+     * <p>An ordinary RuntimeException from a listener is isolated by the event
+     * primitive and does not roll back the already committed TimingData.</p>
+     *
+     * @return true when the listener was newly subscribed
+     */
+    public boolean subscribeNewTimingData(Consumer<TimingData> listener) {
+        requireTimingDataSupport("subscribeNewTimingData");
+        return newTimingDataEvent.subscribe(listener);
+    }
+
+    /**
+     * Removes a previously registered new-TimingData listener.
+     *
+     * @return true when an existing subscription was removed
+     */
+    public boolean unsubscribeNewTimingData(Consumer<TimingData> listener) {
+        requireTimingDataSupport("unsubscribeNewTimingData");
+        return newTimingDataEvent.unsubscribe(listener);
+    }
+
     public List<TimingData> timingDataSnapshot() {
         requireTimingDataSupport("timingDataSnapshot");
         return execute(logBook::snapshot, "timingDataSnapshot");
@@ -419,6 +454,21 @@ public final class TimingNode {
         } catch (RuntimeException ex) {
             timingDataCommitFailure = ex;
             throw ex;
+        }
+
+        // Notification is post-commit. Listener RuntimeExceptions are isolated
+        // by Event and must never turn this successful persistence operation
+        // into a failed domain result.
+        Event.DeliveryReport delivery = newTimingDataEvent.emit(data);
+        if (!delivery.successful()) {
+            LOG.warn(
+                    "TimingData committed but "
+                            + delivery.failureCount()
+                            + " newTimingData listener(s) failed for "
+                            + timingNodeId.value()
+                            + ":"
+                            + data.sequenceNumber(),
+                    delivery.failures().get(0));
         }
 
         return RegistrationResult.committed(data);

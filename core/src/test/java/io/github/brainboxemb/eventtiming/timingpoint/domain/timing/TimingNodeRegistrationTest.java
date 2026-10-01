@@ -174,6 +174,131 @@ public class TimingNodeRegistrationTest {
         }
     }
 
+
+    @Test
+    public void emitsOnlyAfterSuccessfulCommitAndSupportsUnsubscribe() {
+        RecordingStore store = new RecordingStore();
+        TimingNode node = node(store);
+        List<TimingData> delivered = new ArrayList<>();
+        java.util.function.Consumer<TimingData> listener = delivered::add;
+
+        assertTrue(node.subscribeNewTimingData(listener));
+
+        node.start();
+        try {
+            node.setLocation(new LocationId(24));
+
+            TimingNode.RegistrationResult rejected = node.registerManual(
+                    new RegistrationId("1001"),
+                    EFFECTIVE_TIME,
+                    ManualTimeSource.OPERATOR_ENTERED);
+            assertEquals(
+                    TimingNode.RegistrationResult.Outcome.NODE_NOT_OPEN,
+                    rejected.outcome());
+            assertTrue(delivered.isEmpty());
+
+            node.open();
+            TimingNode.RegistrationResult committed = node.registerManual(
+                    new RegistrationId("1002"),
+                    EFFECTIVE_TIME,
+                    ManualTimeSource.OPERATOR_ENTERED);
+
+            assertEquals(1, store.appended.size());
+            assertEquals(1, node.timingDataSnapshot().size());
+            assertEquals(1, delivered.size());
+            assertSame(committed.timingData(), delivered.get(0));
+
+            assertTrue(node.unsubscribeNewTimingData(listener));
+            node.registerManual(
+                    new RegistrationId("1003"),
+                    EFFECTIVE_TIME,
+                    ManualTimeSource.OPERATOR_ENTERED);
+            assertEquals(1, delivered.size());
+        } finally {
+            node.stop();
+        }
+    }
+
+    @Test
+    public void appendFailureDoesNotEmitTimingData() {
+        RecordingStore store = new RecordingStore();
+        store.failNext = true;
+        TimingNode node = node(store);
+        List<TimingData> delivered = new ArrayList<>();
+        node.subscribeNewTimingData(delivered::add);
+
+        node.start();
+        try {
+            node.setLocation(new LocationId(24));
+            node.open();
+
+            try {
+                node.registerManual(
+                        new RegistrationId("1001"),
+                        EFFECTIVE_TIME,
+                        ManualTimeSource.OPERATOR_ENTERED);
+                fail("expected persistence failure");
+            } catch (TimingNode.OperationException expected) {
+                assertEquals(
+                        TimingNode.OperationException.Reason.FAILED,
+                        expected.reason());
+            }
+
+            assertTrue(delivered.isEmpty());
+            assertEquals(0, node.timingDataSnapshot().size());
+        } finally {
+            node.stop();
+        }
+    }
+
+    @Test
+    public void listenerRuntimeFailureDoesNotRollbackCommitOrBlockLaterListener() {
+        RecordingStore store = new RecordingStore();
+        TimingNode node = node(store);
+        List<TimingData> delivered = new ArrayList<>();
+
+        node.subscribeNewTimingData(data -> {
+            throw new IllegalStateException("expected listener failure");
+        });
+        node.subscribeNewTimingData(delivered::add);
+
+        node.start();
+        try {
+            node.setLocation(new LocationId(24));
+            node.open();
+
+            TimingNode.RegistrationResult committed = node.registerManual(
+                    new RegistrationId("1001"),
+                    EFFECTIVE_TIME,
+                    ManualTimeSource.SYSTEM_ASSIGNED);
+
+            assertTrue(committed.committed());
+            assertEquals(1, store.appended.size());
+            assertEquals(1, node.timingDataSnapshot().size());
+            assertEquals(1, delivered.size());
+            assertSame(committed.timingData(), delivered.get(0));
+        } finally {
+            node.stop();
+        }
+    }
+
+    @Test
+    public void recoveryDoesNotReplayNewTimingDataEvent() {
+        RecordingStore store = new RecordingStore();
+        store.loaded.add(recoveredData(1L, 11));
+        TimingNode node = node(store);
+        List<TimingData> delivered = new ArrayList<>();
+        node.subscribeNewTimingData(delivered::add);
+
+        node.start();
+        try {
+            assertEquals(1, node.timingDataSnapshot().size());
+            assertTrue(delivered.isEmpty());
+        } finally {
+            node.stop();
+        }
+    }
+
     @Test
     public void startupRecoversCommittedLogBookAndContinuesSequence() {
         RecordingStore store = new RecordingStore();
