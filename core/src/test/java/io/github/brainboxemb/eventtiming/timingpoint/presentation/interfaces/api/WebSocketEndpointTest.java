@@ -103,12 +103,12 @@ public class WebSocketEndpointTest {
             String located = client.awaitMessage();
             assertTrue(located.contains("\"eventType\":\"STATUS_CHANGED\""));
             assertTrue(located.contains("\"locationId\":24"));
-            assertTrue(located.contains("\"lifecycle\":\"CLOSED\""));
+            assertTrue(located.contains("\"state\":\"CLOSED\""));
 
             fixture.handler.open();
             String opened = client.awaitMessage();
             assertTrue(opened.contains("\"eventType\":\"STATUS_CHANGED\""));
-            assertTrue(opened.contains("\"lifecycle\":\"OPEN\""));
+            assertTrue(opened.contains("\"state\":\"OPEN\""));
 
             fixture.handler.registerAccepted(
                     new RegistrationId("sample-001"),
@@ -145,9 +145,9 @@ public class WebSocketEndpointTest {
         assertNotNull(json);
         assertTrue(json.contains("\"eventType\":\"STATUS_SNAPSHOT\""));
         assertTrue(json.contains("\"occurredAt\":\"2026-10-01T12:00:02Z\""));
-        assertTrue(json.contains("\"timingNodeId\":\"" + timingNodeId + "\""));
+        assertTrue(json.contains("\"id\":\"" + timingNodeId + "\""));
         assertTrue(json.contains("\"locationId\":" + locationJson));
-        assertTrue(json.contains("\"lifecycle\":\"" + lifecycle + "\""));
+        assertTrue(json.contains("\"state\":\"" + lifecycle + "\""));
         assertTrue(json.contains("\"problems\":[]"));
     }
 
