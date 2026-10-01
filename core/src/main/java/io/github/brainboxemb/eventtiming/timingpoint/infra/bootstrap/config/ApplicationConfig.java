@@ -53,6 +53,9 @@ public final class ApplicationConfig {
         if (presentation == null) {
             throw new IllegalArgumentException("presentation must not be null");
         }
+        if (timingDataPath != null && timingDataPath.toString().trim().isEmpty()) {
+            throw new IllegalArgumentException("timingDataPath must not be empty");
+        }
         this.timingNodeId = timingNodeId;
         this.presentation = presentation;
         this.logging = logging;
