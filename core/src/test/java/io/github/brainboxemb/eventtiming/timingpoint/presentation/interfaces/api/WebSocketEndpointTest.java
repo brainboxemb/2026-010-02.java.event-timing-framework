@@ -45,7 +45,7 @@ public class WebSocketEndpointTest {
         fixture.handler.setLocation(new LocationId(24));
         fixture.handler.open();
         fixture.handler.registerAccepted(
-                new RegistrationId("sample-before-connect"),
+                new RegistrationId("N000"),
                 OBSERVATION_TIME);
 
         WebSocketEndpoint server = new WebSocketEndpoint(
@@ -111,7 +111,7 @@ public class WebSocketEndpointTest {
             assertTrue(opened.contains("\"state\":\"OPEN\""));
 
             fixture.handler.registerAccepted(
-                    new RegistrationId("sample-001"),
+                    new RegistrationId("N001"),
                     OBSERVATION_TIME);
             String committed = client.awaitMessage();
             assertTrue(committed.contains(
@@ -119,7 +119,7 @@ public class WebSocketEndpointTest {
             assertTrue(committed.contains("\"sequenceNumber\":1"));
             assertTrue(committed.contains("\"locationId\":24"));
             assertTrue(committed.contains(
-                    "\"registrationId\":\"sample-001\""));
+                    "\"registrationId\":\"N001\""));
             assertTrue(committed.contains("\"origin\":\"AUTOMATIC\""));
             assertTrue(committed.contains(
                     "\"occurredAt\":\"2026-10-01T12:00:02Z\""));
