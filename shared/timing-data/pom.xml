@@ -7,6 +7,7 @@
     <groupId>io.github.brainboxemb.eventtiming</groupId>
     <artifactId>event-timing-parent</artifactId>
     <version>0.2.3-SNAPSHOT</version>
+    <relativePath>../../pom.xml</relativePath>
   </parent>
 
   <artifactId>event-timing-data</artifactId>
