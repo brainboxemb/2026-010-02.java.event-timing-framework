@@ -5,41 +5,80 @@ import java.time.Instant;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 class ApiEventClientTest {
     @Test
-    void parsesCompleteIf03StatusEvent() throws Exception {
+    void parsesCompactStatusSnapshot() throws Exception {
         String json = "{"
-                + "\"apiVersion\":\"1\","
                 + "\"eventType\":\"STATUS_SNAPSHOT\","
-                + "\"occurredAt\":\"2026-09-25T15:00:00Z\","
+                + "\"occurredAt\":\"2026-10-01T12:00:02Z\","
                 + "\"payload\":{"
-                + "\"apiVersion\":\"1\","
-                + "\"build\":{"
-                + "\"application\":\"event-timing-app\","
-                + "\"version\":\"0.2.2-SNAPSHOT\","
-                + "\"revision\":\"abc123\","
-                + "\"sourceRef\":\"feature/test\","
-                + "\"buildOrigin\":\"local\","
-                + "\"dirty\":false,"
-                + "\"apiVersion\":\"1\""
-                + "},"
-                + "\"timingNodes\":[{"
-                + "\"timingNodeId\":\"timing-node-01\","
-                + "\"lifecycle\":\"CLOSED\""
+                + "\"nodes\":[{"
+                + "\"id\":\"timing-node-01\","
+                + "\"locationId\":24,"
+                + "\"state\":\"OPEN\""
                 + "}],"
                 + "\"problems\":[]"
                 + "}"
                 + "}";
 
-        var event = ApiEventClient.parseEvent(json);
+        ApiEventClient.ApiEvent parsed = ApiEventClient.parseEvent(json);
+        var event = assertInstanceOf(ApiEventClient.StatusEvent.class, parsed);
 
         assertEquals("STATUS_SNAPSHOT", event.eventType());
-        assertEquals(Instant.parse("2026-09-25T15:00:00Z"), event.occurredAt());
-        assertEquals("event-timing-app", event.status().build().application());
-        assertEquals("timing-node-01", event.status().timingNodes().get(0).timingNodeId());
-        assertEquals("CLOSED", event.status().timingNodes().get(0).lifecycle());
+        assertEquals(Instant.parse("2026-10-01T12:00:02Z"), event.occurredAt());
+        assertEquals("timing-node-01", event.status().nodes().get(0).id());
+        assertEquals(24, event.status().nodes().get(0).locationId());
+        assertEquals("OPEN", event.status().nodes().get(0).state());
+        assertEquals(json, event.rawJson());
+    }
+
+    @Test
+    void parsesCommittedTimingDataEvent() throws Exception {
+        String json = "{"
+                + "\"eventType\":\"TIMING_DATA_COMMITTED\","
+                + "\"occurredAt\":\"2026-10-01T12:00:02Z\","
+                + "\"payload\":{"
+                + "\"version\":1,"
+                + "\"timingNodeId\":\"timing-node-01\","
+                + "\"sequenceNumber\":3,"
+                + "\"locationId\":24,"
+                + "\"recordType\":\"REGISTRATION\","
+                + "\"effectiveTime\":\"2026-10-01T12:00:00.000000000Z\","
+                + "\"recordedAt\":\"2026-10-01T12:00:00.125000000Z\","
+                + "\"registrationId\":\"N003\","
+                + "\"origin\":\"AUTOMATIC\","
+                + "\"timeSource\":\"OBSERVED\""
+                + "}"
+                + "}";
+
+        ApiEventClient.ApiEvent parsed = ApiEventClient.parseEvent(json);
+        var event = assertInstanceOf(ApiEventClient.TimingDataEvent.class, parsed);
+
+        assertEquals("TIMING_DATA_COMMITTED", event.eventType());
+        assertEquals("timing-node-01", event.timingData().timingNodeId());
+        assertEquals(3L, event.timingData().sequenceNumber());
+        assertEquals("N003", event.timingData().registrationId());
+        assertEquals(
+                new ApiClient.TimingDataKey("timing-node-01", 3L),
+                event.timingData().key());
+    }
+
+    @Test
+    void preservesUnknownEventForDiagnostics() throws Exception {
+        String json = "{"
+                + "\"eventType\":\"FUTURE_EVENT\","
+                + "\"occurredAt\":\"2026-10-01T12:00:02Z\","
+                + "\"payload\":{\"value\":1}"
+                + "}";
+
+        ApiEventClient.ApiEvent parsed = ApiEventClient.parseEvent(json);
+        var event = assertInstanceOf(ApiEventClient.UnknownEvent.class, parsed);
+
+        assertEquals("FUTURE_EVENT", event.eventType());
+        assertEquals("{\"value\":1}", event.payloadJson());
         assertEquals(json, event.rawJson());
     }
 
@@ -63,7 +102,7 @@ class ApiEventClientTest {
         }
 
         @Override
-        public void onEvent(ApiEventClient.StatusEvent event) {
+        public void onEvent(ApiEventClient.ApiEvent event) {
         }
 
         @Override
