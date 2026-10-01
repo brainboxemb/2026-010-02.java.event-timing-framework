@@ -19,7 +19,13 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
-/** Logical timing unit that owns its mutable state behind one serial execution lane. */
+/**
+ * Logical timing unit that owns its mutable state behind one serial execution lane.
+ *
+ * <p>When TimingData support is configured, {@link #start()} first restores the
+ * committed TimingData stream into the passive LogBook. Only after successful
+ * recovery is the serial worker started and operational work accepted.</p>
+ */
 public final class TimingNode {
     private static final int DEFAULT_QUEUE_CAPACITY = 32;
     private static final long DEFAULT_OPERATION_TIMEOUT_MILLIS = 2000L;
@@ -87,14 +93,17 @@ public final class TimingNode {
         private final TimingNodeId timingNodeId;
         private final Lifecycle lifecycle;
         private final LocationId locationId;
+        private final boolean timingDataTailRecovered;
 
         private Status(
                 TimingNodeId timingNodeId,
                 Lifecycle lifecycle,
-                LocationId locationId) {
+                LocationId locationId,
+                boolean timingDataTailRecovered) {
             this.timingNodeId = timingNodeId;
             this.lifecycle = lifecycle;
             this.locationId = locationId;
+            this.timingDataTailRecovered = timingDataTailRecovered;
         }
 
         public TimingNodeId timingNodeId() {
@@ -111,6 +120,23 @@ public final class TimingNode {
 
         public LocationId locationId() {
             return locationId;
+        }
+
+        /**
+         * Returns whether startup repaired one incomplete unterminated TimingData tail.
+         *
+         * <p>This is a recovery diagnostic only; it does not mean a complete
+         * committed record was discarded.</p>
+         */
+        public boolean timingDataTailRecovered() {
+            return timingDataTailRecovered;
+        }
+    }
+
+    /** Startup failure before the TimingNode begins accepting serial work. */
+    public static final class StartupException extends RuntimeException {
+        private StartupException(String message, Throwable cause) {
+            super(message, cause);
         }
     }
 
@@ -162,6 +188,8 @@ public final class TimingNode {
 
     private Lifecycle lifecycle = Lifecycle.CLOSED;
     private LocationId locationId;
+    private boolean timingDataTailRecovered;
+    private Throwable startupFailure;
     private Throwable timingDataCommitFailure;
 
     public TimingNode(TimingNodeId timingNodeId) {
@@ -248,7 +276,27 @@ public final class TimingNode {
         return timingNodeId;
     }
 
+    /**
+     * Restores committed TimingData, when configured, and then starts the serial worker.
+     *
+     * <p>Recovery never reopens the node and never restores an operational
+     * LocationId from historical TimingData. The node starts CLOSED and location
+     * selection remains an explicit current-session operation.</p>
+     *
+     * @throws StartupException when TimingData recovery/rebuild fails
+     */
     public void start() {
+        if (serialWorker.state() != SerialWorker.State.NEW) {
+            throw new IllegalStateException(
+                    "TimingNode can only start once; worker state=" + serialWorker.state());
+        }
+        if (startupFailure != null) {
+            throw new StartupException(
+                    "TimingNode cannot restart after failed TimingData recovery",
+                    startupFailure);
+        }
+
+        recoverTimingData();
         serialWorker.start();
     }
 
@@ -375,8 +423,31 @@ public final class TimingNode {
         return RegistrationResult.committed(data);
     }
 
+    private void recoverTimingData() {
+        if (logBook == null) {
+            return;
+        }
+
+        try {
+            TimingDataStore.LoadResult loadResult = timingDataStore.load();
+            for (TimingData data : loadResult.records()) {
+                logBook.add(data);
+            }
+            timingDataTailRecovered = loadResult.repairedIncompleteTail();
+        } catch (TimingDataStore.StoreException | RuntimeException ex) {
+            startupFailure = ex;
+            throw new StartupException(
+                    "TimingData recovery failed for " + timingNodeId.value(),
+                    ex);
+        }
+    }
+
     private Status snapshotStatus() {
-        return new Status(timingNodeId, lifecycle, locationId);
+        return new Status(
+                timingNodeId,
+                lifecycle,
+                locationId,
+                timingDataTailRecovered);
     }
 
     private void requireTimingDataSupport(String operation) {
