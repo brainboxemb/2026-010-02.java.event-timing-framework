@@ -6,7 +6,7 @@ import java.util.Objects;
  * Stable IF-05 record identity: serialized TimingNode identity plus source sequence number.
  *
  * <p>This shared interchange type deliberately stores the TimingNode identity as the public
- * string value. SI-01 keeps its stronger Domain TimingNodeId type inside the framework and maps
+ * string value. SI-01 keeps its stronger Domain TimingNodeId type inside the application core and maps
  * that value at the TimingData boundary.</p>
  */
 public final class TimingDataRecordKey {
