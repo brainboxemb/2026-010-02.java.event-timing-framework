@@ -6,7 +6,7 @@ Project-wide planning, requirements, architecture, interface design and verifica
 
 ## Current scope
 
-This repository is the public implementation repository for **SI-01 — Timing Point Application**. `v0.2.2` is the accepted SIP Step-3 application/API foundation baseline; normal development continues on `0.2.3-SNAPSHOT` while Step 4 begins. The baseline provides external YAML configuration, long-running process lifecycle, shared local/remote terminal semantics, IF-03 HTTP/WebSocket version and status, runtime logging/live diagnostics, and automated separate-process system verification. Timing-domain behaviour plus RFID, CAN, display and backoffice integrations remain later-step work.
+This repository is the public implementation repository for **SI-01 — Timing Point Application**. `v0.2.2` is the accepted SIP Step-3 application/API foundation baseline; development continues on `0.2.3-SNAPSHOT`. Step 4 now adds the first controlled registration slice: TimingNode location/open/close behaviour, committed TimingData + LogBook persistence, compact node-addressed IF-03 control/LogBook/live resources, the Engineering Client Timing view and separate-process VC-ST1-002 verification. RFID/antenna input, CAN/display behaviour and real upstream/backoffice integration remain later-step work.
 
 ## Artifact and package model
 
@@ -268,11 +268,15 @@ With JDK 17 selected:
 ```
 
 The **Status** tab defaults to `http://127.0.0.1:8081` and provides **Get Version** and
-**Get Status** with parsed fields plus raw JSON. The A07 **Events** tab defaults to
-`ws://127.0.0.1:8082/api/v1/events` and displays the connection state, latest parsed event and
-raw event stream. The **Terminal** tab connects directly to the A05 development shell on
+**Get Status** with parsed fields plus raw JSON. The **Events** tab defaults to
+`ws://127.0.0.1:8082/api/v1/events` and shows status plus committed TimingData events.
+The Step-4 **Timing** tab addresses a selected TimingNode, controls LocationId/open/close,
+provides capability-gated dev `auto-reg`, and rebuilds bounded LogBook state across
+reconnect. The **Terminal** tab connects directly to the development shell on
 `127.0.0.1:8023`, so manual shell verification does not require a separate PuTTY session.
-See `test-client/README.md`.
+
+See `test-client/README.md`; the formal Step-4 V04 manual flow is in
+`test-client/STEP4-DEMO.md`.
 
 
 ## Local checkout and project tooling
@@ -317,11 +321,14 @@ launch the separate application process. Deliberate full system verification is 
 ./mvnw verify -Psystem-test
 ```
 
-That profile adds `system-test` after the application JAR has been packaged. The test launches
-the JAR as a child JVM with temporary loopback ports, verifies IF-03 `/version`, `/status`,
-WebSocket snapshot/reconnect behaviour, and then shuts the process down through the remote
-terminal `quit` command. The verifier does not import core/application classes, so this
-remains a process-level black-box check rather than another in-process component test.
+That profile adds `system-test` after the application JAR has been packaged. VC-ST1-001
+launches the JAR as a child JVM with temporary loopback ports and verifies version, compact
+status, WebSocket snapshot/reconnect and controlled shutdown. VC-ST1-002 drives the Step-4
+public registration flow through IF-03: capabilities, LocationId/open/close, invalid
+OPEN-state location change, dev `auto-reg`, live committed TimingData, bounded LogBook
+recovery and reconnect without historical live replay. The verifier imports no
+core/application classes, so this remains process-level black-box verification rather than
+another in-process component test.
 
 Use `update-repo.ps1` / `update-repo.sh` for a controlled dependency-alignment pass after changing refs in `project.yml`. The generic tool refuses to overwrite local changes inside a managed dependency.
 
@@ -364,7 +371,7 @@ The command-line split is:
 # Normal product verification: core/app tests, no separate process launch
 .\mvnw.cmd verify
 
-# Deliberate VC-ST1-001 black-box verification
+# Deliberate VC-ST1 black-box verification (VC-ST1-001 + VC-ST1-002)
 .\mvnw.cmd verify -Psystem-test
 
 java -jar app\target\event-timing-app-0.2.3-SNAPSHOT.jar config\application.yml
@@ -531,8 +538,8 @@ The exact tag is the release qualification boundary. Tag verification always per
 ```text
 exact tagged Linux canonical Maven build
 native Windows Maven verify       (parallel with Linux)
-explicit VC-ST1-001 profile verify on Linux
-explicit VC-ST1-001 profile verify on Windows
+explicit VC-ST1 profile verify on Linux
+explicit VC-ST1 profile verify on Windows
 exact Linux-produced app JAR smoke on Windows
 rel/vX.Y.Z/bld publication
 product artifact/build-identity validation
