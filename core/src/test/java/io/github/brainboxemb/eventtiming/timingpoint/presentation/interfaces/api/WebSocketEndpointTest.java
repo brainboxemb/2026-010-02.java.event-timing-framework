@@ -1,98 +1,132 @@
 package io.github.brainboxemb.eventtiming.timingpoint.presentation.interfaces.api;
 
-import io.github.brainboxemb.eventtiming.timingpoint.application.ApplicationStatus;
+import io.github.brainboxemb.eventtiming.timingdata.LocationId;
+import io.github.brainboxemb.eventtiming.timingdata.RegistrationId;
+import io.github.brainboxemb.eventtiming.timingdata.TimingData;
+import io.github.brainboxemb.eventtiming.timingdata.TimingNodeId;
+import io.github.brainboxemb.eventtiming.timingdata.TimingTimestamp;
+import io.github.brainboxemb.eventtiming.timingdata.defaultprofile.DefaultTimingDataFactory;
 import io.github.brainboxemb.eventtiming.timingpoint.application.CommandHandler;
 import io.github.brainboxemb.eventtiming.timingpoint.domain.timing.TimingNode;
-import io.github.brainboxemb.eventtiming.timingdata.TimingNodeId;
+import io.github.brainboxemb.eventtiming.timingpoint.domain.timingdata.TimingDataStore;
 import io.github.brainboxemb.eventtiming.timingpoint.infra.BuildIdentity;
 
 import java.net.URI;
 import java.time.Clock;
 import java.time.Instant;
 import java.time.ZoneOffset;
+import java.util.Collections;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicReference;
 
 import org.java_websocket.client.WebSocketClient;
 import org.java_websocket.handshake.ServerHandshake;
 import org.junit.Test;
 
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 public class WebSocketEndpointTest {
+    private static final TimingTimestamp OBSERVATION_TIME =
+            TimingTimestamp.parse("2026-10-01T12:00:00.000000000Z");
+    private static final TimingTimestamp RECORDED_AT =
+            TimingTimestamp.parse("2026-10-01T12:00:01.000000000Z");
+    private static final Clock EVENT_CLOCK =
+            Clock.fixed(Instant.parse("2026-10-01T12:00:02Z"), ZoneOffset.UTC);
+
     @Test
-    public void sendsCompleteSnapshotOnConnectAndReconnect() throws Exception {
-        AtomicReference<ApplicationStatus> status = new AtomicReference<>(status("timing-node-01"));
-        WebSocketEndpoint server = server(status);
+    public void sendsCompleteSnapshotOnConnectAndReconnectWithoutHistoryReplay()
+            throws Exception {
+        Fixture fixture = new Fixture();
+        fixture.start();
+
+        // Commit history before the WebSocket endpoint/client exists.
+        fixture.handler.setLocation(new LocationId(24));
+        fixture.handler.open();
+        fixture.handler.registerAccepted(
+                new RegistrationId("sample-before-connect"),
+                OBSERVATION_TIME);
+
+        WebSocketEndpoint server = new WebSocketEndpoint(
+                "127.0.0.1",
+                0,
+                fixture.handler,
+                EVENT_CLOCK);
         server.start();
 
         try {
-            String first = connectAndReceiveSnapshot(server.boundPort());
-            assertSnapshot(first, "timing-node-01");
+            TestClient first = connect(server.boundPort());
+            try {
+                String snapshot = first.awaitMessage();
+                assertSnapshot(snapshot, "timing-node-01", "OPEN", "24");
+                assertNull(first.pollMessage(250));
+            } finally {
+                first.closeBlocking();
+            }
 
-            String second = connectAndReceiveSnapshot(server.boundPort());
-            assertSnapshot(second, "timing-node-01");
+            TestClient second = connect(server.boundPort());
+            try {
+                String snapshot = second.awaitMessage();
+                assertSnapshot(snapshot, "timing-node-01", "OPEN", "24");
+                assertNull(second.pollMessage(250));
+            } finally {
+                second.closeBlocking();
+            }
         } finally {
             server.close();
+            fixture.close();
         }
     }
 
     @Test
-    public void broadcastsCompleteStatusChangedEvent() throws Exception {
-        AtomicReference<ApplicationStatus> status = new AtomicReference<>(status("timing-node-01"));
-        WebSocketEndpoint server = server(status);
+    public void broadcastsStatusChangesAndCommittedTimingDataAutomatically()
+            throws Exception {
+        Fixture fixture = new Fixture();
+        fixture.start();
+        WebSocketEndpoint server = new WebSocketEndpoint(
+                "127.0.0.1",
+                0,
+                fixture.handler,
+                EVENT_CLOCK);
         server.start();
         TestClient client = connect(server.boundPort());
 
         try {
-            assertSnapshot(client.awaitMessage(), "timing-node-01");
+            assertSnapshot(
+                    client.awaitMessage(),
+                    "timing-node-01",
+                    "CLOSED",
+                    "null");
 
-            status.set(status("timing-node-02"));
-            server.publishStatusChanged();
+            fixture.handler.setLocation(new LocationId(24));
+            String located = client.awaitMessage();
+            assertTrue(located.contains("\"eventType\":\"STATUS_CHANGED\""));
+            assertTrue(located.contains("\"locationId\":24"));
+            assertTrue(located.contains("\"lifecycle\":\"CLOSED\""));
 
-            String changed = client.awaitMessage();
-            assertTrue(changed.contains("\"eventType\":\"STATUS_CHANGED\""));
-            assertTrue(changed.contains("\"timingNodeId\":\"timing-node-02\""));
-            assertTrue(changed.contains("\"lifecycle\":\"CLOSED\""));
+            fixture.handler.open();
+            String opened = client.awaitMessage();
+            assertTrue(opened.contains("\"eventType\":\"STATUS_CHANGED\""));
+            assertTrue(opened.contains("\"lifecycle\":\"OPEN\""));
+
+            fixture.handler.registerAccepted(
+                    new RegistrationId("sample-001"),
+                    OBSERVATION_TIME);
+            String committed = client.awaitMessage();
+            assertTrue(committed.contains(
+                    "\"eventType\":\"TIMING_DATA_COMMITTED\""));
+            assertTrue(committed.contains("\"sequenceNumber\":1"));
+            assertTrue(committed.contains("\"locationId\":24"));
+            assertTrue(committed.contains(
+                    "\"registrationId\":\"sample-001\""));
+            assertTrue(committed.contains("\"origin\":\"AUTOMATIC\""));
+            assertTrue(committed.contains(
+                    "\"occurredAt\":\"2026-10-01T12:00:02Z\""));
         } finally {
             client.closeBlocking();
             server.close();
-        }
-    }
-
-    private static WebSocketEndpoint server(
-            AtomicReference<ApplicationStatus> status) {
-        BuildIdentity identity = BuildIdentity.firstApiVersion(
-                "event-timing-app",
-                "test-version",
-                "abc123def456",
-                "feature/test",
-                "local",
-                false);
-        CommandHandler handler = new CommandHandler(identity, status::get);
-        return new WebSocketEndpoint(
-                "127.0.0.1",
-                0,
-                handler,
-                Clock.fixed(Instant.parse("2026-09-25T15:00:00Z"), ZoneOffset.UTC));
-    }
-
-    private static ApplicationStatus status(String timingNodeId) {
-        return new ApplicationStatus(
-                new TimingNodeId(timingNodeId),
-                TimingNode.Lifecycle.CLOSED);
-    }
-
-    private static String connectAndReceiveSnapshot(int port) throws Exception {
-        TestClient client = connect(port);
-        try {
-            String message = client.awaitMessage();
-            assertSnapshot(message, "timing-node-01");
-            return message;
-        } finally {
-            client.closeBlocking();
+            fixture.close();
         }
     }
 
@@ -103,13 +137,62 @@ public class WebSocketEndpointTest {
         return client;
     }
 
-    private static void assertSnapshot(String json, String timingNodeId) {
+    private static void assertSnapshot(
+            String json,
+            String timingNodeId,
+            String lifecycle,
+            String locationJson) {
         assertNotNull(json);
         assertTrue(json.contains("\"eventType\":\"STATUS_SNAPSHOT\""));
-        assertTrue(json.contains("\"occurredAt\":\"2026-09-25T15:00:00Z\""));
+        assertTrue(json.contains("\"occurredAt\":\"2026-10-01T12:00:02Z\""));
         assertTrue(json.contains("\"timingNodeId\":\"" + timingNodeId + "\""));
-        assertTrue(json.contains("\"lifecycle\":\"CLOSED\""));
+        assertTrue(json.contains("\"locationId\":" + locationJson));
+        assertTrue(json.contains("\"lifecycle\":\"" + lifecycle + "\""));
         assertTrue(json.contains("\"problems\":[]"));
+    }
+
+    private static BuildIdentity identity() {
+        return BuildIdentity.firstApiVersion(
+                "event-timing-app",
+                "test-version",
+                "abc123def456",
+                "feature/test",
+                "local",
+                false);
+    }
+
+    private static final class Fixture implements AutoCloseable {
+        private final TimingNode node;
+        private final CommandHandler handler;
+
+        private Fixture() {
+            node = new TimingNode(
+                    new TimingNodeId("timing-node-01"),
+                    new MemoryStore(),
+                    new DefaultTimingDataFactory(),
+                    () -> RECORDED_AT);
+            handler = new CommandHandler(identity(), node);
+        }
+
+        private void start() {
+            node.start();
+        }
+
+        @Override
+        public void close() {
+            node.stop();
+        }
+    }
+
+    private static final class MemoryStore implements TimingDataStore {
+        @Override
+        public LoadResult load() {
+            return new LoadResult(Collections.<TimingData>emptyList(), false);
+        }
+
+        @Override
+        public void append(TimingData data) {
+        }
     }
 
     private static final class TestClient extends WebSocketClient {
@@ -121,6 +204,10 @@ public class WebSocketEndpointTest {
 
         private String awaitMessage() throws InterruptedException {
             return messages.poll(2, TimeUnit.SECONDS);
+        }
+
+        private String pollMessage(long timeoutMillis) throws InterruptedException {
+            return messages.poll(timeoutMillis, TimeUnit.MILLISECONDS);
         }
 
         @Override
