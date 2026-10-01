@@ -1,0 +1,219 @@
+package io.github.brainboxemb.eventtiming.timingpoint.domain.timing;
+
+import io.github.brainboxemb.eventtiming.timingdata.ManualRegistrationTimeSource;
+import io.github.brainboxemb.eventtiming.timingdata.ManualRegistrationTimingData;
+import io.github.brainboxemb.eventtiming.timingdata.RegistrationId;
+import io.github.brainboxemb.eventtiming.timingdata.TimingData;
+import io.github.brainboxemb.eventtiming.timingdata.TimingTimestamp;
+import io.github.brainboxemb.eventtiming.timingdata.defaultprofile.DefaultTimingDataFactory;
+import io.github.brainboxemb.eventtiming.timingpoint.domain.system.TimeSource;
+import io.github.brainboxemb.eventtiming.timingpoint.domain.timingdata.TimingDataStore;
+import io.github.brainboxemb.eventtiming.timingpoint.platform.execution.SerialWorker;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import org.junit.Test;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
+public class TimingNodeRegistrationTest {
+    private static final TimingTimestamp EFFECTIVE_TIME =
+            TimingTimestamp.parse("2026-10-01T12:00:00.000000000Z");
+    private static final TimingTimestamp RECORDED_AT =
+            TimingTimestamp.parse("2026-10-01T12:00:01.000000000Z");
+
+    @Test
+    public void commitsManualRegistrationAfterStoreAppend() {
+        RecordingStore store = new RecordingStore();
+        TimingNode node = node(store);
+
+        node.start();
+        try {
+            node.setLocation(new LocationId(24));
+            assertEquals(TimingNode.OpenResult.OPENED, node.open());
+
+            TimingNode.RegistrationResult result = node.registerManual(
+                    new RegistrationId("1001"),
+                    EFFECTIVE_TIME,
+                    ManualRegistrationTimeSource.OPERATOR_ENTERED);
+
+            assertTrue(result.committed());
+            assertEquals(
+                    TimingNode.RegistrationResult.Outcome.COMMITTED,
+                    result.outcome());
+            assertEquals(1, store.appended.size());
+            assertSame(result.timingData(), store.appended.get(0));
+
+            List<TimingData> snapshot = node.timingDataSnapshot();
+            assertEquals(1, snapshot.size());
+            assertSame(result.timingData(), snapshot.get(0));
+
+            ManualRegistrationTimingData data =
+                    (ManualRegistrationTimingData) result.timingData();
+            assertEquals("timing-node-01", data.timingNodeId());
+            assertEquals(1L, data.sequenceNumber());
+            assertEquals(24, data.locationId());
+            assertEquals(EFFECTIVE_TIME, data.effectiveTime());
+            assertEquals(RECORDED_AT, data.recordedAt());
+            assertEquals(new RegistrationId("1001"), data.registrationId());
+            assertEquals(
+                    ManualRegistrationTimeSource.OPERATOR_ENTERED,
+                    data.timeSource());
+        } finally {
+            node.stop();
+        }
+    }
+
+    @Test
+    public void assignsSequenceOnlyFromCommittedLogBookState() {
+        RecordingStore store = new RecordingStore();
+        TimingNode node = node(store);
+
+        node.start();
+        try {
+            node.setLocation(new LocationId(24));
+            node.open();
+
+            TimingNode.RegistrationResult first = node.registerManual(
+                    new RegistrationId("1001"),
+                    EFFECTIVE_TIME,
+                    ManualRegistrationTimeSource.SYSTEM_ASSIGNED);
+            TimingNode.RegistrationResult second = node.registerManual(
+                    new RegistrationId("1002"),
+                    EFFECTIVE_TIME,
+                    ManualRegistrationTimeSource.SYSTEM_ASSIGNED);
+
+            assertEquals(1L, first.timingData().sequenceNumber());
+            assertEquals(2L, second.timingData().sequenceNumber());
+            assertEquals(2, node.timingDataSnapshot().size());
+        } finally {
+            node.stop();
+        }
+    }
+
+    @Test
+    public void closedNodeRejectsWithoutAllocatingOrPersisting() {
+        RecordingStore store = new RecordingStore();
+        TimingNode node = node(store);
+
+        node.start();
+        try {
+            node.setLocation(new LocationId(24));
+
+            TimingNode.RegistrationResult rejected = node.registerManual(
+                    new RegistrationId("1001"),
+                    EFFECTIVE_TIME,
+                    ManualRegistrationTimeSource.OPERATOR_ENTERED);
+
+            assertEquals(
+                    TimingNode.RegistrationResult.Outcome.NODE_NOT_OPEN,
+                    rejected.outcome());
+            assertEquals(0, store.appended.size());
+            assertEquals(0, node.timingDataSnapshot().size());
+
+            node.open();
+            TimingNode.RegistrationResult committed = node.registerManual(
+                    new RegistrationId("1002"),
+                    EFFECTIVE_TIME,
+                    ManualRegistrationTimeSource.OPERATOR_ENTERED);
+            assertEquals(1L, committed.timingData().sequenceNumber());
+        } finally {
+            node.stop();
+        }
+    }
+
+    @Test
+    public void appendFailureLeavesLogBookUnchangedAndBlocksLaterCommit() {
+        RecordingStore store = new RecordingStore();
+        store.failNext = true;
+        TimingNode node = node(store);
+
+        node.start();
+        try {
+            node.setLocation(new LocationId(24));
+            node.open();
+
+            try {
+                node.registerManual(
+                        new RegistrationId("1001"),
+                        EFFECTIVE_TIME,
+                        ManualRegistrationTimeSource.OPERATOR_ENTERED);
+                fail("expected persistence failure");
+            } catch (TimingNode.OperationException expected) {
+                assertEquals(
+                        TimingNode.OperationException.Reason.FAILED,
+                        expected.reason());
+            }
+
+            assertEquals(0, node.timingDataSnapshot().size());
+            assertEquals(1, store.attempts);
+
+            try {
+                node.registerManual(
+                        new RegistrationId("1002"),
+                        EFFECTIVE_TIME,
+                        ManualRegistrationTimeSource.OPERATOR_ENTERED);
+                fail("expected blocked commit");
+            } catch (TimingNode.OperationException expected) {
+                assertEquals(
+                        TimingNode.OperationException.Reason.FAILED,
+                        expected.reason());
+            }
+
+            assertEquals(1, store.attempts);
+            assertEquals(0, node.timingDataSnapshot().size());
+        } finally {
+            node.stop();
+        }
+    }
+
+    @Test
+    public void lifecycleOnlyNodeReportsTimingDataUnavailable() {
+        TimingNode node = new TimingNode(new TimingNodeId("timing-node-01"));
+
+        node.start();
+        try {
+            try {
+                node.timingDataSnapshot();
+                fail("expected unavailable TimingData support");
+            } catch (TimingNode.OperationException expected) {
+                assertEquals(
+                        TimingNode.OperationException.Reason.UNAVAILABLE,
+                        expected.reason());
+            }
+        } finally {
+            node.stop();
+        }
+    }
+
+    private static TimingNode node(RecordingStore store) {
+        TimeSource timeSource = () -> RECORDED_AT;
+        return new TimingNode(
+                new TimingNodeId("timing-node-01"),
+                new SerialWorker(8, "timing-node-registration-test"),
+                1000L,
+                store,
+                new DefaultTimingDataFactory(),
+                timeSource);
+    }
+
+    private static final class RecordingStore implements TimingDataStore {
+        private final List<TimingData> appended = new ArrayList<>();
+        private int attempts;
+        private boolean failNext;
+
+        @Override
+        public void append(TimingData data) throws StoreException {
+            attempts++;
+            if (failNext) {
+                failNext = false;
+                throw new StoreException("expected test failure");
+            }
+            appended.add(data);
+        }
+    }
+}
