@@ -207,6 +207,11 @@ public class TimingNodeRegistrationTest {
         private boolean failNext;
 
         @Override
+        public LoadResult load() {
+            return new LoadResult(new ArrayList<>(), false);
+        }
+
+        @Override
         public void append(TimingData data) throws StoreException {
             attempts++;
             if (failNext) {
