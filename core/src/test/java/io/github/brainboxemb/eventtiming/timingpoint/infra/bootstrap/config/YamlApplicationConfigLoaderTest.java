@@ -3,6 +3,7 @@ package io.github.brainboxemb.eventtiming.timingpoint.infra.bootstrap.config;
 import java.io.File;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.nio.file.Paths;
 
 import org.junit.Rule;
 import org.junit.Test;
@@ -26,7 +27,9 @@ public class YamlApplicationConfigLoaderTest {
         assertNull(config.presentation().api());
         assertNull(config.logging());
         assertNull(config.loggingServer());
-        assertEquals("data/timing-data.jsonl", config.timingDataPath().toString());
+        assertEquals(
+                Paths.get("data", "timing-data.jsonl"),
+                config.timingDataPath());
     }
 
     @Test
