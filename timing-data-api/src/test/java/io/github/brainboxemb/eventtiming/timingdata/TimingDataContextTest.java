@@ -32,4 +32,14 @@ public class TimingDataContextTest {
     public void rejectsNonPositiveLocationId() {
         new TimingDataContext("timing-node-01", 1L, 0, EFFECTIVE, RECORDED);
     }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void rejectsSequenceAboveJsonSafeRange() {
+        new TimingDataContext(
+                "timing-node-01",
+                TimingDataContext.MAX_SEQUENCE_NUMBER + 1L,
+                12,
+                EFFECTIVE,
+                RECORDED);
+    }
 }
