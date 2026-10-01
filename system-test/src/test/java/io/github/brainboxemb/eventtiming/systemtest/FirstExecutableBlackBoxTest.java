@@ -33,7 +33,7 @@ import static org.junit.Assert.fail;
 /**
  * VC-ST1-001 black-box verification.
  *
- * <p>This test deliberately imports no application/framework classes. It starts the packaged
+ * <p>This test deliberately imports no application/core classes. It starts the packaged
  * application in a separate JVM and uses only externally observable interfaces.</p>
  */
 public class FirstExecutableBlackBoxTest {

@@ -36,13 +36,13 @@ Keep product implementation detail here and project-family coordination in the
 companion meta repository.
 
 The current implementation intentionally keeps one reusable
-`event-timing-framework` library and one runnable `event-timing-app` consumer.
+`event-timing-core` application-core library and one runnable `event-timing-app` consumer.
 Architecture packages/layers are not automatically Maven artifact boundaries;
 introduce another artifact only when a concrete reuse, dependency, deployment,
 ownership, public/private or release boundary justifies it.
 
 Application composition/startup/shutdown belongs in the executable application.
-Reusable timing/domain rules and framework contracts belong in the framework
+Reusable timing/domain rules and application-core contracts belong in the core module
 according to the current README and owning SAD/SDD.
 
 ## Local constraints

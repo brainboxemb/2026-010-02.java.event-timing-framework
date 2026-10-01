@@ -10,11 +10,11 @@
   <packaging>pom</packaging>
 
   <name>Event Timing Parent</name>
-  <description>Build parent and reactor for the reusable event-timing framework and applications.</description>
+  <description>Build parent and reactor for the event-timing application core and applications.</description>
 
   <modules>
     <module>timing-data-api</module>
-    <module>framework</module>
+    <module>core</module>
     <module>app</module>
   </modules>
 

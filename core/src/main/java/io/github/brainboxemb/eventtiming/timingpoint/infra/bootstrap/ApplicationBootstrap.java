@@ -18,11 +18,11 @@ import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 
 /**
- * Cross-cutting framework bootstrap: composition and startup wiring.
+ * Cross-cutting application-core bootstrap: composition and startup wiring.
  *
  * <p>The bootstrap consumes an already parsed and validated ApplicationConfig. Input-format
  * parsing is a separate infrastructure concern; the default IF-11 YAML loader lives beside the
- * framework configuration model and is not part of bootstrap composition itself.</p>
+ * application-core configuration model and is not part of bootstrap composition itself.</p>
  */
 public final class ApplicationBootstrap {
     private ApplicationBootstrap() {

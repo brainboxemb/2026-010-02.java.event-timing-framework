@@ -1,6 +1,6 @@
 # 2026-010-02.java.event-timing-framework
 
-Public Java framework for reusable event timing and time-registration applications.
+Public Java application core and executable for reusable event timing and time-registration applications.
 
 Project-wide planning, requirements, architecture, interface design and verification coordination live in the companion meta repository: [**2026-010-01.meta.event-timing-software**](https://github.com/brainboxemb/2026-010-01.meta.event-timing-software).
 
@@ -20,7 +20,7 @@ profile is selected:
 
 ```text
 timing-data-api/  event-timing-data-api   shared Java-8 IF-05 model/SPI
-framework/        event-timing-framework  reusable SI-01 library
+core/             event-timing-core       reusable SI-01 application core
 app/              event-timing-app        runnable/default application
 system-test/      event-timing-system-test black-box verification only (profile-only)
 ```
@@ -32,7 +32,7 @@ product component.
 
 The `io.github.brainboxemb.eventtiming` namespace denotes the software-system/product family; reusable SI-01 code is rooted under `io.github.brainboxemb.eventtiming.timingpoint` because SI-01 is the software running locally at a timing observation point. `TimingNode` remains a logical domain aggregate inside that application and is not the package root.
 
-The reusable `event-timing-framework` JAR is organised by logical responsibility, but a
+The reusable `event-timing-core` JAR is organised by logical responsibility, but a
 layer/package is not represented by a runtime marker object merely to make the source tree mirror
 the architecture diagram.
 
@@ -62,7 +62,7 @@ and `platform` are introduced only when real classes require those boundaries.
 Empty `*Layer` marker classes and pre-modelled future status objects are deliberately not kept as
 architecture evidence.
 
-The reusable framework owns the runtime and cross-cutting bootstrap model:
+The reusable application core owns the runtime and cross-cutting bootstrap model:
 
 ```text
 io.github.brainboxemb.eventtiming/
@@ -82,7 +82,7 @@ io.github.brainboxemb.eventtiming/
 ```
 
 The executable artifact remains thin. Launcher/input adapters stay under `...eventtiming.timingpoint.app`;
-reusable logging infrastructure lives in the framework artifact, while the executable selects the SLF4J provider:
+reusable logging infrastructure lives in the core artifact, while the executable selects the SLF4J provider:
 
 ```text
 io.github.brainboxemb.eventtiming.timingpoint.app/
@@ -109,11 +109,11 @@ io.github.brainboxemb.eventtiming.timingpoint.infra.loggingserver/
   LiveLogHandler
 ```
 
-`Logging` owns JUL/backend, retained file/console sink composition and runtime level control. `LoggingServer` is a separate infrastructure component/package that owns the optional client-facing live-log socket. The executable composes both; `Logging` does not construct or own `LoggingServer`. These reusable classes live in `event-timing-framework`; the
+`Logging` owns JUL/backend, retained file/console sink composition and runtime level control. `LoggingServer` is a separate infrastructure component/package that owns the optional client-facing live-log socket. The executable composes both; `Logging` does not construct or own `LoggingServer`. These reusable classes live in `event-timing-core`; the
 framework still selects no SLF4J provider. The default executable supplies `slf4j-jdk14` at
-runtime and starts/stops the framework-provided logging component.
+runtime and starts/stops the core-provided logging component.
 
-`ApplicationBootstrap` consumes the validated framework configuration model and
+`ApplicationBootstrap` consumes the validated application-core configuration model and
 owns concrete composition plus presentation/startup wiring. The default IF-11 YAML parser/mapping and embedded build-identity interpretation are framework
 infrastructure. The executable remains responsible only for supplying the configuration path and
 its filtered `event-timing-build.properties` resource; SnakeYAML is therefore a framework
@@ -130,18 +130,18 @@ A package or architecture layer is **not** a publication boundary by itself. Int
 - deployment, ownership or release/versioning requires separation;
 - public/private implementation boundaries require independent composition.
 
-This keeps logical responsibilities inside the one framework artifact while real package boundaries emerge from implemented behaviour. A later capability such as RabbitMQ, a platform-specific implementation, or reusable test support can be split only when its consumer and boundary are concrete.
+This keeps logical responsibilities inside the one core artifact while real package boundaries emerge from implemented behaviour. A later capability such as RabbitMQ, a platform-specific implementation, or reusable test support can be split only when its consumer and boundary are concrete.
 
 ### Derived applications
 
-The framework is intended to support more than one executable composition. Examples that may later become separate applications include:
+The application core is intended to support more than one executable composition. Examples that may later become separate applications include:
 
 ```text
 single-TimingNode application compose exactly one TimingNode
 multi-TimingNode application  compose and coordinate 1..N TimingNode objects
 ```
 
-Those applications should reuse the same framework library and inject/select their own concrete components. New Step-3 configuration/domain types use `TimingNode` / `TimingNodeId` directly; the repository does not introduce legacy `Waypoint` / `UniqueID` compatibility names.
+Those applications should reuse the same application-core library and inject/select their own concrete components. New Step-3 configuration/domain types use `TimingNode` / `TimingNodeId` directly; the repository does not introduce legacy `Waypoint` / `UniqueID` compatibility names.
 
 The working design is coordinated in the meta repository, especially `docs/31-01-SDD-02-java-component-design.md`.
 
@@ -180,7 +180,7 @@ logging:
     port: 8030
 ```
 
-The framework still logs only through SLF4J. Executable infrastructure `Logging` maps the
+The application core still logs only through SLF4J. Executable infrastructure `Logging` maps the
 semantic startup level to `slf4j-jdk14 -> java.util.logging`, applies the same compact formatter
 to console output, and writes retained rotating file logs under timestamped names such as
 `20250514-101657.txt`. Retained file records use
@@ -247,7 +247,7 @@ added only when their SIP activities provide a real consumer.
 
 `test-client/` is the standalone Java 17 / JavaFX **Engineering Client** used for manual integration, diagnostics and public-interface inspection. It remains engineering tooling rather than SI-02 and deliberately has no dependency on SI-01 implementation classes.
 It is deliberately not part of the Java-8 SI-01 Maven reactor and has no dependency on
-`event-timing-framework` or `event-timing-app`.
+`event-timing-core` or `event-timing-app`.
 
 With JDK 17 selected:
 
@@ -308,7 +308,7 @@ launch the separate application process. Deliberate full system verification is 
 That profile adds `system-test` after the application JAR has been packaged. The test launches
 the JAR as a child JVM with temporary loopback ports, verifies IF-03 `/version`, `/status`,
 WebSocket snapshot/reconnect behaviour, and then shuts the process down through the remote
-terminal `quit` command. The verifier does not import framework/application classes, so this
+terminal `quit` command. The verifier does not import core/application classes, so this
 remains a process-level black-box check rather than another in-process component test.
 
 Use `update-repo.ps1` / `update-repo.sh` for a controlled dependency-alignment pass after changing refs in `project.yml`. The generic tool refuses to overwrite local changes inside a managed dependency.
@@ -349,7 +349,7 @@ Run and Debug use the same configured application path; Debug only adds the NetB
 The command-line split is:
 
 ```powershell
-# Normal product verification: framework/app tests, no separate process launch
+# Normal product verification: core/app tests, no separate process launch
 .\mvnw.cmd verify
 
 # Deliberate VC-ST1-001 black-box verification
@@ -390,7 +390,7 @@ dirty          true when uncommitted source changes were present
 apiVersion     IF-03 major version
 ```
 
-`pl.project13.maven:git-commit-id-plugin:4.9.10` supplies the Git revision, local source ref and dirty-state during Maven `initialize`; GitHub Actions supplies the CI source ref/origin through stable environment context. Normal resource filtering packages only those values the runtime needs. The executable bootstrap reads them into `BuildIdentity`; the framework value itself never knows about the resource file or a working Git checkout.
+`pl.project13.maven:git-commit-id-plugin:4.9.10` supplies the Git revision, local source ref and dirty-state during Maven `initialize`; GitHub Actions supplies the CI source ref/origin through stable environment context. Normal resource filtering packages only those values the runtime needs. The executable bootstrap reads them into `BuildIdentity`; the core value itself never knows about the resource file or a working Git checkout.
 
 Wall-clock build time, CI run/build id and actor/user are deliberately **not** embedded. Repeating a build with the same version/revision/ref/origin/dirty inputs must not become a different artifact merely because it ran at another time or under another run id.
 
@@ -399,7 +399,7 @@ A Git tag does **not** silently determine or override the application version. I
 Lifecycle diagnostics use the selected logging composition:
 
 ```text
-event-timing-framework  -> SLF4J API + reusable JUL logging infrastructure; no SLF4J provider selected
+event-timing-core       -> SLF4J API + reusable JUL logging infrastructure; no SLF4J provider selected
 event-timing-app        -> selects slf4j-jdk14 -> java.util.logging
 ```
 
@@ -458,7 +458,7 @@ The canonical Linux producer stages all three product JARs:
 ```text
 artifacts/
   event-timing-data-api-<version>.jar
-  event-timing-framework-<version>.jar
+  event-timing-core-<version>.jar
   event-timing-app-<version>.jar
 ```
 
@@ -540,7 +540,7 @@ BuildIdentity       revision=<tagged commit SHA>
 Release assets contain:
 
 - `event-timing-data-api-X.Y.Z.jar`;
-- `event-timing-framework-X.Y.Z.jar`;
+- `event-timing-core-X.Y.Z.jar`;
 - `event-timing-app-X.Y.Z.jar`;
 - SHA-256 checksums;
 - a compressed evidence bundle containing build provenance, tests and orchestration evidence.

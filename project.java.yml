@@ -12,5 +12,5 @@ maven:
 verification:
   canonical_runner: ubuntu-24.04
   compatibility_runner: windows-2025
-  artifact_name: event-timing-framework-canonical
+  artifact_name: event-timing-core-canonical
   test_report_path: "**/target/surefire-reports/**"

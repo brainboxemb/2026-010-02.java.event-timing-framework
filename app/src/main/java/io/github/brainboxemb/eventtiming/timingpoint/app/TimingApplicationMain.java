@@ -13,7 +13,7 @@ import io.github.brainboxemb.eventtiming.timingpoint.runtime.TimingApplicationLi
 import java.io.IOException;
 import java.nio.file.Paths;
 
-/** Thin default executable launcher for the reusable SI-01 framework runtime. */
+/** Thin default executable launcher for the reusable SI-01 application-core runtime. */
 public final class TimingApplicationMain {
     private TimingApplicationMain() {
     }

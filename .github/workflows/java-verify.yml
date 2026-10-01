@@ -38,7 +38,7 @@ jobs:
       is_release: ${{ steps.metadata.outputs.is_release }}
       release_tag: ${{ steps.metadata.outputs.release_tag }}
       app_jar: ${{ steps.metadata.outputs.app_jar }}
-      framework_jar: ${{ steps.metadata.outputs.framework_jar }}
+      core_jar: ${{ steps.metadata.outputs.core_jar }}
       timing_data_api_jar: ${{ steps.metadata.outputs.timing_data_api_jar }}
     steps:
       - name: Checkout exact source revision
@@ -67,8 +67,8 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          grep -F '<artifactId>slf4j-api</artifactId>' framework/pom.xml
-          ! grep -F '<artifactId>slf4j-jdk14</artifactId>' framework/pom.xml
+          grep -F '<artifactId>slf4j-api</artifactId>' core/pom.xml
+          ! grep -F '<artifactId>slf4j-jdk14</artifactId>' core/pom.xml
           grep -F '<artifactId>slf4j-jdk14</artifactId>' app/pom.xml
 
       - name: Verify black-box system-test dependency boundary
@@ -77,7 +77,7 @@ jobs:
           set -euo pipefail
           test -f system-test/pom.xml
           ! grep -F '<artifactId>event-timing-data-api</artifactId>' system-test/pom.xml
-          ! grep -F '<artifactId>event-timing-framework</artifactId>' system-test/pom.xml
+          ! grep -F '<artifactId>event-timing-core</artifactId>' system-test/pom.xml
           ! grep -F '<artifactId>event-timing-app</artifactId>' system-test/pom.xml
 
   # Normal development lifecycle. Pull requests use affected auto-selection;
@@ -91,21 +91,21 @@ jobs:
     with:
       base-revision: ${{ github.event_name == 'pull_request' && github.event.pull_request.base.sha || github.event_name == 'push' && github.event.before || inputs.base_revision }}
       head-revision: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
-      affected-task: framework:java.canonical
-      windows-full-task: framework:java.windows-full
+      affected-task: core:java.canonical
+      windows-full-task: core:java.windows-full
       windows-mode: ${{ github.event_name == 'workflow_dispatch' && inputs.windows_mode || github.event_name == 'push' && 'none' || 'auto' }}
       working-directory: .
       java-version: '8.0.504+1'
       maven-version: '3.9.16'
       maven-wrapper-version: '3.3.4'
-      artifact-name: event-timing-framework-canonical
+      artifact-name: event-timing-core-canonical
       artifact-path: app/target/${{ needs.release-metadata.outputs.app_jar }}
       runnable-jar-name: ${{ needs.release-metadata.outputs.app_jar }}
       smoke-expected-output: 'event-timing-app lifecycle OK version=${{ needs.release-metadata.outputs.version }} state=STOPPED'
       test-report-path: '**/target/surefire-reports/**'
       publication-artifact-paths: |
         timing-data-api/target/${{ needs.release-metadata.outputs.timing_data_api_jar }}
-        framework/target/${{ needs.release-metadata.outputs.framework_jar }}
+        core/target/${{ needs.release-metadata.outputs.core_jar }}
         app/target/${{ needs.release-metadata.outputs.app_jar }}
 
   main-system-test:
@@ -160,8 +160,8 @@ jobs:
       actions: read
     uses: brainboxemb/tool.java-project/.github/workflows/reusable-java-publish.yml@c0ca2e1365a64bc626ca331a8170d13340ae0b36
     with:
-      publication-artifact-name: event-timing-framework-canonical-publication
-      preflight-artifact-name: event-timing-framework-canonical-preflight
+      publication-artifact-name: event-timing-core-canonical-publication
+      preflight-artifact-name: event-timing-core-canonical-preflight
       source-revision: ${{ github.event.pull_request.head.sha || github.sha }}
 
   # Product release semantics remain repository-owned. A reviewed non-SNAPSHOT
@@ -236,14 +236,14 @@ jobs:
       java-version: '8.0.504+1'
       maven-version: '3.9.16'
       maven-wrapper-version: '3.3.4'
-      artifact-name: event-timing-framework-canonical
+      artifact-name: event-timing-core-canonical
       artifact-path: app/target/${{ needs.release-metadata.outputs.app_jar }}
       runnable-jar-name: ''
       smoke-expected-output: ''
       test-report-path: '**/target/surefire-reports/**'
       publication-artifact-paths: |
         timing-data-api/target/${{ needs.release-metadata.outputs.timing_data_api_jar }}
-        framework/target/${{ needs.release-metadata.outputs.framework_jar }}
+        core/target/${{ needs.release-metadata.outputs.core_jar }}
         app/target/${{ needs.release-metadata.outputs.app_jar }}
       windows-mode: none
 
@@ -260,7 +260,7 @@ jobs:
       java-version: '8.0.504+1'
       maven-version: '3.9.16'
       maven-wrapper-version: '3.3.4'
-      artifact-name: event-timing-framework-canonical
+      artifact-name: event-timing-core-canonical
       runnable-jar-name: ''
       smoke-expected-output: ''
       test-report-path: '**/target/surefire-reports/**'
@@ -281,7 +281,7 @@ jobs:
       java-version: '8.0.504+1'
       maven-version: '3.9.16'
       maven-wrapper-version: '3.3.4'
-      artifact-name: event-timing-framework-canonical
+      artifact-name: event-timing-core-canonical
       runnable-jar-name: ${{ needs.release-metadata.outputs.app_jar }}
       smoke-expected-output: 'event-timing-app lifecycle OK version=${{ needs.release-metadata.outputs.version }} state=STOPPED'
       test-report-path: '**/target/surefire-reports/**'
@@ -386,7 +386,7 @@ jobs:
       actions: read
     uses: brainboxemb/tool.java-project/.github/workflows/reusable-java-publish.yml@c0ca2e1365a64bc626ca331a8170d13340ae0b36
     with:
-      publication-artifact-name: event-timing-framework-canonical-publication
+      publication-artifact-name: event-timing-core-canonical-publication
       source-revision: ${{ github.sha }}
 
   publish-release:
@@ -437,13 +437,13 @@ jobs:
           RELEASE_VERSION: ${{ needs.release-metadata.outputs.version }}
           RELEASE_TAG: ${{ needs.release-metadata.outputs.release_tag }}
           APP_JAR: ${{ needs.release-metadata.outputs.app_jar }}
-          FRAMEWORK_JAR: ${{ needs.release-metadata.outputs.framework_jar }}
+          CORE_JAR: ${{ needs.release-metadata.outputs.core_jar }}
           TIMING_DATA_API_JAR: ${{ needs.release-metadata.outputs.timing_data_api_jar }}
         run: |
           set -euo pipefail
           test "$(cat publication/source-sha.txt)" = "${GITHUB_SHA}"
           test -f "publication/artifacts/${APP_JAR}"
-          test -f "publication/artifacts/${FRAMEWORK_JAR}"
+          test -f "publication/artifacts/${CORE_JAR}"
           test -f "publication/artifacts/${TIMING_DATA_API_JAR}"
 
           python3 tools/release_metadata.py verify-artifact \
@@ -454,7 +454,7 @@ jobs:
             --version "${RELEASE_VERSION}" \
             --output release-notes.md
 
-          (cd publication/artifacts && sha256sum "${TIMING_DATA_API_JAR}" "${FRAMEWORK_JAR}" "${APP_JAR}") \
+          (cd publication/artifacts && sha256sum "${TIMING_DATA_API_JAR}" "${CORE_JAR}" "${APP_JAR}") \
             > "SHA256SUMS-${RELEASE_VERSION}.txt"
 
           mkdir -p publication/evidence/system-test/linux publication/evidence/system-test/windows
@@ -471,13 +471,13 @@ jobs:
           RELEASE_VERSION: ${{ needs.release-metadata.outputs.version }}
           RELEASE_TAG: ${{ needs.release-metadata.outputs.release_tag }}
           APP_JAR: ${{ needs.release-metadata.outputs.app_jar }}
-          FRAMEWORK_JAR: ${{ needs.release-metadata.outputs.framework_jar }}
+          CORE_JAR: ${{ needs.release-metadata.outputs.core_jar }}
           TIMING_DATA_API_JAR: ${{ needs.release-metadata.outputs.timing_data_api_jar }}
         run: |
           set -euo pipefail
           assets=(
             "publication/artifacts/${TIMING_DATA_API_JAR}"
-            "publication/artifacts/${FRAMEWORK_JAR}"
+            "publication/artifacts/${CORE_JAR}"
             "publication/artifacts/${APP_JAR}"
             "SHA256SUMS-${RELEASE_VERSION}.txt"
             "event-timing-release-evidence-${RELEASE_VERSION}.tar.gz"
