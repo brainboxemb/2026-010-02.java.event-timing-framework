@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Add the first serialized TimingNode state slice: bounded per-node execution, LocationId, CLOSED/OPEN lifecycle, processed state-operation results, timeout-as-unknown-outcome semantics and ordered status snapshots.
+
 - Move the shared TimingData library to `shared/timing-data` and rename its artifact from `event-timing-data-api` to `event-timing-data`; keep semantic contracts, default/reference profile, codec and factory/provider in one JAR.
 
 - Refine the IF-05 TimingData API around `TagId` / `TeamId` -> `RegistrationId`, one common `TimingDataContext`, and type-safe `AutomaticRegistrationTimingData` / `ManualRegistrationTimingData` factory returns; remove the premature universal state/revocation record model.

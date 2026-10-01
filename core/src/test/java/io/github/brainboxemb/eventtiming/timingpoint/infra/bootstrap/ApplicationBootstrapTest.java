@@ -18,6 +18,7 @@ public class ApplicationBootstrapTest {
                 new PresentationConfig(null, null));
 
         TimingApplication application = ApplicationBootstrap.compose(identity(), config);
+        application.start();
         try {
             assertEquals(
                     "configured-node",
