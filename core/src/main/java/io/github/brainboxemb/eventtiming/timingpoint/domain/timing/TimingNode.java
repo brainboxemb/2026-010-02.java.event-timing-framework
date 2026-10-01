@@ -408,6 +408,25 @@ public final class TimingNode {
         return execute(logBook::snapshot, "timingDataSnapshot");
     }
 
+    public int timingDataCount() {
+        requireTimingDataSupport("timingDataCount");
+        return execute(logBook::size, "timingDataCount");
+    }
+
+    public List<TimingData> timingDataRange(long fromSequence, int limit) {
+        requireTimingDataSupport("timingDataRange");
+        return execute(
+                () -> logBook.range(fromSequence, limit),
+                "timingDataRange");
+    }
+
+    public List<TimingData> latestTimingData(int limit) {
+        requireTimingDataSupport("latestTimingData");
+        return execute(
+                () -> logBook.latest(limit),
+                "latestTimingData");
+    }
+
     public Status status() {
         return execute(this::snapshotStatus, "status");
     }
