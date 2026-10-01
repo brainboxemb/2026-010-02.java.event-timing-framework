@@ -3,17 +3,16 @@ package io.github.brainboxemb.eventtiming.timingdata;
 import java.util.Objects;
 
 /**
- * Canonical provider-neutral participant identity carried by IF-05 TimingData.
+ * Canonical registration identity carried by committed registration TimingData.
  *
- * <p>The public TimingData contract deliberately does not encode event-specific
- * categories, number ranges, source formats or deployment mapping rules. Those
- * concerns belong to the provider/reference-data boundary that resolves this
- * value before commit.</p>
+ * <p>TagId and TeamId belong to source/reference domains and are resolved to
+ * this value before TimingData construction. This value is also distinct from
+ * the TimingData record key (TimingNodeId + sequence number).</p>
  */
-public final class RegistrationIdentity {
+public final class RegistrationId {
     private final String value;
 
-    public RegistrationIdentity(String value) {
+    public RegistrationId(String value) {
         if (value == null || value.trim().isEmpty()) {
             throw new IllegalArgumentException("value must not be blank");
         }
@@ -29,10 +28,10 @@ public final class RegistrationIdentity {
         if (this == other) {
             return true;
         }
-        if (!(other instanceof RegistrationIdentity)) {
+        if (!(other instanceof RegistrationId)) {
             return false;
         }
-        RegistrationIdentity that = (RegistrationIdentity) other;
+        RegistrationId that = (RegistrationId) other;
         return value.equals(that.value);
     }
 

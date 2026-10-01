@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Refine the IF-05 TimingData API around `TagId` / `TeamId` -> `RegistrationId`, one common `TimingDataContext`, and type-safe `AutomaticRegistrationTimingData` / `ManualRegistrationTimingData` factory returns; remove the premature universal state/revocation record model.
+
 - Rename the reusable SI-01 Maven module from `framework/` to `core/` and the artifact from `event-timing-framework` to `event-timing-core`; keep `app/` as the thin executable boundary and keep Core out of the architecture-layer model.
 
 - Add the narrow shared `TimingDataCodec` and `TimingDataProvider` SPI; codecs translate one record payload while stores own framing/recovery, and codec failures distinguish invalid data from unsupported version/record-type compatibility cases.

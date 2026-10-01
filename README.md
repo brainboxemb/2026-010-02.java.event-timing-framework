@@ -30,13 +30,22 @@ a separate JVM process and verifies only external interfaces. It is not a releas
 artifact. The root `event-timing-parent` POM is build/aggregation metadata rather than a deployed
 product component.
 
+The shared TimingData API models committed registrations with a small common
+`TimingData` contract plus type-safe `AutomaticRegistrationTimingData` and
+`ManualRegistrationTimingData` variants. One immutable `TimingDataContext`
+carries the common source/sequence/location/time values. A configured
+`TimingDataFactory` returns the typed variant and a matching `TimingDataCodec`
+handles representation. `RegistrationId` is the canonical ID carried by
+committed registration TimingData; source-domain `TagId` / `TeamId` resolution
+happens before this API boundary.
+
 The `io.github.brainboxemb.eventtiming` namespace denotes the software-system/product family; reusable SI-01 code is rooted under `io.github.brainboxemb.eventtiming.timingpoint` because SI-01 is the software running locally at a timing observation point. `TimingNode` remains a logical domain aggregate inside that application and is not the package root.
 
 The reusable `event-timing-core` JAR is organised by logical responsibility, but a
 layer/package is not represented by a runtime marker object merely to make the source tree mirror
 the architecture diagram.
 
-Current real framework behaviour is deliberately small:
+Current real application-core behaviour is deliberately small:
 
 ```text
 io.github.brainboxemb.eventtiming.timingpoint.application.ApplicationStatus
