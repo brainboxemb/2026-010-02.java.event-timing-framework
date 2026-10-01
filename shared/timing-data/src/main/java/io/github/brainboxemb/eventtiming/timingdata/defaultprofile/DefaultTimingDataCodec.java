@@ -10,6 +10,7 @@ import io.github.brainboxemb.eventtiming.timingdata.TimingData;
 import io.github.brainboxemb.eventtiming.timingdata.TimingDataCodec;
 import io.github.brainboxemb.eventtiming.timingdata.TimingDataFactory;
 import io.github.brainboxemb.eventtiming.timingdata.TimingTimestamp;
+import io.github.brainboxemb.eventtiming.timingdata.TimingNodeId;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -91,7 +92,7 @@ public final class DefaultTimingDataCodec implements TimingDataCodec {
             try {
                 generator.writeStartObject();
                 generator.writeNumberField("version", VERSION);
-                generator.writeStringField("timingNodeId", data.timingNodeId());
+                generator.writeStringField("timingNodeId", data.timingNodeId().value());
                 generator.writeNumberField("sequenceNumber", data.sequenceNumber());
                 generator.writeNumberField("locationId", data.locationId().value());
                 generator.writeStringField("recordType", RECORD_TYPE_REGISTRATION);
@@ -373,7 +374,7 @@ public final class DefaultTimingDataCodec implements TimingDataCodec {
 
         try {
             return new TimingDataFactory.Context(
-                    fields.timingNodeId,
+                    new TimingNodeId(fields.timingNodeId),
                     fields.sequenceNumber,
                     new LocationId(fields.locationId),
                     TimingTimestamp.parse(fields.effectiveTimeText),
