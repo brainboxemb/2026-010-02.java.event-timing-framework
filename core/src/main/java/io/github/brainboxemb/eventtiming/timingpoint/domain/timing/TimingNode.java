@@ -388,8 +388,8 @@ public final class TimingNode {
     }
 
     private <R> R execute(Callable<R> work, String operation) {
-        SerialWorker.Submission<R> submission = serialWorker.submit(work);
-        switch (submission.result()) {
+        SerialWorker.SubmitResult<R> submitResult = serialWorker.submit(work);
+        switch (submitResult.admission()) {
             case FULL:
                 throw new OperationException(
                         OperationException.Reason.BUSY,
@@ -405,10 +405,10 @@ public final class TimingNode {
                         OperationException.Reason.UNAVAILABLE,
                         operation + " could not be admitted because the TimingNode is not running");
             case ACCEPTED:
-                return await(submission.future(), operation);
+                return await(submitResult.futureResult(), operation);
             default:
                 throw new IllegalStateException(
-                        "Unsupported submission result " + submission.result());
+                        "Unsupported submission result " + submitResult.admission());
         }
     }
 
