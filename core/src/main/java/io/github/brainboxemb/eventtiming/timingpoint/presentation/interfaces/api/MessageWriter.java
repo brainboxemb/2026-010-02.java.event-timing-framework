@@ -2,7 +2,6 @@ package io.github.brainboxemb.eventtiming.timingpoint.presentation.interfaces.ap
 
 import io.github.brainboxemb.eventtiming.timingdata.TimingData;
 import io.github.brainboxemb.eventtiming.timingdata.TimingDataCodec;
-import io.github.brainboxemb.eventtiming.timingdata.TimingNodeId;
 import io.github.brainboxemb.eventtiming.timingpoint.application.ApplicationStatus;
 import io.github.brainboxemb.eventtiming.timingpoint.application.CommandHandler;
 import io.github.brainboxemb.eventtiming.timingpoint.infra.BuildIdentity;
@@ -27,27 +26,22 @@ public final class MessageWriter {
                 + "}";
     }
 
-    public static String status(BuildIdentity identity, ApplicationStatus status) {
+    public static String status(ApplicationStatus status) {
         String location = status.hasLocation()
                 ? Integer.toString(status.locationId().value())
                 : "null";
         return "{"
-                + "\"apiVersion\":" + quote(identity.apiVersion()) + ","
-                + "\"build\":" + version(identity) + ","
-                + "\"timingNodes\":[{"
-                + "\"timingNodeId\":" + quote(status.timingNodeId().value()) + ","
+                + "\"nodes\":[{"
+                + "\"id\":" + quote(status.timingNodeId().value()) + ","
                 + "\"locationId\":" + location + ","
-                + "\"lifecycle\":" + quote(status.timingNodeLifecycle().name())
+                + "\"state\":" + quote(status.timingNodeLifecycle().name())
                 + "}],"
                 + "\"problems\":[]"
                 + "}";
     }
 
-    public static String capabilities(
-            BuildIdentity identity,
-            CommandHandler.Capabilities capabilities) {
+    public static String capabilities(CommandHandler.Capabilities capabilities) {
         return "{"
-                + "\"apiVersion\":" + quote(identity.apiVersion()) + ","
                 + "\"capabilities\":[{"
                 + "\"id\":\"DIRECT_REGISTRATION_SIMULATION\","
                 + "\"supported\":"
@@ -57,35 +51,34 @@ public final class MessageWriter {
                 + "}]}";
     }
 
-    public static String result(BuildIdentity identity, String result) {
+    public static String result(String result) {
+        return "{\"result\":" + quote(result) + "}";
+    }
+
+    public static String committedRegistration(TimingData data) {
+        return "{\"seq\":" + data.sequenceNumber() + "}";
+    }
+
+    public static String logBookInfo(int count) {
         return "{"
-                + "\"apiVersion\":" + quote(identity.apiVersion()) + ","
-                + "\"result\":" + quote(result)
+                + "\"count\":" + count + ","
+                + "\"first\":" + (count == 0 ? "null" : "1") + ","
+                + "\"last\":" + (count == 0 ? "null" : Integer.toString(count))
                 + "}";
     }
 
-    public static String committedRegistration(
-            BuildIdentity identity,
-            TimingData data) {
-        return "{"
-                + "\"apiVersion\":" + quote(identity.apiVersion()) + ","
-                + "\"result\":\"COMMITTED\","
-                + "\"recordKey\":{"
-                + "\"timingNodeId\":" + quote(data.timingNodeId().value()) + ","
-                + "\"sequenceNumber\":" + data.sequenceNumber()
-                + "}}";
-    }
-
-    public static String history(
-            BuildIdentity identity,
-            TimingNodeId timingNodeId,
+    public static String logBookPage(
+            int count,
+            Long next,
             List<TimingData> records,
             TimingDataCodec codec)
             throws TimingDataCodec.CodecException {
         StringBuilder json = new StringBuilder();
         json.append("{")
-                .append("\"apiVersion\":").append(quote(identity.apiVersion())).append(",")
-                .append("\"timingNodeId\":").append(quote(timingNodeId.value())).append(",")
+                .append("\"count\":").append(count).append(",")
+                .append("\"next\":")
+                .append(next == null ? "null" : Long.toString(next.longValue()))
+                .append(",")
                 .append("\"records\":[");
 
         for (int i = 0; i < records.size(); i++) {
@@ -101,7 +94,6 @@ public final class MessageWriter {
     public static String statusEvent(
             String eventType,
             java.time.Instant occurredAt,
-            BuildIdentity identity,
             ApplicationStatus status) {
         if (eventType == null || eventType.trim().isEmpty()) {
             throw new IllegalArgumentException("eventType must not be blank");
@@ -109,23 +101,18 @@ public final class MessageWriter {
         if (occurredAt == null) {
             throw new IllegalArgumentException("occurredAt must not be null");
         }
-        if (identity == null) {
-            throw new IllegalArgumentException("identity must not be null");
-        }
         if (status == null) {
             throw new IllegalArgumentException("status must not be null");
         }
         return "{"
-                + "\"apiVersion\":" + quote(identity.apiVersion()) + ","
                 + "\"eventType\":" + quote(eventType) + ","
                 + "\"occurredAt\":" + quote(occurredAt.toString()) + ","
-                + "\"payload\":" + status(identity, status)
+                + "\"payload\":" + status(status)
                 + "}";
     }
 
     public static String timingDataEvent(
             java.time.Instant occurredAt,
-            BuildIdentity identity,
             TimingData data,
             TimingDataCodec codec)
             throws TimingDataCodec.CodecException {
@@ -133,7 +120,6 @@ public final class MessageWriter {
             throw new IllegalArgumentException("occurredAt must not be null");
         }
         return "{"
-                + "\"apiVersion\":" + quote(identity.apiVersion()) + ","
                 + "\"eventType\":\"TIMING_DATA_COMMITTED\","
                 + "\"occurredAt\":" + quote(occurredAt.toString()) + ","
                 + "\"payload\":" + timingDataJson(data, codec)
@@ -142,7 +128,6 @@ public final class MessageWriter {
 
     public static String error(String code, String message) {
         return "{"
-                + "\"apiVersion\":\"1\","
                 + "\"error\":{"
                 + "\"code\":" + quote(code) + ","
                 + "\"message\":" + quote(message)
