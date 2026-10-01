@@ -2,56 +2,26 @@ package io.github.brainboxemb.eventtiming.timingdata;
 
 import java.util.Objects;
 
-/** Canonical IF-05 participant identity used by registration records. */
+/**
+ * Canonical provider-neutral participant identity carried by IF-05 TimingData.
+ *
+ * <p>The public TimingData contract deliberately does not encode event-specific
+ * categories, number ranges, source formats or deployment mapping rules. Those
+ * concerns belong to the provider/reference-data boundary that resolves this
+ * value before commit.</p>
+ */
 public final class RegistrationIdentity {
-    public static final int MIN_NUMBER = 1;
-    public static final int MAX_NUMBER = 350;
+    private final String value;
 
-    public enum Type {
-        STANDARD,
-        WOMEN,
-        MEN
-    }
-
-    private final Type type;
-    private final int number;
-
-    public RegistrationIdentity(Type type, int number) {
-        if (type == null) {
-            throw new IllegalArgumentException("type must not be null");
+    public RegistrationIdentity(String value) {
+        if (value == null || value.trim().isEmpty()) {
+            throw new IllegalArgumentException("value must not be blank");
         }
-        if (number < MIN_NUMBER || number > MAX_NUMBER) {
-            throw new IllegalArgumentException(
-                    "number must be in range " + MIN_NUMBER + ".." + MAX_NUMBER);
-        }
-        this.type = type;
-        this.number = number;
+        this.value = value;
     }
 
-    public Type type() {
-        return type;
-    }
-
-    public int number() {
-        return number;
-    }
-
-    /**
-     * Returns whether this identity is valid at the supplied IF-05 location.
-     *
-     * <p>STANDARD uses locations 1..23, WOMEN uses 24 and MEN uses 25.</p>
-     */
-    public boolean supportsLocationId(int locationId) {
-        switch (type) {
-            case STANDARD:
-                return locationId >= 1 && locationId <= 23;
-            case WOMEN:
-                return locationId == 24;
-            case MEN:
-                return locationId == 25;
-            default:
-                throw new IllegalStateException("Unsupported registration identity type: " + type);
-        }
+    public String value() {
+        return value;
     }
 
     @Override
@@ -63,16 +33,16 @@ public final class RegistrationIdentity {
             return false;
         }
         RegistrationIdentity that = (RegistrationIdentity) other;
-        return number == that.number && type == that.type;
+        return value.equals(that.value);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(type, number);
+        return Objects.hash(value);
     }
 
     @Override
     public String toString() {
-        return type + ":" + number;
+        return value;
     }
 }

@@ -11,7 +11,6 @@ import java.util.Objects;
 public final class TimingDataRecord {
     public static final int VERSION = 1;
     public static final int MIN_LOCATION_ID = 1;
-    public static final int MAX_LOCATION_ID = 25;
 
     private final TimingDataRecordKey key;
     private final int locationId;
@@ -171,9 +170,9 @@ public final class TimingDataRecord {
     }
 
     private static void validateLocationId(int locationId) {
-        if (locationId < MIN_LOCATION_ID || locationId > MAX_LOCATION_ID) {
+        if (locationId < MIN_LOCATION_ID) {
             throw new IllegalArgumentException(
-                    "locationId must be in range " + MIN_LOCATION_ID + ".." + MAX_LOCATION_ID);
+                    "locationId must be a positive configured identity");
         }
     }
 
@@ -191,10 +190,6 @@ public final class TimingDataRecord {
                 timeSource,
                 "timeSource");
 
-        if (!identity.supportsLocationId(locationId)) {
-            throw new IllegalArgumentException(
-                    "registrationIdentity " + identity + " is not valid for locationId " + locationId);
-        }
         if (registrationOrigin == RegistrationOrigin.AUTOMATIC
                 && registrationTimeSource != RegistrationTimeSource.OBSERVED) {
             throw new IllegalArgumentException(

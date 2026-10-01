@@ -34,7 +34,7 @@ public class TimingDataRecordTest {
     @Test
     public void createsAutomaticObservedRegistration() {
         RegistrationIdentity identity =
-                new RegistrationIdentity(RegistrationIdentity.Type.STANDARD, 42);
+                new RegistrationIdentity("participant-0042");
 
         TimingDataRecord record = TimingDataRecord.registration(
                 key(2),
@@ -56,7 +56,7 @@ public class TimingDataRecordTest {
     @Test
     public void createsRevocationOfEarlierRegistrationInSameStream() {
         RegistrationIdentity identity =
-                new RegistrationIdentity(RegistrationIdentity.Type.STANDARD, 42);
+                new RegistrationIdentity("participant-0042");
 
         TimingDataRecord record = TimingDataRecord.registrationRevoked(
                 key(3),
@@ -73,7 +73,7 @@ public class TimingDataRecordTest {
     }
 
     @Test(expected = IllegalArgumentException.class)
-    public void rejectsLocationOutsideIf05Range() {
+    public void rejectsNonPositiveLocationIdentity() {
         TimingDataRecord.timingNodeState(
                 key(1),
                 0,
@@ -83,25 +83,13 @@ public class TimingDataRecordTest {
     }
 
     @Test(expected = IllegalArgumentException.class)
-    public void rejectsIdentityAtIncompatibleLocation() {
-        TimingDataRecord.registration(
-                key(1),
-                24,
-                EFFECTIVE,
-                RECORDED,
-                new RegistrationIdentity(RegistrationIdentity.Type.STANDARD, 42),
-                RegistrationOrigin.AUTOMATIC,
-                RegistrationTimeSource.OBSERVED);
-    }
-
-    @Test(expected = IllegalArgumentException.class)
     public void rejectsAutomaticRegistrationWithoutObservedTime() {
         TimingDataRecord.registration(
                 key(1),
                 7,
                 EFFECTIVE,
                 RECORDED,
-                new RegistrationIdentity(RegistrationIdentity.Type.STANDARD, 42),
+                new RegistrationIdentity("participant-0042"),
                 RegistrationOrigin.AUTOMATIC,
                 RegistrationTimeSource.SYSTEM_ASSIGNED);
     }
@@ -113,7 +101,7 @@ public class TimingDataRecordTest {
                 7,
                 EFFECTIVE,
                 RECORDED,
-                new RegistrationIdentity(RegistrationIdentity.Type.STANDARD, 42),
+                new RegistrationIdentity("participant-0042"),
                 RegistrationOrigin.MANUAL,
                 RegistrationTimeSource.OBSERVED);
     }
@@ -125,7 +113,7 @@ public class TimingDataRecordTest {
                 7,
                 EFFECTIVE,
                 RECORDED,
-                new RegistrationIdentity(RegistrationIdentity.Type.STANDARD, 42),
+                new RegistrationIdentity("participant-0042"),
                 RegistrationOrigin.AUTOMATIC,
                 RegistrationTimeSource.OBSERVED,
                 new TimingDataRecordKey("timing-node-02", 2));
@@ -138,7 +126,7 @@ public class TimingDataRecordTest {
                 7,
                 EFFECTIVE,
                 RECORDED,
-                new RegistrationIdentity(RegistrationIdentity.Type.STANDARD, 42),
+                new RegistrationIdentity("participant-0042"),
                 RegistrationOrigin.AUTOMATIC,
                 RegistrationTimeSource.OBSERVED,
                 key(3));

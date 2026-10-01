@@ -52,6 +52,7 @@ according to the current README and owning SAD/SDD.
 - keep public surfaces deliberately small and do not add speculative future capability merely to make the structure look complete;
 - prefer composition and explicit ports/contracts over subclass-driven extension;
 - keep real/proprietary deployment identities, protocol mappings, credentials and secrets out of this public repository;
+- treat legacy/reference software, production behaviour and user-provided operational examples as reference input rather than automatically as public contract data; publish concrete categories, ranges, encodings or mappings only when an explicit public project authority owns them;
 - Docker is not a prerequisite for normal compile/unit-test work.
 
 When architecture intent and current implementation differ, treat the project
