@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Rebuild LogBook from committed TimingData before the TimingNode serial worker starts; preserve CLOSED/no-location restart policy and expose repaired incomplete-tail recovery in TimingNode status.
+
 - Add append-only `FileTimingDataStore` with canonical LF framing, `FileChannel.force(true)` append gating, contiguous-stream validation and explicit incomplete-tail recovery reporting.
 
 - Add the default/reference IF-05 v1 TimingData JSON codec using Jackson streaming only, with canonical writer ordering, compatible extra-member reads and explicit invalid/version/record-type failures.
