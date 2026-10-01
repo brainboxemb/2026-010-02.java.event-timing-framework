@@ -11,6 +11,11 @@
   <description>Reusable application core for the Timing Point Application.</description>
   <dependencies>
     <dependency>
+      <groupId>io.github.brainboxemb.eventtiming</groupId>
+      <artifactId>event-timing-data</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
       <groupId>org.slf4j</groupId>
       <artifactId>slf4j-api</artifactId>
     </dependency>

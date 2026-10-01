@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Add the passive per-TimingNode LogBook and TimingDataStore append boundary as the foundation for ordered durable TimingData commits.
+
 - Add the first serialized TimingNode state slice: bounded per-node execution, LocationId, CLOSED/OPEN lifecycle, processed state-operation results, timeout-as-unknown-outcome semantics and ordered status snapshots.
 
 - Move the shared TimingData library to `shared/timing-data` and rename its artifact from `event-timing-data-api` to `event-timing-data`; keep semantic contracts, default/reference profile, codec and factory/provider in one JAR.
