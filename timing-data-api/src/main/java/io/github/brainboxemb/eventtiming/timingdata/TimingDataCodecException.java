@@ -82,7 +82,7 @@ public final class TimingDataCodecException extends Exception {
         if (key == null) {
             throw new IllegalArgumentException("key must not be null");
         }
-        if (locationId < TimingDataRecord.MIN_LOCATION_ID) {
+        if (locationId < TimingDataContext.MIN_LOCATION_ID) {
             throw new IllegalArgumentException("locationId must be positive");
         }
         if (recordType == null || recordType.trim().isEmpty()) {
