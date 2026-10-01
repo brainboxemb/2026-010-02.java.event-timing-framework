@@ -127,7 +127,7 @@ public class TimingNodeRegistrationTest {
 
             ManualRegistration data =
                     (ManualRegistration) result.timingData();
-            assertEquals("timing-node-01", data.timingNodeId());
+            assertEquals(new TimingNodeId("timing-node-01"), data.timingNodeId());
             assertEquals(1L, data.sequenceNumber());
             assertEquals(new LocationId(24), data.locationId());
             assertEquals(EFFECTIVE_TIME, data.effectiveTime());
