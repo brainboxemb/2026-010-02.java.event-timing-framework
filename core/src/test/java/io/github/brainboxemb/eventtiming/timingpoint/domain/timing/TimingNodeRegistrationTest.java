@@ -1,7 +1,7 @@
 package io.github.brainboxemb.eventtiming.timingpoint.domain.timing;
 
-import io.github.brainboxemb.eventtiming.timingdata.ManualRegistrationTimeSource;
-import io.github.brainboxemb.eventtiming.timingdata.ManualRegistrationTimingData;
+import io.github.brainboxemb.eventtiming.timingdata.TimingData.ManualTimeSource;
+import io.github.brainboxemb.eventtiming.timingdata.TimingData.ManualRegistration;
 import io.github.brainboxemb.eventtiming.timingdata.RegistrationId;
 import io.github.brainboxemb.eventtiming.timingdata.TimingData;
 import io.github.brainboxemb.eventtiming.timingdata.TimingTimestamp;
@@ -39,7 +39,7 @@ public class TimingNodeRegistrationTest {
             TimingNode.RegistrationResult result = node.registerManual(
                     new RegistrationId("1001"),
                     EFFECTIVE_TIME,
-                    ManualRegistrationTimeSource.OPERATOR_ENTERED);
+                    ManualTimeSource.OPERATOR_ENTERED);
 
             assertTrue(result.committed());
             assertEquals(
@@ -52,8 +52,8 @@ public class TimingNodeRegistrationTest {
             assertEquals(1, snapshot.size());
             assertSame(result.timingData(), snapshot.get(0));
 
-            ManualRegistrationTimingData data =
-                    (ManualRegistrationTimingData) result.timingData();
+            ManualRegistration data =
+                    (ManualRegistration) result.timingData();
             assertEquals("timing-node-01", data.timingNodeId());
             assertEquals(1L, data.sequenceNumber());
             assertEquals(24, data.locationId());
@@ -61,7 +61,7 @@ public class TimingNodeRegistrationTest {
             assertEquals(RECORDED_AT, data.recordedAt());
             assertEquals(new RegistrationId("1001"), data.registrationId());
             assertEquals(
-                    ManualRegistrationTimeSource.OPERATOR_ENTERED,
+                    ManualTimeSource.OPERATOR_ENTERED,
                     data.timeSource());
         } finally {
             node.stop();
@@ -81,11 +81,11 @@ public class TimingNodeRegistrationTest {
             TimingNode.RegistrationResult first = node.registerManual(
                     new RegistrationId("1001"),
                     EFFECTIVE_TIME,
-                    ManualRegistrationTimeSource.SYSTEM_ASSIGNED);
+                    ManualTimeSource.SYSTEM_ASSIGNED);
             TimingNode.RegistrationResult second = node.registerManual(
                     new RegistrationId("1002"),
                     EFFECTIVE_TIME,
-                    ManualRegistrationTimeSource.SYSTEM_ASSIGNED);
+                    ManualTimeSource.SYSTEM_ASSIGNED);
 
             assertEquals(1L, first.timingData().sequenceNumber());
             assertEquals(2L, second.timingData().sequenceNumber());
@@ -107,7 +107,7 @@ public class TimingNodeRegistrationTest {
             TimingNode.RegistrationResult rejected = node.registerManual(
                     new RegistrationId("1001"),
                     EFFECTIVE_TIME,
-                    ManualRegistrationTimeSource.OPERATOR_ENTERED);
+                    ManualTimeSource.OPERATOR_ENTERED);
 
             assertEquals(
                     TimingNode.RegistrationResult.Outcome.NODE_NOT_OPEN,
@@ -119,7 +119,7 @@ public class TimingNodeRegistrationTest {
             TimingNode.RegistrationResult committed = node.registerManual(
                     new RegistrationId("1002"),
                     EFFECTIVE_TIME,
-                    ManualRegistrationTimeSource.OPERATOR_ENTERED);
+                    ManualTimeSource.OPERATOR_ENTERED);
             assertEquals(1L, committed.timingData().sequenceNumber());
         } finally {
             node.stop();
@@ -141,7 +141,7 @@ public class TimingNodeRegistrationTest {
                 node.registerManual(
                         new RegistrationId("1001"),
                         EFFECTIVE_TIME,
-                        ManualRegistrationTimeSource.OPERATOR_ENTERED);
+                        ManualTimeSource.OPERATOR_ENTERED);
                 fail("expected persistence failure");
             } catch (TimingNode.OperationException expected) {
                 assertEquals(
@@ -156,7 +156,7 @@ public class TimingNodeRegistrationTest {
                 node.registerManual(
                         new RegistrationId("1002"),
                         EFFECTIVE_TIME,
-                        ManualRegistrationTimeSource.OPERATOR_ENTERED);
+                        ManualTimeSource.OPERATOR_ENTERED);
                 fail("expected blocked commit");
             } catch (TimingNode.OperationException expected) {
                 assertEquals(
