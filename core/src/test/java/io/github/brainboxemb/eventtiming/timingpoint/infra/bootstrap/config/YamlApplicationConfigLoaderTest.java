@@ -16,20 +16,24 @@ public class YamlApplicationConfigLoaderTest {
     public TemporaryFolder temporaryFolder = new TemporaryFolder();
 
     @Test
-    public void loadsSingleTimingNodeIdWithoutPresentation() throws Exception {
-        ApplicationConfig config = load("timingNodeId: timing-node-01\n");
+    public void loadsSingleTimingNodeIdAndStorageWithoutPresentation() throws Exception {
+        ApplicationConfig config = load(
+                "timingNodeId: timing-node-01\n"
+                        + timingDataStorage());
 
         assertEquals("timing-node-01", config.timingNodeId().value());
         assertNull(config.presentation().remoteShell());
         assertNull(config.presentation().api());
         assertNull(config.logging());
         assertNull(config.loggingServer());
+        assertEquals("data/timing-data.jsonl", config.timingDataPath().toString());
     }
 
     @Test
     public void loadsImplementedPresentationConfig() throws Exception {
         ApplicationConfig config = load(
                 "timingNodeId: timing-node-01\n"
+                        + timingDataStorage()
                         + "presentation:\n"
                         + "  remoteShell:\n"
                         + "    bindAddress: 127.0.0.1\n"
@@ -56,6 +60,7 @@ public class YamlApplicationConfigLoaderTest {
     public void loadsRuntimeLoggingConfig() throws Exception {
         ApplicationConfig config = load(
                 "timingNodeId: timing-node-01\n"
+                        + timingDataStorage()
                         + "logging:\n"
                         + "  level: DEBUG\n"
                         + "  file:\n"
@@ -86,6 +91,21 @@ public class YamlApplicationConfigLoaderTest {
                         + "    path: logs\n"
                         + "    rotateBytes: 1024\n"
                         + "    retainedFiles: 2\n");
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void rejectsMissingTimingDataStorage() throws Exception {
+        load("timingNodeId: timing-node-01\n");
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void rejectsBlankTimingDataPath() throws Exception {
+        load(
+                "timingNodeId: timing-node-01\n"
+                        + "io:\n"
+                        + "  storage:\n"
+                        + "    timingData:\n"
+                        + "      path: '   '\n");
     }
 
     @Test(expected = IllegalArgumentException.class)
@@ -142,6 +162,13 @@ public class YamlApplicationConfigLoaderTest {
                 "timingNodeId: timing-node-01\n"
                         + "presentation:\n"
                         + "  api: {}\n");
+    }
+
+    private static String timingDataStorage() {
+        return "io:\n"
+                + "  storage:\n"
+                + "    timingData:\n"
+                + "      path: data/timing-data.jsonl\n";
     }
 
     private ApplicationConfig load(String yaml) throws Exception {

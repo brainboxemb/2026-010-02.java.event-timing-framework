@@ -1,6 +1,12 @@
 # Step-3 development configuration: one TimingNode plus presentation interfaces.
 timingNodeId: timing-node-01
 
+io:
+  storage:
+    timingData:
+      # Step-4 reference persistence for the configured TimingNode.
+      path: data/timing-data.jsonl
+
 presentation:
   remoteShell:
     # Development/service baseline: explicit loopback-only listener.

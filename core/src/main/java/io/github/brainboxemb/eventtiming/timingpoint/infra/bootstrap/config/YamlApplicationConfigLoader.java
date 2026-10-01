@@ -9,7 +9,9 @@ import io.github.brainboxemb.eventtiming.timingpoint.infra.loggingserver.Logging
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
+import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.Map;
 
@@ -22,6 +24,9 @@ import org.yaml.snakeyaml.error.YAMLException;
 public final class YamlApplicationConfigLoader {
     private static final String TIMING_NODE_ID = "timingNodeId";
     private static final String PRESENTATION = "presentation";
+    private static final String IO = "io";
+    private static final String STORAGE = "storage";
+    private static final String TIMING_DATA = "timingData";
     private static final String LOGGING = "logging";
     private static final String LEVEL = "level";
     private static final String FILE = "file";
@@ -56,7 +61,7 @@ public final class YamlApplicationConfigLoader {
         }
 
         Map<?, ?> root = requireMapping(document, "configuration root");
-        rejectUnknownFields(root, "configuration root", TIMING_NODE_ID, PRESENTATION, LOGGING);
+        rejectUnknownFields(root, "configuration root", TIMING_NODE_ID, PRESENTATION, LOGGING, IO);
 
         if (!root.containsKey(TIMING_NODE_ID)) {
             throw new IllegalArgumentException(
@@ -69,7 +74,50 @@ public final class YamlApplicationConfigLoader {
                 timingNodeId,
                 mapPresentation(root.get(PRESENTATION)),
                 mapLogging(root.get(LOGGING)),
-                mapLoggingLive(root.get(LOGGING)));
+                mapLoggingLive(root.get(LOGGING)),
+                mapTimingDataPath(root.get(IO)));
+    }
+
+    private static Path mapTimingDataPath(Object rawIo) {
+        if (rawIo == null) {
+            throw new IllegalArgumentException(
+                    "Missing required configuration field: " + IO);
+        }
+
+        Map<?, ?> io = requireMapping(rawIo, IO);
+        rejectUnknownFields(io, IO, STORAGE);
+        if (!io.containsKey(STORAGE)) {
+            throw new IllegalArgumentException(
+                    "Missing required configuration field: " + IO + "." + STORAGE);
+        }
+
+        String storageField = IO + "." + STORAGE;
+        Map<?, ?> storage = requireMapping(io.get(STORAGE), storageField);
+        rejectUnknownFields(storage, storageField, TIMING_DATA);
+        if (!storage.containsKey(TIMING_DATA)) {
+            throw new IllegalArgumentException(
+                    "Missing required configuration field: "
+                            + storageField + "." + TIMING_DATA);
+        }
+
+        String timingDataField = storageField + "." + TIMING_DATA;
+        Map<?, ?> timingData = requireMapping(storage.get(TIMING_DATA), timingDataField);
+        rejectUnknownFields(timingData, timingDataField, PATH);
+        String rawPath = requireString(
+                timingData.get(PATH),
+                timingDataField + "." + PATH).trim();
+        if (rawPath.isEmpty()) {
+            throw new IllegalArgumentException(
+                    timingDataField + "." + PATH + " must not be blank");
+        }
+
+        try {
+            return Paths.get(rawPath);
+        } catch (InvalidPathException ex) {
+            throw new IllegalArgumentException(
+                    timingDataField + "." + PATH + " is not a valid filesystem path",
+                    ex);
+        }
     }
 
     private static LoggingConfig mapLogging(Object rawLogging) {

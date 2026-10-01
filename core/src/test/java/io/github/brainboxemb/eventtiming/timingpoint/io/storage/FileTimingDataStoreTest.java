@@ -56,6 +56,19 @@ public class FileTimingDataStoreTest {
     }
 
     @Test
+    public void appendCreatesMissingParentDirectory() throws Exception {
+        Path file = temporaryFolder.getRoot().toPath()
+                .resolve("nested")
+                .resolve("timing")
+                .resolve("timing-data.jsonl");
+
+        store(file).append(data(NODE_ID, 1L));
+
+        assertTrue(Files.isRegularFile(file));
+        assertEquals(1, store(file).load().records().size());
+    }
+
+    @Test
     public void loadAcceptsCrLfFraming() throws Exception {
         Path file = file();
         TimingData first = data(NODE_ID, 1L);

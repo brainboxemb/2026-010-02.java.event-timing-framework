@@ -129,6 +129,8 @@ public final class FileTimingDataStore implements TimingDataStore {
         byte[] framed = Arrays.copyOf(payload, payload.length + 1);
         framed[framed.length - 1] = LF;
 
+        ensureParentDirectory();
+
         try (FileChannel channel = FileChannel.open(
                 file,
                 StandardOpenOption.CREATE,
@@ -141,6 +143,20 @@ public final class FileTimingDataStore implements TimingDataStore {
             channel.force(true);
         } catch (IOException ex) {
             throw new StoreException("could not durably append TimingData to " + file, ex);
+        }
+    }
+
+    private void ensureParentDirectory() throws StoreException {
+        Path parent = file.toAbsolutePath().getParent();
+        if (parent == null) {
+            return;
+        }
+        try {
+            Files.createDirectories(parent);
+        } catch (IOException ex) {
+            throw new StoreException(
+                    "could not create TimingData directory " + parent,
+                    ex);
         }
     }
 

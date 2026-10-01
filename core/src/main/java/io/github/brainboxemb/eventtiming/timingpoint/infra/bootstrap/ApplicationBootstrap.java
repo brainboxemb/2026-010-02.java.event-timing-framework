@@ -1,6 +1,10 @@
 package io.github.brainboxemb.eventtiming.timingpoint.infra.bootstrap;
 
+import io.github.brainboxemb.eventtiming.timingdata.TimingTimestamp;
+import io.github.brainboxemb.eventtiming.timingdata.defaultprofile.DefaultTimingDataCodec;
+import io.github.brainboxemb.eventtiming.timingdata.defaultprofile.DefaultTimingDataFactory;
 import io.github.brainboxemb.eventtiming.timingpoint.domain.timing.TimingNode;
+import io.github.brainboxemb.eventtiming.timingpoint.io.storage.FileTimingDataStore;
 import io.github.brainboxemb.eventtiming.timingpoint.infra.BuildIdentity;
 import io.github.brainboxemb.eventtiming.timingpoint.infra.bootstrap.config.ApplicationConfig;
 import io.github.brainboxemb.eventtiming.timingpoint.infra.bootstrap.config.ApiConfig;
@@ -16,6 +20,7 @@ import io.github.brainboxemb.eventtiming.timingpoint.runtime.TimingApplication;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
+import java.time.Instant;
 
 /**
  * Cross-cutting application-core bootstrap: composition and startup wiring.
@@ -71,8 +76,25 @@ public final class ApplicationBootstrap {
         if (config == null) {
             throw new IllegalArgumentException("config must not be null");
         }
+        if (config.timingDataPath() == null) {
+            throw new IllegalArgumentException(
+                    "TimingData storage path must be configured before composition");
+        }
+
+        DefaultTimingDataFactory timingDataFactory = new DefaultTimingDataFactory();
+        FileTimingDataStore timingDataStore = new FileTimingDataStore(
+                config.timingDataPath(),
+                config.timingNodeId(),
+                new DefaultTimingDataCodec());
+
+        TimingNode timingNode = new TimingNode(
+                config.timingNodeId(),
+                timingDataStore,
+                timingDataFactory,
+                () -> new TimingTimestamp(Instant.now()));
+
         return TimingApplication.builder(buildIdentity)
-                .timingNode(new TimingNode(config.timingNodeId()))
+                .timingNode(timingNode)
                 .build();
     }
 
