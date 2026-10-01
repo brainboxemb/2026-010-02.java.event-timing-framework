@@ -1,9 +1,9 @@
 package io.github.brainboxemb.eventtiming.timingpoint.domain.logbook;
 
-import io.github.brainboxemb.eventtiming.timingdata.ManualRegistrationTimeSource;
+import io.github.brainboxemb.eventtiming.timingdata.TimingData.ManualTimeSource;
 import io.github.brainboxemb.eventtiming.timingdata.RegistrationId;
 import io.github.brainboxemb.eventtiming.timingdata.TimingData;
-import io.github.brainboxemb.eventtiming.timingdata.TimingDataContext;
+import io.github.brainboxemb.eventtiming.timingdata.TimingDataFactory.Context;
 import io.github.brainboxemb.eventtiming.timingdata.TimingTimestamp;
 import io.github.brainboxemb.eventtiming.timingdata.defaultprofile.DefaultTimingDataFactory;
 import io.github.brainboxemb.eventtiming.timingpoint.domain.timing.TimingNodeId;
@@ -83,11 +83,11 @@ public class LogBookTest {
                 TimingTimestamp.parse("2026-10-01T12:00:00.000000000Z");
         TimingTimestamp recorded =
                 TimingTimestamp.parse("2026-10-01T12:00:01.000000000Z");
-        TimingDataContext context =
-                new TimingDataContext(nodeId, sequence, 24, effective, recorded);
+        Context context =
+                new Context(nodeId, sequence, 24, effective, recorded);
         return factory.createManualRegistration(
                 context,
                 new RegistrationId(registrationId),
-                ManualRegistrationTimeSource.OPERATOR_ENTERED);
+                ManualTimeSource.OPERATOR_ENTERED);
     }
 }
