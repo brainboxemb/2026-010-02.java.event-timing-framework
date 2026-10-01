@@ -18,7 +18,7 @@ import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.constructor.SafeConstructor;
 import org.yaml.snakeyaml.error.YAMLException;
 
-/** Maps the default IF-11 YAML syntax into the framework application configuration model. */
+/** Maps the default IF-11 YAML syntax into the application-core configuration model. */
 public final class YamlApplicationConfigLoader {
     private static final String TIMING_NODE_ID = "timingNodeId";
     private static final String PRESENTATION = "presentation";
