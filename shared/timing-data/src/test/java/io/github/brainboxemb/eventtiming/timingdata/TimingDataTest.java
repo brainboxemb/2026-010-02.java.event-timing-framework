@@ -30,8 +30,8 @@ public class TimingDataTest {
     }
 
     @Test(expected = IllegalArgumentException.class)
-    public void recordKeyRejectsBlankTimingNodeIdentity() {
-        new TimingData.RecordKey(new TimingNodeId("   "), 1L);
+    public void recordKeyRejectsMissingTimingNodeIdentity() {
+        new TimingData.RecordKey(null, 1L);
     }
 
     @Test
