@@ -387,7 +387,7 @@ public final class DefaultTimingDataCodec implements TimingDataCodec {
             JsonToken token,
             String name,
             boolean alreadySeen)
-            throws CodecException {
+            throws IOException, CodecException {
         rejectDuplicate(name, alreadySeen);
         if (token != JsonToken.VALUE_STRING) {
             throw invalid(name + " must be a JSON string");
