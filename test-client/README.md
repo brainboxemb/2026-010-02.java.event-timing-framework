@@ -56,6 +56,10 @@ With `JAVA_HOME` pointing to a JDK 17 installation:
 ```
 
 Start SI-01 separately from the normal Java-8 project/NetBeans run configuration.
+For the formal Step-4 V04 running-system check, follow
+[STEP4-DEMO.md](STEP4-DEMO.md); it uses a dedicated demo storage file so normal
+development TimingData is not modified.
+
 The default development endpoints are:
 
 ```text
@@ -113,17 +117,17 @@ live stream is separate from IF-03 status/events and does not provide retained h
 The **Timing** tab implements the first-registration Step-4 slice against the compact
 IF-03 contract:
 
-- reads the 1..N \`nodes[]\` status model and addresses one selected TimingNode;
+- reads the 1..N `nodes[]` status model and addresses one selected TimingNode;
 - shows current node state and LocationId;
 - enables LocationId changes only while CLOSED;
 - opens/closes the selected node through node-addressed IF-03 commands;
-- discovers \`DIRECT_REGISTRATION_SIMULATION\` before enabling dev \`auto-reg\`;
-- submits only short \`id\` + canonical \`time\` input for auto-reg (for example
-  \`N001\`); the prefix is an example convention, not RegistrationId syntax;
-- shows the returned source \`seq\` as the operation result;
+- discovers `DIRECT_REGISTRATION_SIMULATION` before enabling dev `auto-reg`;
+- submits only short `id` + canonical `time` input for auto-reg (for example
+  `N001`); the prefix is an example convention, not RegistrationId syntax;
+- shows the returned source `seq` as the operation result;
 - queries LogBook metadata without downloading the full LogBook;
 - loads bounded LogBook pages and merges live committed TimingData by stable
-  \`TimingNodeId + sequenceNumber\` key;
+  `TimingNodeId + sequenceNumber` key;
 - marks cached data stale during disconnect/reconnect and disables mutating controls
   until status/LogBook recovery is complete.
 
@@ -137,7 +141,7 @@ Those remain later increments.
 
 ### Current IF-03 resources used
 
-\`\`\`text
+```text
 GET  /api/v1/version
 GET  /api/v1/status
 GET  /api/v1/capabilities
@@ -153,7 +157,7 @@ GET  /api/v1/node/{id}/logbook?last=...
 POST /api/v1/dev/node/{id}/auto-reg
 
 WS   /api/v1/events
-\`\`\`
+```
 
 ## Documentation screenshots
 
@@ -176,9 +180,9 @@ This is intentionally not generic desktop mouse/keyboard automation. A JavaFX-ow
 snapshot can wait until the scene is rendered and does not depend on window-manager
 coordinates.
 
-The first screenshot proof should stay small; likely candidates are Status, a Step-4
-Timing view and an Upstream/DebugConnector view. Screenshot generation is not implemented
-by this documentation change.
+The first screenshot proof should stay small; useful candidates are Status and the
+CLOSED, OPEN and RECONNECTING/STALE Step-4 Timing states. Screenshot generation remains
+presentation evidence and is separate from the V04 behavioural pass/fail check.
 
 ## Verify
 
