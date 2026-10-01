@@ -9,7 +9,7 @@ import io.github.brainboxemb.eventtiming.timingpoint.infra.BuildIdentity;
  * Top-level reusable runtime object for one SI-01 application composition.
  *
  * <p>Concrete configuration parsing and executable input handling stay outside this runtime.
- * Cross-cutting composition is owned by the framework ApplicationBootstrap.</p>
+ * Cross-cutting composition is owned by the application-core ApplicationBootstrap.</p>
  */
 public final class TimingApplication implements AutoCloseable {
     private final BuildIdentity buildIdentity;
@@ -72,7 +72,7 @@ public final class TimingApplication implements AutoCloseable {
         return buildIdentity.application() + " lifecycle OK version=" + buildIdentity.version() + " state=" + state;
     }
 
-    /** Small runtime builder that creates only objects required by the current framework runtime. */
+    /** Small runtime builder that creates only objects required by the current application-core runtime. */
     public static final class Builder {
         private final BuildIdentity buildIdentity;
         private TimingNode timingNode;
