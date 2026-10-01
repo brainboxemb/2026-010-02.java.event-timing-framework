@@ -12,17 +12,20 @@ This repository is the public implementation repository for **SI-01 — Timing P
 
 Architectural responsibilities are not automatically Maven artifacts.
 
-The default reactor contains three product artifacts. The small TimingData API is
-an independently reusable IF-05 model/SPI artifact because both SI-01 and the
-standalone Engineering Client are real consumers. The verification-only
+The default reactor contains three product artifacts. TimingData is an independently
+reusable shared IF-05 library because both SI-01 and the standalone Engineering Client
+are real consumers. It deliberately remains one artifact containing the semantic contracts,
+default/reference profile, codec and factory/provider; those responsibilities are not split
+into separate API/default JARs. The verification-only
 `system-test` module is added only when the explicit Maven `system-test`
 profile is selected:
 
 ```text
-timing-data-api/  event-timing-data-api   shared Java-8 IF-05 model/SPI
-core/             event-timing-core       reusable SI-01 application core
-app/              event-timing-app        runnable/default application
-system-test/      event-timing-system-test black-box verification only (profile-only)
+shared/
+  timing-data/    event-timing-data        shared Java-8 IF-05 TimingData library
+core/             event-timing-core        reusable SI-01 application core
+app/              event-timing-app         runnable/default application
+system-test/      event-timing-system-test  black-box verification only (profile-only)
 ```
 
 `system-test` has no Java dependency on the product artifacts. It starts the built app JAR as
@@ -30,7 +33,7 @@ a separate JVM process and verifies only external interfaces. It is not a releas
 artifact. The root `event-timing-parent` POM is build/aggregation metadata rather than a deployed
 product component.
 
-The shared TimingData API models committed registrations with a small common
+The shared TimingData library models committed registrations with a small common
 `TimingData` contract plus type-safe `AutomaticRegistrationTimingData` and
 `ManualRegistrationTimingData` variants. One immutable `TimingDataContext`
 carries the common source/sequence/location/time values. A configured
@@ -466,7 +469,7 @@ The canonical Linux producer stages all three product JARs:
 
 ```text
 artifacts/
-  event-timing-data-api-<version>.jar
+  event-timing-data-<version>.jar
   event-timing-core-<version>.jar
   event-timing-app-<version>.jar
 ```
@@ -548,7 +551,7 @@ BuildIdentity       revision=<tagged commit SHA>
 
 Release assets contain:
 
-- `event-timing-data-api-X.Y.Z.jar`;
+- `event-timing-data-X.Y.Z.jar`;
 - `event-timing-core-X.Y.Z.jar`;
 - `event-timing-app-X.Y.Z.jar`;
 - SHA-256 checksums;

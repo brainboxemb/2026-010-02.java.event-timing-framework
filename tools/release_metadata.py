@@ -86,7 +86,7 @@ def inspect(repo_root, git_ref, github_output=None):
         "release_tag": expected_tag,
         "app_jar": "event-timing-app-{}.jar".format(version),
         "core_jar": "event-timing-core-{}.jar".format(version),
-        "timing_data_api_jar": "event-timing-data-api-{}.jar".format(version),
+        "timing_data_jar": "event-timing-data-{}.jar".format(version),
     }
 
     for key, value in values.items():

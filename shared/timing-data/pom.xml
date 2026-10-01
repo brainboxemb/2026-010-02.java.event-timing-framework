@@ -9,9 +9,9 @@
     <version>0.2.3-SNAPSHOT</version>
   </parent>
 
-  <artifactId>event-timing-data-api</artifactId>
-  <name>Event Timing Data API</name>
-  <description>Shared Java-8 model and provider SPI for the public IF-05 TimingData interchange contract.</description>
+  <artifactId>event-timing-data</artifactId>
+  <name>Event Timing Data</name>
+  <description>Shared Java-8 TimingData library for the public IF-05 semantic contract, default/reference profile, codec and provider SPI.</description>
 
   <dependencies>
     <dependency>
