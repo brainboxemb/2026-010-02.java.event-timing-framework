@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Move `LocationId` into the shared TimingData library and use the same value type across TimingNode, TimingData construction and codec diagnostics; event/profile-specific allowed values remain outside the shared type.
+
 - Add a small typed local `Event<T>` primitive and publish newly committed TimingData after durable store append and LogBook visibility; listener RuntimeExceptions are isolated and reported without rolling back the commit.
 
 - Rebuild LogBook from committed TimingData before the TimingNode serial worker starts; preserve CLOSED/no-location restart policy and expose repaired incomplete-tail recovery in TimingNode status.
