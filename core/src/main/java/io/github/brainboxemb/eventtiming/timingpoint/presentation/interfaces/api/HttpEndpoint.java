@@ -105,6 +105,8 @@ public final class HttpEndpoint implements AutoCloseable {
     private void handle(HttpExchange exchange) throws IOException {
         try {
             route(exchange);
+        } catch (ResponseAlreadySent ignored) {
+            // Method validation already wrote and closed the HTTP response.
         } catch (RequestException ex) {
             sendJson(exchange, 400, MessageWriter.error(ex.code, ex.getMessage()));
         } catch (TimingNode.OperationException ex) {
