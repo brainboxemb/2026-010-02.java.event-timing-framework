@@ -39,6 +39,7 @@ jobs:
       release_tag: ${{ steps.metadata.outputs.release_tag }}
       app_jar: ${{ steps.metadata.outputs.app_jar }}
       framework_jar: ${{ steps.metadata.outputs.framework_jar }}
+      timing_data_api_jar: ${{ steps.metadata.outputs.timing_data_api_jar }}
     steps:
       - name: Checkout exact source revision
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
@@ -75,6 +76,7 @@ jobs:
         run: |
           set -euo pipefail
           test -f system-test/pom.xml
+          ! grep -F '<artifactId>event-timing-data-api</artifactId>' system-test/pom.xml
           ! grep -F '<artifactId>event-timing-framework</artifactId>' system-test/pom.xml
           ! grep -F '<artifactId>event-timing-app</artifactId>' system-test/pom.xml
 
@@ -102,6 +104,7 @@ jobs:
       smoke-expected-output: 'event-timing-app lifecycle OK version=${{ needs.release-metadata.outputs.version }} state=STOPPED'
       test-report-path: '**/target/surefire-reports/**'
       publication-artifact-paths: |
+        timing-data-api/target/${{ needs.release-metadata.outputs.timing_data_api_jar }}
         framework/target/${{ needs.release-metadata.outputs.framework_jar }}
         app/target/${{ needs.release-metadata.outputs.app_jar }}
 
@@ -239,6 +242,7 @@ jobs:
       smoke-expected-output: ''
       test-report-path: '**/target/surefire-reports/**'
       publication-artifact-paths: |
+        timing-data-api/target/${{ needs.release-metadata.outputs.timing_data_api_jar }}
         framework/target/${{ needs.release-metadata.outputs.framework_jar }}
         app/target/${{ needs.release-metadata.outputs.app_jar }}
       windows-mode: none
@@ -434,11 +438,13 @@ jobs:
           RELEASE_TAG: ${{ needs.release-metadata.outputs.release_tag }}
           APP_JAR: ${{ needs.release-metadata.outputs.app_jar }}
           FRAMEWORK_JAR: ${{ needs.release-metadata.outputs.framework_jar }}
+          TIMING_DATA_API_JAR: ${{ needs.release-metadata.outputs.timing_data_api_jar }}
         run: |
           set -euo pipefail
           test "$(cat publication/source-sha.txt)" = "${GITHUB_SHA}"
           test -f "publication/artifacts/${APP_JAR}"
           test -f "publication/artifacts/${FRAMEWORK_JAR}"
+          test -f "publication/artifacts/${TIMING_DATA_API_JAR}"
 
           python3 tools/release_metadata.py verify-artifact \
             --jar "publication/artifacts/${APP_JAR}" \
@@ -448,7 +454,7 @@ jobs:
             --version "${RELEASE_VERSION}" \
             --output release-notes.md
 
-          (cd publication/artifacts && sha256sum "${APP_JAR}" "${FRAMEWORK_JAR}") \
+          (cd publication/artifacts && sha256sum "${TIMING_DATA_API_JAR}" "${FRAMEWORK_JAR}" "${APP_JAR}") \
             > "SHA256SUMS-${RELEASE_VERSION}.txt"
 
           mkdir -p publication/evidence/system-test/linux publication/evidence/system-test/windows
@@ -466,9 +472,11 @@ jobs:
           RELEASE_TAG: ${{ needs.release-metadata.outputs.release_tag }}
           APP_JAR: ${{ needs.release-metadata.outputs.app_jar }}
           FRAMEWORK_JAR: ${{ needs.release-metadata.outputs.framework_jar }}
+          TIMING_DATA_API_JAR: ${{ needs.release-metadata.outputs.timing_data_api_jar }}
         run: |
           set -euo pipefail
           assets=(
+            "publication/artifacts/${TIMING_DATA_API_JAR}"
             "publication/artifacts/${FRAMEWORK_JAR}"
             "publication/artifacts/${APP_JAR}"
             "SHA256SUMS-${RELEASE_VERSION}.txt"

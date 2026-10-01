@@ -13,6 +13,7 @@
   <description>Build parent and reactor for the reusable event-timing framework and applications.</description>
 
   <modules>
+    <module>timing-data-api</module>
     <module>framework</module>
     <module>app</module>
   </modules>

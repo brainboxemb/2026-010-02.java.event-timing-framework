@@ -12,16 +12,20 @@ This repository is the public implementation repository for **SI-01 — Timing P
 
 Architectural responsibilities are not automatically Maven artifacts.
 
-The default reactor contains the two product deliverables. The verification-only
-`system-test` module is added only when the explicit Maven `system-test` profile is selected:
+The default reactor contains three product artifacts. The small TimingData API is
+an independently reusable IF-05 model/SPI artifact because both SI-01 and the
+standalone Engineering Client are real consumers. The verification-only
+`system-test` module is added only when the explicit Maven `system-test`
+profile is selected:
 
 ```text
-framework/    event-timing-framework    reusable library
-app/          event-timing-app          runnable/default application
-system-test/  event-timing-system-test  black-box verification only (profile-only)
+timing-data-api/  event-timing-data-api   shared Java-8 IF-05 model/SPI
+framework/        event-timing-framework  reusable SI-01 library
+app/              event-timing-app        runnable/default application
+system-test/      event-timing-system-test black-box verification only (profile-only)
 ```
 
-`system-test` has no Java dependency on either product artifact. It starts the built app JAR as
+`system-test` has no Java dependency on the product artifacts. It starts the built app JAR as
 a separate JVM process and verifies only external interfaces. It is not a release/publication
 artifact. The root `event-timing-parent` POM is build/aggregation metadata rather than a deployed
 product component.
@@ -449,10 +453,11 @@ exact release-tag qualification          full
 
 `smoke` runs the exact Linux-produced application JAR on Windows without a second Maven build. `full` adds an independent native Windows Maven `verify`; that native Windows build can start in parallel with the Linux canonical producer after preflight, while exact-artifact smoke waits for Linux output. A normal protected-main publication deliberately does not allocate Windows again after the pull request has already qualified the change.
 
-The canonical Linux producer stages both product JARs:
+The canonical Linux producer stages all three product JARs:
 
 ```text
 artifacts/
+  event-timing-data-api-<version>.jar
   event-timing-framework-<version>.jar
   event-timing-app-<version>.jar
 ```
@@ -534,6 +539,7 @@ BuildIdentity       revision=<tagged commit SHA>
 
 Release assets contain:
 
+- `event-timing-data-api-X.Y.Z.jar`;
 - `event-timing-framework-X.Y.Z.jar`;
 - `event-timing-app-X.Y.Z.jar`;
 - SHA-256 checksums;
