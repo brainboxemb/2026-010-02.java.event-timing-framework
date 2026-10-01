@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Compose the reference TimingData persistence stack in the real executable from `io.storage.timingData.path`, including startup recovery, default factory/codec and UTC recorded-time source.
+
 - Move `TimingNodeId` into the shared TimingData library and use the same value type across TimingNode, TimingData, record keys, persistence, application status and configuration while keeping the IF-05 wire value a string.
 
 - Add `TimingNode.registerAccepted(...)` as the shared post-filter registration boundary used by Step-4 engineering simulation and later RFID processing; it creates automatic TimingData through the same ordered durable commit path.
