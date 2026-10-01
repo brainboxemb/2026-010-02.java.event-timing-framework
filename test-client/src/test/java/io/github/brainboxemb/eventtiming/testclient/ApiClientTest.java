@@ -7,12 +7,17 @@ import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class ApiClientTest {
     private HttpServer server;
@@ -25,59 +30,213 @@ public class ApiClientTest {
     }
 
     @Test
-    void readsVersionAndStatusFromPublicHttpContract() throws Exception {
+    void readsCompactVersionStatusAndCapabilities() throws Exception {
         server = HttpServer.create(new InetSocketAddress("127.0.0.1", 0), 0);
-        server.createContext("/api/v1/version", exchange -> respond(exchange,
+        server.createContext("/api/v1/version", exchange -> respond(exchange, 200,
                 "{"
                         + "\"application\":\"event-timing-app\","
-                        + "\"version\":\"0.2.2-SNAPSHOT\","
+                        + "\"version\":\"0.2.3-SNAPSHOT\","
                         + "\"revision\":\"abc123\","
                         + "\"sourceRef\":\"feature/test\","
                         + "\"buildOrigin\":\"local\","
                         + "\"dirty\":false,"
                         + "\"apiVersion\":\"1\""
                         + "}"));
-        server.createContext("/api/v1/status", exchange -> respond(exchange,
+        server.createContext("/api/v1/status", exchange -> respond(exchange, 200,
                 "{"
-                        + "\"apiVersion\":\"1\","
-                        + "\"build\":{"
-                        + "\"application\":\"event-timing-app\","
-                        + "\"version\":\"0.2.2-SNAPSHOT\","
-                        + "\"revision\":\"abc123\","
-                        + "\"sourceRef\":\"feature/test\","
-                        + "\"buildOrigin\":\"local\","
-                        + "\"dirty\":false,"
-                        + "\"apiVersion\":\"1\""
+                        + "\"nodes\":["
+                        + "{"
+                        + "\"id\":\"timing-node-01\","
+                        + "\"locationId\":24,"
+                        + "\"state\":\"OPEN\""
                         + "},"
-                        + "\"timingNodes\":[{"
-                        + "\"timingNodeId\":\"timing-node-01\","
-                        + "\"lifecycle\":\"CLOSED\""
-                        + "}],"
+                        + "{"
+                        + "\"id\":\"timing-node-02\","
+                        + "\"locationId\":null,"
+                        + "\"state\":\"CLOSED\""
+                        + "}"
+                        + "],"
                         + "\"problems\":[]"
+                        + "}"));
+        server.createContext("/api/v1/capabilities", exchange -> respond(exchange, 200,
+                "{"
+                        + "\"capabilities\":[{"
+                        + "\"id\":\"DIRECT_REGISTRATION_SIMULATION\","
+                        + "\"supported\":true,"
+                        + "\"enabled\":true"
+                        + "}]"
                         + "}"));
         server.start();
 
-        ApiClient client = new ApiClient(
-                URI.create("http://127.0.0.1:" + server.getAddress().getPort()));
+        ApiClient client = client();
 
         var version = client.getVersion();
         assertEquals("event-timing-app", version.build().application());
-        assertEquals("0.2.2-SNAPSHOT", version.build().version());
+        assertEquals("0.2.3-SNAPSHOT", version.build().version());
         assertEquals("feature/test", version.build().sourceRef());
         assertFalse(version.build().dirty());
 
         var status = client.getStatus();
-        assertEquals("timing-node-01", status.timingNodes().get(0).timingNodeId());
-        assertEquals("CLOSED", status.timingNodes().get(0).lifecycle());
-        assertEquals("abc123", status.build().revision());
+        assertEquals(2, status.nodes().size());
+        assertEquals("timing-node-01", status.nodes().get(0).id());
+        assertEquals(24, status.nodes().get(0).locationId());
+        assertEquals("OPEN", status.nodes().get(0).state());
+        assertEquals("timing-node-02", status.nodes().get(1).id());
+        assertNull(status.nodes().get(1).locationId());
+        assertEquals("CLOSED", status.nodes().get(1).state());
+
+        var capabilities = client.getCapabilities();
+        assertTrue(capabilities.enabled("DIRECT_REGISTRATION_SIMULATION"));
+        assertFalse(capabilities.enabled("UNKNOWN"));
     }
 
-    private static void respond(HttpExchange exchange, String json) throws IOException {
+    @Test
+    void addressesNodeControlsAndBoundedLogBook() throws Exception {
+        List<Request> requests = new ArrayList<>();
+        server = HttpServer.create(new InetSocketAddress("127.0.0.1", 0), 0);
+        server.createContext("/", exchange -> {
+            requests.add(new Request(
+                    exchange.getRequestMethod(),
+                    exchange.getRequestURI().toString(),
+                    new String(exchange.getRequestBody().readAllBytes(), StandardCharsets.UTF_8)));
+            String path = exchange.getRequestURI().getPath();
+            String query = exchange.getRequestURI().getQuery();
+
+            if (path.endsWith("/location")) {
+                respond(exchange, 200, "{\"result\":\"UPDATED\"}");
+            } else if (path.endsWith("/open")) {
+                respond(exchange, 200, "{\"result\":\"OPENED\"}");
+            } else if (path.endsWith("/close")) {
+                respond(exchange, 200, "{\"result\":\"CLOSED\"}");
+            } else if (path.endsWith("/auto-reg")) {
+                respond(exchange, 200, "{\"seq\":2}");
+            } else if (path.endsWith("/logbook") && query == null) {
+                respond(exchange, 200, "{\"count\":2,\"first\":1,\"last\":2}");
+            } else if (path.endsWith("/logbook") && "from=1&limit=100".equals(query)) {
+                respond(exchange, 200,
+                        "{\"count\":2,\"next\":null,\"records\":["
+                                + timingData(1, "N001")
+                                + ","
+                                + timingData(2, "N002")
+                                + "]}");
+            } else if (path.endsWith("/logbook") && "last=1".equals(query)) {
+                respond(exchange, 200,
+                        "{\"count\":2,\"next\":null,\"records\":["
+                                + timingData(2, "N002")
+                                + "]}");
+            } else {
+                respond(exchange, 404,
+                        "{\"error\":{\"code\":\"NOT_FOUND\",\"message\":\"missing\"}}");
+            }
+        });
+        server.start();
+
+        ApiClient client = client();
+        assertEquals("UPDATED", client.setLocation("timing-node-01", 24).result());
+        assertEquals("OPENED", client.open("timing-node-01").result());
+        assertEquals(2L, client.autoReg(
+                "timing-node-01",
+                "N002",
+                "2026-10-01T12:00:04.000000000Z").seq());
+
+        var info = client.getLogBookInfo("timing-node-01");
+        assertEquals(2L, info.count());
+        assertEquals(1L, info.first());
+        assertEquals(2L, info.last());
+
+        var page = client.getLogBookFrom("timing-node-01", 1L, 100);
+        assertEquals(2L, page.count());
+        assertNull(page.next());
+        assertEquals(2, page.records().size());
+        assertEquals("N001", page.records().get(0).registrationId());
+        assertEquals(
+                new ApiClient.TimingDataKey("timing-node-01", 2L),
+                page.records().get(1).key());
+
+        var latest = client.getLogBookLast("timing-node-01", 1);
+        assertEquals(1, latest.records().size());
+        assertEquals(2L, latest.records().get(0).sequenceNumber());
+
+        assertEquals("CLOSED", client.close("timing-node-01").result());
+
+        assertEquals("PUT", requests.get(0).method());
+        assertEquals("/api/v1/node/timing-node-01/location", requests.get(0).uri());
+        assertTrue(requests.get(0).body().contains("\"locationId\":24"));
+
+        assertEquals("POST", requests.get(2).method());
+        assertEquals(
+                "/api/v1/dev/node/timing-node-01/auto-reg",
+                requests.get(2).uri());
+        assertTrue(requests.get(2).body().contains("\"id\":\"N002\""));
+        assertTrue(requests.get(2).body().contains(
+                "\"time\":\"2026-10-01T12:00:04.000000000Z\""));
+    }
+
+    @Test
+    void exposesStructuredIf03Errors() throws Exception {
+        server = HttpServer.create(new InetSocketAddress("127.0.0.1", 0), 0);
+        server.createContext("/", exchange -> respond(exchange, 409,
+                "{"
+                        + "\"error\":{"
+                        + "\"code\":\"NODE_NOT_OPEN\","
+                        + "\"message\":\"Accepted registration requires an OPEN TimingNode\""
+                        + "}"
+                        + "}"));
+        server.start();
+
+        ApiClient.ApiException error = assertThrows(
+                ApiClient.ApiException.class,
+                () -> client().autoReg(
+                        "timing-node-01",
+                        "N001",
+                        "2026-10-01T12:00:00.000000000Z"));
+
+        assertEquals(409, error.statusCode());
+        assertEquals("NODE_NOT_OPEN", error.code());
+        assertTrue(error.getMessage().contains("OPEN TimingNode"));
+    }
+
+    @Test
+    void validatesLogBookBoundsLocally() {
+        ApiClient client = new ApiClient(URI.create("http://127.0.0.1:8081"));
+        assertThrows(
+                IllegalArgumentException.class,
+                () -> client.getLogBookFrom("timing-node-01", 0L, 100));
+        assertThrows(
+                IllegalArgumentException.class,
+                () -> client.getLogBookLast("timing-node-01", 1001));
+    }
+
+    private ApiClient client() {
+        return new ApiClient(
+                URI.create("http://127.0.0.1:" + server.getAddress().getPort()));
+    }
+
+    private static String timingData(long sequence, String registrationId) {
+        return "{"
+                + "\"version\":1,"
+                + "\"timingNodeId\":\"timing-node-01\","
+                + "\"sequenceNumber\":" + sequence + ","
+                + "\"locationId\":24,"
+                + "\"recordType\":\"REGISTRATION\","
+                + "\"effectiveTime\":\"2026-10-01T12:00:00.000000000Z\","
+                + "\"recordedAt\":\"2026-10-01T12:00:00.125000000Z\","
+                + "\"registrationId\":\"" + registrationId + "\","
+                + "\"origin\":\"AUTOMATIC\","
+                + "\"timeSource\":\"OBSERVED\""
+                + "}";
+    }
+
+    private static void respond(HttpExchange exchange, int status, String json)
+            throws IOException {
         byte[] body = json.getBytes(StandardCharsets.UTF_8);
         exchange.getResponseHeaders().set("Content-Type", "application/json");
-        exchange.sendResponseHeaders(200, body.length);
+        exchange.sendResponseHeaders(status, body.length);
         try (var output = exchange.getResponseBody()) {
             output.write(body);
         }
+    }
+
+    private record Request(String method, String uri, String body) {
     }
 }
