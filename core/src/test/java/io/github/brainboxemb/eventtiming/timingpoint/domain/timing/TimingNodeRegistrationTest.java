@@ -4,6 +4,7 @@ import io.github.brainboxemb.eventtiming.timingdata.TimingData.ManualTimeSource;
 import io.github.brainboxemb.eventtiming.timingdata.TimingData.ManualRegistration;
 import io.github.brainboxemb.eventtiming.timingdata.RegistrationId;
 import io.github.brainboxemb.eventtiming.timingdata.TimingData;
+import io.github.brainboxemb.eventtiming.timingdata.TimingDataFactory.Context;
 import io.github.brainboxemb.eventtiming.timingdata.TimingTimestamp;
 import io.github.brainboxemb.eventtiming.timingdata.defaultprofile.DefaultTimingDataFactory;
 import io.github.brainboxemb.eventtiming.timingpoint.domain.system.TimeSource;
@@ -269,7 +270,7 @@ public class TimingNodeRegistrationTest {
 
     private static TimingData recoveredData(long sequence, int locationId) {
         return new DefaultTimingDataFactory().createManualRegistration(
-                new io.github.brainboxemb.eventtiming.timingdata.TimingDataFactory.Context(
+                new Context(
                         "timing-node-01",
                         sequence,
                         locationId,
