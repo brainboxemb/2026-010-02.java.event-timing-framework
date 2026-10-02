@@ -311,7 +311,9 @@ launch the separate application process. Deliberate full system verification is 
 ./mvnw verify -Psystem-test
 ```
 
-That profile adds `system-test` after the application JAR has been packaged. VC-ST1-001
+That profile adds `system-test` after the application JAR has been packaged. Formal
+verification-case IDs are preserved in the Java class names:
+`VC-ST1-001 -> VcSt1_001Test` and `VC-ST1-002 -> VcSt1_002Test`. VC-ST1-001
 launches the JAR as a child JVM with temporary loopback ports and verifies version, compact
 status, WebSocket snapshot/reconnect and controlled shutdown. VC-ST1-002 drives the Step-4
 public registration flow through IF-03: capabilities, LocationId/open/close, invalid
