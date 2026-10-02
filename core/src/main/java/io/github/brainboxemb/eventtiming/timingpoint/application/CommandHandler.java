@@ -5,6 +5,7 @@ import io.github.brainboxemb.eventtiming.timingdata.RegistrationId;
 import io.github.brainboxemb.eventtiming.timingdata.TimingData;
 import io.github.brainboxemb.eventtiming.timingdata.TimingTimestamp;
 import io.github.brainboxemb.eventtiming.timingpoint.domain.timing.TimingNode;
+import io.github.brainboxemb.eventtiming.timingpoint.domain.timing.TimingNodeQueries;
 import io.github.brainboxemb.eventtiming.timingpoint.infra.BuildIdentity;
 import io.github.brainboxemb.eventtiming.timingpoint.platform.events.Event;
 
@@ -155,19 +156,19 @@ public final class CommandHandler {
     /** Returns the number of committed records in the current node LogBook. */
     public int logBookCount() {
         return requireOperationalTimingNode("logBookCount")
-                .timingDataCount();
+                .query(TimingNodeQueries.timingDataCount());
     }
 
     /** Returns a bounded committed LogBook range starting at an inclusive sequence. */
     public List<TimingData> logBookFrom(long fromSequence, int limit) {
         return requireOperationalTimingNode("logBookFrom")
-                .timingDataRange(fromSequence, limit);
+                .query(TimingNodeQueries.timingDataRange(fromSequence, limit));
     }
 
     /** Returns a bounded newest LogBook range in committed source order. */
     public List<TimingData> latestLogBook(int limit) {
         return requireOperationalTimingNode("latestLogBook")
-                .latestTimingData(limit);
+                .query(TimingNodeQueries.latestTimingData(limit));
     }
 
     /** Subscribes to authoritative status changes caused through this application boundary. */
@@ -224,7 +225,7 @@ public final class CommandHandler {
     private static Supplier<ApplicationStatus> statusSupplier(TimingNode timingNode) {
         TimingNode node = requireTimingNode(timingNode);
         return () -> {
-            TimingNode.Status status = node.status();
+            TimingNode.Status status = node.query(TimingNodeQueries.status());
             return new ApplicationStatus(
                     status.timingNodeId(),
                     status.lifecycle(),

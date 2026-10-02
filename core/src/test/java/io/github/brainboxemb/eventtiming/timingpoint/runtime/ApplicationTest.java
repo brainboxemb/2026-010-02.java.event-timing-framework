@@ -35,7 +35,7 @@ public class ApplicationTest {
         }
 
         try {
-            timingNode.status();
+            timingNode.query(TimingNodeQueries.status());
             fail("expected TimingNode to be unavailable after application close");
         } catch (TimingNode.OperationException expected) {
             assertEquals(

@@ -12,7 +12,6 @@ import io.github.brainboxemb.eventtiming.timingpoint.domain.timingdata.TimingDat
 import io.github.brainboxemb.eventtiming.timingpoint.platform.events.Event;
 import io.github.brainboxemb.eventtiming.timingpoint.platform.execution.SerialWorker;
 
-import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
@@ -215,32 +214,21 @@ public final class TimingNode {
         return newTimingDataEvent.unsubscribe(listener);
     }
 
-    public List<TimingData> timingDataSnapshot() {
-        requireTimingDataSupport("timingDataSnapshot");
-        return execute(logic::timingDataSnapshot, "timingDataSnapshot");
-    }
-
-    public int timingDataCount() {
-        requireTimingDataSupport("timingDataCount");
-        return execute(logic::timingDataCount, "timingDataCount");
-    }
-
-    public List<TimingData> timingDataRange(long fromSequence, int limit) {
-        requireTimingDataSupport("timingDataRange");
-        return execute(
-                () -> logic.timingDataRange(fromSequence, limit),
-                "timingDataRange");
-    }
-
-    public List<TimingData> latestTimingData(int limit) {
-        requireTimingDataSupport("latestTimingData");
-        return execute(
-                () -> logic.latestTimingData(limit),
-                "latestTimingData");
-    }
-
-    public Status status() {
-        return execute(logic::status, "status");
+    /**
+     * Executes a typed read against the same serial lane as state-changing commands.
+     *
+     * <p>Queries carry the read operation instead of requiring a forwarding method
+     * on TimingNode for every value exposed by TimingNodeLogic. This keeps reads
+     * ordered with commands while the visible TimingNode API stays compact.</p>
+     */
+    public <R> R query(TimingNodeQuery<R> query) {
+        if (query == null) {
+            throw new IllegalArgumentException("query must not be null");
+        }
+        if (query.requiresTimingData()) {
+            requireTimingDataSupport(query.name());
+        }
+        return execute(() -> query.read(logic), query.name());
     }
 
     private RegistrationResult publishCommitted(RegistrationResult result) {

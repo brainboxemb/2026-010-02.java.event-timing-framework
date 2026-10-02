@@ -61,7 +61,7 @@ public class TimingNodeRegistrationTest {
 
             assertEquals(1, store.appended.size());
             assertSame(data, store.appended.get(0));
-            assertEquals(1, node.timingDataSnapshot().size());
+            assertEquals(1, node.query(TimingNodeQueries.timingDataSnapshot()).size());
             assertSame(data, delivered.get(0));
         } finally {
             node.stop();
@@ -86,7 +86,7 @@ public class TimingNodeRegistrationTest {
                     TimingNode.RegistrationResult.Outcome.NODE_NOT_OPEN,
                     rejected.outcome());
             assertEquals(0, store.attempts);
-            assertTrue(node.timingDataSnapshot().isEmpty());
+            assertTrue(node.query(TimingNodeQueries.timingDataSnapshot()).isEmpty());
 
             node.open();
             TimingNode.RegistrationResult committed =
@@ -121,7 +121,7 @@ public class TimingNodeRegistrationTest {
             assertEquals(1, store.appended.size());
             assertSame(result.timingData(), store.appended.get(0));
 
-            List<TimingData> snapshot = node.timingDataSnapshot();
+            List<TimingData> snapshot = node.query(TimingNodeQueries.timingDataSnapshot());
             assertEquals(1, snapshot.size());
             assertSame(result.timingData(), snapshot.get(0));
 
@@ -161,7 +161,7 @@ public class TimingNodeRegistrationTest {
 
             assertEquals(1L, first.timingData().sequenceNumber());
             assertEquals(2L, second.timingData().sequenceNumber());
-            assertEquals(2, node.timingDataSnapshot().size());
+            assertEquals(2, node.query(TimingNodeQueries.timingDataSnapshot()).size());
         } finally {
             node.stop();
         }
@@ -185,7 +185,7 @@ public class TimingNodeRegistrationTest {
                     TimingNode.RegistrationResult.Outcome.NODE_NOT_OPEN,
                     rejected.outcome());
             assertEquals(0, store.appended.size());
-            assertEquals(0, node.timingDataSnapshot().size());
+            assertEquals(0, node.query(TimingNodeQueries.timingDataSnapshot()).size());
 
             node.open();
             TimingNode.RegistrationResult committed = node.commitManualRegistration(
@@ -221,7 +221,7 @@ public class TimingNodeRegistrationTest {
                         expected.reason());
             }
 
-            assertEquals(0, node.timingDataSnapshot().size());
+            assertEquals(0, node.query(TimingNodeQueries.timingDataSnapshot()).size());
             assertEquals(1, store.attempts);
 
             try {
@@ -237,7 +237,7 @@ public class TimingNodeRegistrationTest {
             }
 
             assertEquals(1, store.attempts);
-            assertEquals(0, node.timingDataSnapshot().size());
+            assertEquals(0, node.query(TimingNodeQueries.timingDataSnapshot()).size());
         } finally {
             node.stop();
         }
@@ -272,7 +272,7 @@ public class TimingNodeRegistrationTest {
                     ManualTimeSource.OPERATOR_ENTERED);
 
             assertEquals(1, store.appended.size());
-            assertEquals(1, node.timingDataSnapshot().size());
+            assertEquals(1, node.query(TimingNodeQueries.timingDataSnapshot()).size());
             assertEquals(1, delivered.size());
             assertSame(committed.timingData(), delivered.get(0));
 
@@ -313,7 +313,7 @@ public class TimingNodeRegistrationTest {
             }
 
             assertTrue(delivered.isEmpty());
-            assertEquals(0, node.timingDataSnapshot().size());
+            assertEquals(0, node.query(TimingNodeQueries.timingDataSnapshot()).size());
         } finally {
             node.stop();
         }
@@ -342,7 +342,7 @@ public class TimingNodeRegistrationTest {
 
             assertTrue(committed.committed());
             assertEquals(1, store.appended.size());
-            assertEquals(1, node.timingDataSnapshot().size());
+            assertEquals(1, node.query(TimingNodeQueries.timingDataSnapshot()).size());
             assertEquals(1, delivered.size());
             assertSame(committed.timingData(), delivered.get(0));
         } finally {
@@ -360,7 +360,7 @@ public class TimingNodeRegistrationTest {
 
         node.start();
         try {
-            assertEquals(1, node.timingDataSnapshot().size());
+            assertEquals(1, node.query(TimingNodeQueries.timingDataSnapshot()).size());
             assertTrue(delivered.isEmpty());
         } finally {
             node.stop();
@@ -376,11 +376,11 @@ public class TimingNodeRegistrationTest {
 
         node.start();
         try {
-            TimingNode.Status status = node.status();
+            TimingNode.Status status = node.query(TimingNodeQueries.status());
             assertEquals(TimingNode.Lifecycle.CLOSED, status.lifecycle());
             assertFalse(status.hasLocation());
             assertFalse(status.timingDataTailRecovered());
-            assertEquals(2, node.timingDataSnapshot().size());
+            assertEquals(2, node.query(TimingNodeQueries.timingDataSnapshot()).size());
 
             assertEquals(TimingNode.OpenResult.NO_LOCATION, node.open());
 
@@ -406,8 +406,8 @@ public class TimingNodeRegistrationTest {
 
         node.start();
         try {
-            assertTrue(node.status().timingDataTailRecovered());
-            assertEquals(1, node.timingDataSnapshot().size());
+            assertTrue(node.query(TimingNodeQueries.status()).timingDataTailRecovered());
+            assertEquals(1, node.query(TimingNodeQueries.timingDataSnapshot()).size());
         } finally {
             node.stop();
         }
@@ -427,7 +427,7 @@ public class TimingNodeRegistrationTest {
         }
 
         try {
-            node.status();
+            node.query(TimingNodeQueries.status());
             fail("expected worker to remain unavailable");
         } catch (TimingNode.OperationException expected) {
             assertEquals(
@@ -450,7 +450,7 @@ public class TimingNodeRegistrationTest {
         node.start();
         try {
             try {
-                node.timingDataSnapshot();
+                node.query(TimingNodeQueries.timingDataSnapshot());
                 fail("expected unavailable TimingData support");
             } catch (TimingNode.OperationException expected) {
                 assertEquals(
