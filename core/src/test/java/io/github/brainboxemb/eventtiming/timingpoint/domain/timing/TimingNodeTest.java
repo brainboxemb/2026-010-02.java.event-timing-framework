@@ -1,8 +1,8 @@
 package io.github.brainboxemb.eventtiming.timingpoint.domain.timing;
 
-import io.github.brainboxemb.eventtiming.timingdata.LocationId;
+import io.github.brainboxemb.eventtiming.timingdata.TimingDataTypes.LocationId;
 import io.github.brainboxemb.eventtiming.timingdata.TimingData;
-import io.github.brainboxemb.eventtiming.timingdata.TimingNodeId;
+import io.github.brainboxemb.eventtiming.timingdata.TimingDataTypes.NodeId;
 import io.github.brainboxemb.eventtiming.timingdata.TimingTimestamp;
 import io.github.brainboxemb.eventtiming.timingdata.defaultprofile.DefaultTimingDataFactory;
 import io.github.brainboxemb.eventtiming.timingpoint.domain.timingdata.TimingDataPersistence;
@@ -24,7 +24,7 @@ import static org.junit.Assert.fail;
 public class TimingNodeTest {
     @Test
     public void startsClosedWithoutLocation() {
-        TimingNodeId id = new TimingNodeId("timing-node-01");
+        NodeId id = new NodeId("timing-node-01");
         TimingNode node = node(id);
 
         node.start();
@@ -41,7 +41,7 @@ public class TimingNodeTest {
 
     @Test
     public void configuresLocationWhileClosedThenOpensAndCloses() {
-        TimingNode node = node(new TimingNodeId("timing-node-01"));
+        TimingNode node = node(new NodeId("timing-node-01"));
         LocationId location = new LocationId(24);
 
         node.start();
@@ -70,7 +70,7 @@ public class TimingNodeTest {
 
     @Test
     public void openWithoutLocationIsProcessedDomainRejection() {
-        TimingNode node = node(new TimingNodeId("timing-node-01"));
+        TimingNode node = node(new NodeId("timing-node-01"));
 
         node.start();
         try {
@@ -83,7 +83,7 @@ public class TimingNodeTest {
 
     @Test
     public void repeatedLifecycleCommandsReturnProcessedResults() {
-        TimingNode node = node(new TimingNodeId("timing-node-01"));
+        TimingNode node = node(new NodeId("timing-node-01"));
 
         node.start();
         try {
@@ -101,7 +101,7 @@ public class TimingNodeTest {
     public void timeoutDoesNotCancelAcceptedOperation() throws Exception {
         SerialWorker worker = new SerialWorker(2, "timing-node-test");
         TimingNode node = node(
-                new TimingNodeId("timing-node-01"),
+                new NodeId("timing-node-01"),
                 worker,
                 25L);
         CountDownLatch blockerStarted = new CountDownLatch(1);
@@ -143,7 +143,7 @@ public class TimingNodeTest {
     public void stateDependentOperationsAreDecidedInQueueOrder() throws Exception {
         SerialWorker worker = new SerialWorker(4, "timing-node-test");
         TimingNode node = node(
-                new TimingNodeId("timing-node-01"),
+                new NodeId("timing-node-01"),
                 worker,
                 1000L);
         CountDownLatch blockerStarted = new CountDownLatch(1);
@@ -207,7 +207,7 @@ public class TimingNodeTest {
             throws Exception {
         SerialWorker worker = new SerialWorker(2, "timing-node-submit-test");
         TimingNode node = node(
-                new TimingNodeId("timing-node-01"),
+                new NodeId("timing-node-01"),
                 worker,
                 1000L);
         CountDownLatch blockerStarted = new CountDownLatch(1);
@@ -262,7 +262,7 @@ public class TimingNodeTest {
 
     @Test
     public void operationBeforeStartIsUnavailable() {
-        TimingNode node = node(new TimingNodeId("timing-node-01"));
+        TimingNode node = node(new NodeId("timing-node-01"));
 
         try {
             node.query(TimingNodeQueries.status());
@@ -283,7 +283,7 @@ public class TimingNodeTest {
                 TimingNodeTest::now);
     }
 
-    private static TimingNode node(TimingNodeId id) {
+    private static TimingNode node(NodeId id) {
         return new TimingNode(
                 id,
                 new NoOpPersistence(),
@@ -296,7 +296,7 @@ public class TimingNodeTest {
      * these boundary tests. Production code never uses this construction path.
      */
     private static TimingNode node(
-            TimingNodeId id,
+            NodeId id,
             SerialWorker worker,
             long timeoutMillis) {
         TimingNodeLogic logic = new TimingNodeLogic(

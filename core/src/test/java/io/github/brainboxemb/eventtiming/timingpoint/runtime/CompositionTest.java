@@ -1,6 +1,6 @@
 package io.github.brainboxemb.eventtiming.timingpoint.runtime;
 
-import io.github.brainboxemb.eventtiming.timingdata.TimingNodeId;
+import io.github.brainboxemb.eventtiming.timingdata.TimingDataTypes.NodeId;
 import io.github.brainboxemb.eventtiming.timingpoint.domain.timing.TimingNode;
 import io.github.brainboxemb.eventtiming.timingpoint.domain.timing.TimingNodeTypes;
 import io.github.brainboxemb.eventtiming.timingpoint.infra.BuildIdentity;
@@ -61,7 +61,7 @@ public class CompositionTest {
     @Test(expected = IllegalArgumentException.class)
     public void createRejectsMissingTimingDataPath() {
         Config config = new Config(
-                new TimingNodeId("configured-node"),
+                new NodeId("configured-node"),
                 new Presentation(null, null));
 
         Composition.create(identity(), config);
@@ -69,7 +69,7 @@ public class CompositionTest {
 
     private static Config config(Path timingDataPath) {
         return new Config(
-                new TimingNodeId("configured-node"),
+                new NodeId("configured-node"),
                 new Presentation(null, null),
                 null,
                 null,

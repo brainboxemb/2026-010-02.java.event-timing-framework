@@ -1,10 +1,10 @@
 package io.github.brainboxemb.eventtiming.timingpoint.domain.timingdata;
 
-import io.github.brainboxemb.eventtiming.timingdata.LocationId;
-import io.github.brainboxemb.eventtiming.timingdata.RegistrationId;
+import io.github.brainboxemb.eventtiming.timingdata.TimingDataTypes.LocationId;
+import io.github.brainboxemb.eventtiming.timingdata.TimingDataTypes.RegistrationId;
 import io.github.brainboxemb.eventtiming.timingdata.TimingData;
 import io.github.brainboxemb.eventtiming.timingdata.TimingDataFactory;
-import io.github.brainboxemb.eventtiming.timingdata.TimingNodeId;
+import io.github.brainboxemb.eventtiming.timingdata.TimingDataTypes.NodeId;
 import io.github.brainboxemb.eventtiming.timingdata.TimingTimestamp;
 import io.github.brainboxemb.eventtiming.timingdata.defaultprofile.DefaultTimingDataCodec;
 import io.github.brainboxemb.eventtiming.timingdata.defaultprofile.DefaultTimingDataFactory;
@@ -24,7 +24,7 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 public class DefaultTimingDataPersistenceTest {
-    private static final TimingNodeId NODE_ID = new TimingNodeId("timing-node-01");
+    private static final NodeId NODE_ID = new NodeId("timing-node-01");
     private static final TimingTimestamp EFFECTIVE =
             TimingTimestamp.parse("2026-10-01T12:00:00.000000000Z");
     private static final TimingTimestamp RECORDED =
@@ -82,7 +82,7 @@ public class DefaultTimingDataPersistenceTest {
         Files.write(
                 file,
                 concat(
-                        codec.encode(data(new TimingNodeId("timing-node-02"), 1L)),
+                        codec.encode(data(new NodeId("timing-node-02"), 1L)),
                         new byte[] {'\n'}));
 
         assertLoadFails(file, "but persistence owns " + NODE_ID);
@@ -93,7 +93,7 @@ public class DefaultTimingDataPersistenceTest {
         TimingDataPersistence persistence = persistence(file());
 
         try {
-            persistence.append(data(new TimingNodeId("timing-node-02"), 1L));
+            persistence.append(data(new NodeId("timing-node-02"), 1L));
             fail("expected wrong TimingNode rejection");
         } catch (TimingDataPersistence.PersistenceException expected) {
             assertTrue(expected.getMessage().contains("but persistence owns " + NODE_ID));
@@ -129,7 +129,7 @@ public class DefaultTimingDataPersistenceTest {
         return temporaryFolder.getRoot().toPath().resolve("timing-data.jsonl");
     }
 
-    private TimingData data(TimingNodeId nodeId, long sequence) {
+    private TimingData data(NodeId nodeId, long sequence) {
         return factory.createManualRegistration(
                 new TimingDataFactory.Context(
                         nodeId,
