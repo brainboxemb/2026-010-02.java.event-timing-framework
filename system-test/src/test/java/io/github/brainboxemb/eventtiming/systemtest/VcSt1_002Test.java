@@ -143,7 +143,7 @@ public class VcSt1_002Test {
                     "POST",
                     "/api/v1/dev/node/" + NODE_ID + "/auto-reg",
                     "{"
-                            + "\"id\":\"N001\","
+                            + "\"id\":\"N0001\","
                             + "\"time\":\"2026-10-01T12:00:00Z\""
                             + "}");
             assertEquals("Unexpected auto-reg status", 200, registration.status);
@@ -404,7 +404,7 @@ public class VcSt1_002Test {
         assertContains(
                 json,
                 "\"time\":\"2026-10-01T12:00:00Z\"");
-        assertContains(json, "\"regId\":\"N001\"");
+        assertContains(json, "\"regId\":\"N0001\"");
         assertContains(json, "\"code\":[\"ADD\"]");
         assertContains(json, "\"recTime\":");
     }

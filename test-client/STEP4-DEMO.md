@@ -88,13 +88,13 @@ Open the **Timing** tab and choose **Connect live**.
    - LocationId remains `24`;
    - **Set location** is disabled;
    - **Close** and **Auto-reg** are enabled.
-4. Enter registration ID `N001`.
+4. Enter registration ID `N0001`.
 5. Use the explicit time below for deterministic evidence:
    `2026-10-01T12:00:00Z`.
 6. Choose **Auto-reg**.
    - Last operation shows `seq 1`;
    - LogBook count becomes `1`;
-   - the table contains sequence 1 / LocationId 24 / RegistrationId `N001`;
+   - the table contains sequence 1 / LocationId 24 / RegistrationId `N0001`;
    - the record is shown as `AUTO_REG` with code `ADD`;
    - the **Events** tab contains one `TIMING_DATA_COMMITTED` event for that
      same record.
@@ -119,7 +119,7 @@ VC-ST1-002.
    - enters syncing/reconnecting before becoming LIVE;
    - keeps state-changing controls disabled while rebuilding;
    - rebuilds current status to `CLOSED` with no operational LocationId;
-   - rebuilds LogBook count `1` with sequence 1 / `N001`;
+   - rebuilds LogBook count `1` with sequence 1 / `N0001`;
    - does not add the recovered sequence-1 row again as a new live event;
    - merges any history/live overlap by stable TimingData record key;
    - reaches LIVE only after the baseline and buffered events are reconciled.
@@ -143,7 +143,7 @@ Client Java           :
 
 Initial CLOSED/no-location     PASS / FAIL
 Location 24 + OPEN             PASS / FAIL
-Auto-reg N001 -> seq 1         PASS / FAIL
+Auto-reg N0001 -> seq 1        PASS / FAIL
 Live committed event           PASS / FAIL
 LogBook count/row              PASS / FAIL
 Close + LocationId 25          PASS / FAIL

@@ -115,14 +115,14 @@ public class ApiClientTest {
             } else if (path.endsWith("/logbook") && "from=1&limit=100".equals(query)) {
                 respond(exchange, 200,
                         "{\"count\":2,\"next\":null,\"records\":["
-                                + timingData(1, "N001")
+                                + timingData(1, "N0001")
                                 + ","
-                                + timingData(2, "N002")
+                                + timingData(2, "N0002")
                                 + "]}");
             } else if (path.endsWith("/logbook") && "last=1".equals(query)) {
                 respond(exchange, 200,
                         "{\"count\":2,\"next\":null,\"records\":["
-                                + timingData(2, "N002")
+                                + timingData(2, "N0002")
                                 + "]}");
             } else {
                 respond(exchange, 404,
@@ -136,7 +136,7 @@ public class ApiClientTest {
         assertEquals("OPENED", client.open("timing-node-01").result());
         assertEquals(2L, client.autoReg(
                 "timing-node-01",
-                "N002",
+                "N0002",
                 "2026-10-01T12:00:04.000000000Z").seq());
 
         var info = client.getLogBookInfo("timing-node-01");
@@ -148,7 +148,7 @@ public class ApiClientTest {
         assertEquals(2L, page.count());
         assertNull(page.next());
         assertEquals(2, page.records().size());
-        assertEquals("N001", page.records().get(0).registrationId());
+        assertEquals("N0001", page.records().get(0).registrationId());
         assertEquals("AUTO_REG", page.records().get(0).recordType());
         assertEquals(List.of("ADD"), page.records().get(0).codes());
         assertEquals(
@@ -169,7 +169,7 @@ public class ApiClientTest {
         assertEquals(
                 "/api/v1/dev/node/timing-node-01/auto-reg",
                 requests.get(2).uri());
-        assertTrue(requests.get(2).body().contains("\"id\":\"N002\""));
+        assertTrue(requests.get(2).body().contains("\"id\":\"N0002\""));
         assertTrue(requests.get(2).body().contains(
                 "\"time\":\"2026-10-01T12:00:04.000000000Z\""));
     }
@@ -190,7 +190,7 @@ public class ApiClientTest {
                 ApiClient.ApiException.class,
                 () -> client().autoReg(
                         "timing-node-01",
-                        "N001",
+                        "N0001",
                         "2026-10-01T12:00:00.000000000Z"));
 
         assertEquals(409, error.statusCode());

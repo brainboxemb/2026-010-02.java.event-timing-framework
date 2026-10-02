@@ -93,7 +93,7 @@ public class CommandHandlerTest {
                     statusChanges.get(1).timingNodeLifecycle());
 
             TimingNodeTypes.RegistrationResult registration = handler.commitAutomaticRegistration(
-                    new RegistrationId("N001"),
+                    new RegistrationId("N0001"),
                     OBSERVATION_TIME);
             assertTrue(registration.committed());
             assertEquals(1, committed.size());

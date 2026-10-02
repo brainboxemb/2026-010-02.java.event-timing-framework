@@ -48,7 +48,7 @@ class ApiEventClientTest {
                 + "\"locId\":24,"
                 + "\"recType\":\"AUTO_REG\","
                 + "\"time\":\"2026-10-01T12:00:00Z\","
-                + "\"regId\":\"N003\","
+                + "\"regId\":\"N0003\","
                 + "\"code\":[\"ADD\"],"
                 + "\"recTime\":\"2026-10-01T12:00:00.125Z\""
                 + "}"
@@ -60,7 +60,7 @@ class ApiEventClientTest {
         assertEquals("TIMING_DATA_COMMITTED", event.eventType());
         assertEquals("timing-node-01", event.timingData().timingNodeId());
         assertEquals(3L, event.timingData().sequenceNumber());
-        assertEquals("N003", event.timingData().registrationId());
+        assertEquals("N0003", event.timingData().registrationId());
         assertEquals("AUTO_REG", event.timingData().recordType());
         assertEquals(List.of("ADD"), event.timingData().codes());
         assertEquals(

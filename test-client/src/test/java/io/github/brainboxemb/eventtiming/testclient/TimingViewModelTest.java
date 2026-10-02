@@ -54,7 +54,7 @@ class TimingViewModelTest {
                 node("node-01", 24, "OPEN"),
                 node("node-02", 25, "CLOSED")));
         model.selectNode("node-02");
-        model.mergeCommitted(record("node-02", 1L, "N001"));
+        model.mergeCommitted(record("node-02", 1L, "N0001"));
 
         model.applyStatus(status(
                 node("node-01", 24, "OPEN"),
@@ -75,8 +75,8 @@ class TimingViewModelTest {
         model.applyStatus(status(node("node-01", 24, "OPEN")));
         model.applyLogBookInfo(new ApiClient.LogBookInfo(2L, 1L, 2L, "{}"));
 
-        ApiClient.TimingDataInfo first = record("node-01", 1L, "N001");
-        ApiClient.TimingDataInfo second = record("node-01", 2L, "N002");
+        ApiClient.TimingDataInfo first = record("node-01", 1L, "N0001");
+        ApiClient.TimingDataInfo second = record("node-01", 2L, "N0002");
         model.mergeLogBookPage(new ApiClient.LogBookPage(
                 2L,
                 null,
@@ -96,7 +96,7 @@ class TimingViewModelTest {
                 node("node-01", 24, "OPEN"),
                 node("node-02", 25, "OPEN")));
 
-        model.mergeCommitted(record("node-02", 1L, "N001"));
+        model.mergeCommitted(record("node-02", 1L, "N0001"));
 
         assertTrue(model.records().isEmpty());
         assertNull(model.latestSequence());

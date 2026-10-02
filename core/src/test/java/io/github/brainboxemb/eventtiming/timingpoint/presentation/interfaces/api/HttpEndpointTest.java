@@ -111,7 +111,7 @@ public class HttpEndpointTest {
                     "POST",
                     "/api/v1/dev/node/timing-node-01/auto-reg",
                     "{"
-                            + "\"id\":\"N001\","
+                            + "\"id\":\"N0001\","
                             + "\"time\":"
                             + "\"2026-10-01T12:00:00.000000000Z\""
                             + "}");
@@ -137,7 +137,7 @@ public class HttpEndpointTest {
             assertTrue(history.body.contains("\"seqNr\":1"));
             assertTrue(history.body.contains("\"locId\":24"));
             assertTrue(history.body.contains("\"recType\":\"AUTO_REG\""));
-            assertTrue(history.body.contains("\"regId\":\"N001\""));
+            assertTrue(history.body.contains("\"regId\":\"N0001\""));
             assertTrue(history.body.contains("\"code\":[\"ADD\"]"));
             assertTrue(history.body.contains(
                     "\"time\":\"2026-10-01T12:00:00Z\""));
