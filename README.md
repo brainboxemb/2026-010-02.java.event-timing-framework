@@ -48,90 +48,79 @@ The reusable `event-timing-core` JAR is organised by logical responsibility, but
 layer/package is not represented by a runtime marker object merely to make the source tree mirror
 the architecture diagram.
 
-Current real application-core behaviour is deliberately small:
+Current real application-core behaviour is deliberately small and follows the package boundaries directly:
 
 ```text
-io.github.brainboxemb.eventtiming.timingpoint.application.ApplicationStatus
 io.github.brainboxemb.eventtiming.timingpoint.application.CommandHandler
+io.github.brainboxemb.eventtiming.timingpoint.application.ApplicationStatus
 io.github.brainboxemb.eventtiming.timingpoint.domain.timing.TimingNode
-io.github.brainboxemb.eventtiming.timingpoint.domain.timing.TimingNodeId
+io.github.brainboxemb.eventtiming.timingpoint.domain.timing.TimingNodeLogic   # package-private
+io.github.brainboxemb.eventtiming.timingpoint.domain.timing.TimingNodeTypes   # source-code grouping
+io.github.brainboxemb.eventtiming.timingpoint.domain.timingdata.DefaultTimingDataPersistence
+io.github.brainboxemb.eventtiming.timingpoint.io.storage.AppendOnlyRecordStore
+io.github.brainboxemb.eventtiming.timingpoint.io.storage.FileAppendOnlyRecordStore
+io.github.brainboxemb.eventtiming.timingpoint.platform.execution.SerialWorker
 io.github.brainboxemb.eventtiming.timingpoint.infra.BuildIdentity
-io.github.brainboxemb.eventtiming.timingpoint.infra.bootstrap.ApplicationBootstrap
-io.github.brainboxemb.eventtiming.timingpoint.infra.bootstrap.config.ApplicationConfig
-io.github.brainboxemb.eventtiming.timingpoint.runtime.TimingApplication
-io.github.brainboxemb.eventtiming.timingpoint.runtime.TimingApplicationLifecycle
-io.github.brainboxemb.eventtiming.timingpoint.presentation.interfaces.console.LocalConsole
-io.github.brainboxemb.eventtiming.timingpoint.presentation.interfaces.shell.RemoteShellServer
+io.github.brainboxemb.eventtiming.timingpoint.runtime.config.YamlLoader
+io.github.brainboxemb.eventtiming.timingpoint.runtime.Application
+io.github.brainboxemb.eventtiming.timingpoint.runtime.Composition
+io.github.brainboxemb.eventtiming.timingpoint.runtime.Lifecycle
 io.github.brainboxemb.eventtiming.timingpoint.presentation.interfaces.api.HttpEndpoint
 io.github.brainboxemb.eventtiming.timingpoint.presentation.interfaces.api.WebSocketEndpoint
-io.github.brainboxemb.eventtiming.timingpoint.presentation.interfaces.api.MessageWriter
-io.github.brainboxemb.eventtiming.timingpoint.presentation.common.terminal.TerminalSession
 ```
 
-`application` owns the shared client-facing request boundary. `infra` owns build/runtime
-provenance. Further package responsibilities such as `domain`, `core`, `presentation`, `io`
-and `platform` are introduced only when real classes require those boundaries.
-Empty `*Layer` marker classes and pre-modelled future status objects are deliberately not kept as
-architecture evidence.
-
-The reusable application core owns the runtime and cross-cutting bootstrap model:
+The responsibilities are deliberately distinct:
 
 ```text
-io.github.brainboxemb.eventtiming/
-  runtime/
-    TimingApplication
-    TimingApplicationLifecycle
-  infra/
-    bootstrap/
-      ApplicationBootstrap
-      config/
-        ApplicationConfig
-        PresentationConfig
-        RemoteShellConfig
-        ApiConfig
-        ApiHttpConfig
-        ApiWebSocketConfig
+runtime/
+  Application
+  Composition
+  Lifecycle
+  config/
+    Config
+    Presentation
+    Api
+
+infra/
+  BuildIdentity
+  EmbeddedBuildIdentityLoader
+  config/
+    YamlLoader
+  logging/
+  loggingserver/
+
+io/
+  storage/
+    AppendOnlyRecordStore
+    FileAppendOnlyRecordStore
+
+platform/
+  execution/
+    SerialWorker
+  events/
+    Event
 ```
 
-The executable artifact remains thin. Launcher/input adapters stay under `...eventtiming.timingpoint.app`;
-reusable logging infrastructure lives in the core artifact, while the executable selects the SLF4J provider:
+TimingData-specific persistence semantics remain above the generic storage layer: `DefaultTimingDataPersistence` owns codec, TimingNodeId and sequence validation; `io.storage` owns only opaque record/file mechanics and imports no Domain/Application classes.
+
+`runtime.Composition` owns knowledge of the concrete running application graph. Infrastructure provides supporting/cross-cutting mechanisms only; I/O and Platform remain separate responsibilities. The package namespace carries the context, so runtime classes use the short names `Application`, `Composition` and `Lifecycle`. There is no second bootstrap object and no application builder.
+
+A constructed `TimingNode` is always complete: TimingData persistence, factory and TimeSource are required constructor dependencies. There is no lifecycle-only or capability-partial production node.
+
+`TimingNodeTypes` groups the public status/result/exception value types in one Java source file; it has no runtime state and is not a separate architecture component.
+
+Local events keep publish ownership inside the component. Consumers receive a subscription-only `EventSource<T>` and subscribe directly, e.g. `handler.statusChanged().subscribe(...)`. The underlying `Event<T>` registry is thread-safe, but delivery remains synchronous on the emitting thread and concurrent emits are not serialized by the generic event primitive.
+
+`TimingNode` remains the visible Domain component boundary used by higher layers. It serializes typed commands and consistency-sensitive queries through `SerialWorker`, while package-private `TimingNodeLogic` keeps the mutable node state, `LocationId`, LogBook interaction and registration commit behaviour readable. Result-bearing callers use `invoke(TimingNodeCommands....)` and may wait for the processed domain result. Producer/callback paths use `submit(TimingNodeCommands....)` and receive only immediate bounded-queue admission, so RFID/TagProcessor ingress does not wait for later node processing. Reads use `query(TimingNodeQueries....)`; bounded LogBook reads copy a stable shallow view on the serial lane and perform longer formatting/calculation afterwards. The automatic registration command is `commitAutomaticRegistration(...)`; the IF-03 engineering resource remains `/auto-reg`.
+
+The executable artifact remains thin:
 
 ```text
 io.github.brainboxemb.eventtiming.timingpoint.app/
-  TimingApplicationMain
-
-io.github.brainboxemb.eventtiming.timingpoint.infra/
-  BuildIdentity
-  EmbeddedBuildIdentityLoader
-  bootstrap/config/
-    YamlApplicationConfigLoader
-
-io.github.brainboxemb.eventtiming.timingpoint.infra.logging/
-  Logging
-  LoggingConfig
-  LoggingLevel
-  LoggingFileConfig
-  LoggingControl
-  TimestampedFileLogHandler
-  CompactLogFormatter
-
-io.github.brainboxemb.eventtiming.timingpoint.infra.loggingserver/
-  LoggingServer
-  LoggingServerConfig
-  LiveLogHandler
+  Main
 ```
 
-`Logging` owns JUL/backend, retained file/console sink composition and runtime level control. `LoggingServer` is a separate infrastructure component/package that owns the optional client-facing live-log socket. The executable composes both; `Logging` does not construct or own `LoggingServer`. These reusable classes live in `event-timing-core`; the
-framework still selects no SLF4J provider. The default executable supplies `slf4j-jdk14` at
-runtime and starts/stops the core-provided logging component.
-
-`ApplicationBootstrap` consumes the validated application-core configuration model and
-owns concrete composition plus presentation/startup wiring. The default IF-11 YAML parser/mapping and embedded build-identity interpretation are framework
-infrastructure. The executable remains responsible only for supplying the configuration path and
-its filtered `event-timing-build.properties` resource; SnakeYAML is therefore a framework
-implementation dependency. The application has a deliberately minimal `NEW -> RUNNING -> STOPPED` executable lifecycle and
-now composes the first shared client boundary, `CommandHandler`, for the authoritative version
-query. Future timing-domain capability is added only when its use case is implemented.
+It supplies the configuration path, starts the reusable logging infrastructure and hands the parsed runtime configuration to `runtime.Composition`. The default IF-11 YAML parser/mapping lives in `runtime.config.YamlLoader` because it maps directly to the concrete runtime configuration model. The executable selects `slf4j-jdk14`; the core artifact itself still selects no SLF4J provider.
 
 ### Artifact rule
 

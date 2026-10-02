@@ -5,6 +5,7 @@ import io.github.brainboxemb.eventtiming.timingdata.TimingDataCodec;
 import io.github.brainboxemb.eventtiming.timingdata.defaultprofile.DefaultTimingDataCodec;
 import io.github.brainboxemb.eventtiming.timingpoint.application.ApplicationStatus;
 import io.github.brainboxemb.eventtiming.timingpoint.application.CommandHandler;
+import io.github.brainboxemb.eventtiming.timingpoint.platform.events.EventSource;
 
 import java.io.IOException;
 import java.net.InetAddress;
@@ -52,6 +53,8 @@ public final class WebSocketEndpoint implements AutoCloseable {
             this::broadcastStatusChanged;
     private final Consumer<TimingData> timingDataListener =
             this::broadcastTimingDataCommitted;
+    private final EventSource<ApplicationStatus> statusChanged;
+    private final EventSource<TimingData> newTimingData;
 
     private Server server;
     private boolean statusSubscribed;
@@ -61,33 +64,19 @@ public final class WebSocketEndpoint implements AutoCloseable {
             String bindAddress,
             int port,
             CommandHandler commandHandler) {
-        this(
-                bindAddress,
-                port,
-                commandHandler,
-                Clock.systemUTC(),
-                new DefaultTimingDataCodec());
+        this(bindAddress, port, commandHandler, Clock.systemUTC());
     }
 
+    /**
+     * Package-private deterministic-clock seam for event timestamp tests.
+     *
+     * <p>Production composition always uses the public constructor.</p>
+     */
     WebSocketEndpoint(
             String bindAddress,
             int port,
             CommandHandler commandHandler,
             Clock clock) {
-        this(
-                bindAddress,
-                port,
-                commandHandler,
-                clock,
-                new DefaultTimingDataCodec());
-    }
-
-    WebSocketEndpoint(
-            String bindAddress,
-            int port,
-            CommandHandler commandHandler,
-            Clock clock,
-            TimingDataCodec timingDataCodec) {
         if (bindAddress == null || bindAddress.trim().isEmpty()) {
             throw new IllegalArgumentException("bindAddress must not be blank");
         }
@@ -100,14 +89,13 @@ public final class WebSocketEndpoint implements AutoCloseable {
         if (clock == null) {
             throw new IllegalArgumentException("clock must not be null");
         }
-        if (timingDataCodec == null) {
-            throw new IllegalArgumentException("timingDataCodec must not be null");
-        }
         this.bindAddress = bindAddress.trim();
         this.port = port;
         this.commandHandler = commandHandler;
         this.clock = clock;
-        this.timingDataCodec = timingDataCodec;
+        this.timingDataCodec = new DefaultTimingDataCodec();
+        this.statusChanged = commandHandler.statusChanged();
+        this.newTimingData = commandHandler.newTimingData();
     }
 
     /**
@@ -146,10 +134,8 @@ public final class WebSocketEndpoint implements AutoCloseable {
 
         server = candidate;
         try {
-            statusSubscribed =
-                    commandHandler.subscribeStatusChanged(statusChangedListener);
-            timingDataSubscribed =
-                    commandHandler.subscribeNewTimingData(timingDataListener);
+            statusSubscribed = statusChanged.subscribe(statusChangedListener);
+            timingDataSubscribed = newTimingData.subscribe(timingDataListener);
         } catch (RuntimeException ex) {
             unsubscribeApplicationEvents();
             server = null;
@@ -242,11 +228,11 @@ public final class WebSocketEndpoint implements AutoCloseable {
 
     private void unsubscribeApplicationEvents() {
         if (statusSubscribed) {
-            commandHandler.unsubscribeStatusChanged(statusChangedListener);
+            statusChanged.unsubscribe(statusChangedListener);
             statusSubscribed = false;
         }
         if (timingDataSubscribed) {
-            commandHandler.unsubscribeNewTimingData(timingDataListener);
+            newTimingData.unsubscribe(timingDataListener);
             timingDataSubscribed = false;
         }
     }

@@ -13,7 +13,11 @@ import io.github.brainboxemb.eventtiming.timingdata.TimingDataCodec;
 import io.github.brainboxemb.eventtiming.timingdata.TimingTimestamp;
 import io.github.brainboxemb.eventtiming.timingdata.defaultprofile.DefaultTimingDataCodec;
 import io.github.brainboxemb.eventtiming.timingpoint.application.CommandHandler;
-import io.github.brainboxemb.eventtiming.timingpoint.domain.timing.TimingNode;
+import io.github.brainboxemb.eventtiming.timingpoint.domain.timing.TimingNodeTypes.CloseResult;
+import io.github.brainboxemb.eventtiming.timingpoint.domain.timing.TimingNodeTypes.OpenResult;
+import io.github.brainboxemb.eventtiming.timingpoint.domain.timing.TimingNodeTypes.OperationException;
+import io.github.brainboxemb.eventtiming.timingpoint.domain.timing.TimingNodeTypes.RegistrationResult;
+import io.github.brainboxemb.eventtiming.timingpoint.domain.timing.TimingNodeTypes.SetLocationResult;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -50,14 +54,6 @@ public final class HttpEndpoint implements AutoCloseable {
     private ExecutorService executor;
 
     public HttpEndpoint(String bindAddress, int port, CommandHandler commandHandler) {
-        this(bindAddress, port, commandHandler, new DefaultTimingDataCodec());
-    }
-
-    HttpEndpoint(
-            String bindAddress,
-            int port,
-            CommandHandler commandHandler,
-            TimingDataCodec timingDataCodec) {
         if (bindAddress == null || bindAddress.trim().isEmpty()) {
             throw new IllegalArgumentException("bindAddress must not be blank");
         }
@@ -67,13 +63,10 @@ public final class HttpEndpoint implements AutoCloseable {
         if (commandHandler == null) {
             throw new IllegalArgumentException("commandHandler must not be null");
         }
-        if (timingDataCodec == null) {
-            throw new IllegalArgumentException("timingDataCodec must not be null");
-        }
         this.bindAddress = bindAddress.trim();
         this.port = port;
         this.commandHandler = commandHandler;
-        this.timingDataCodec = timingDataCodec;
+        this.timingDataCodec = new DefaultTimingDataCodec();
     }
 
     public synchronized void start() throws IOException {
@@ -111,7 +104,7 @@ public final class HttpEndpoint implements AutoCloseable {
             // Method validation already wrote and closed the HTTP response.
         } catch (RequestException ex) {
             sendJson(exchange, 400, MessageWriter.error(ex.code, ex.getMessage()));
-        } catch (TimingNode.OperationException ex) {
+        } catch (OperationException ex) {
             sendOperationFailure(exchange, ex);
         } catch (RuntimeException ex) {
             LOG.warn("IF-03 request failed", ex);
@@ -259,8 +252,8 @@ public final class HttpEndpoint implements AutoCloseable {
             throw invalidValue(ex.getMessage());
         }
 
-        TimingNode.SetLocationResult result = commandHandler.setLocation(locationId);
-        if (result == TimingNode.SetLocationResult.NODE_NOT_CLOSED) {
+        SetLocationResult result = commandHandler.setLocation(locationId);
+        if (result == SetLocationResult.NODE_NOT_CLOSED) {
             sendJson(
                     exchange,
                     409,
@@ -276,8 +269,8 @@ public final class HttpEndpoint implements AutoCloseable {
     }
 
     private void handleOpen(HttpExchange exchange) throws IOException {
-        TimingNode.OpenResult result = commandHandler.open();
-        if (result == TimingNode.OpenResult.NO_LOCATION) {
+        OpenResult result = commandHandler.open();
+        if (result == OpenResult.NO_LOCATION) {
             sendJson(
                     exchange,
                     409,
@@ -314,9 +307,9 @@ public final class HttpEndpoint implements AutoCloseable {
             return;
         }
 
-        TimingNode.RegistrationResult result =
-                commandHandler.registerAccepted(registrationId, observationTime);
-        if (result.outcome() == TimingNode.RegistrationResult.Outcome.NODE_NOT_OPEN) {
+        RegistrationResult result =
+                commandHandler.commitAutomaticRegistration(registrationId, observationTime);
+        if (result.outcome() == RegistrationResult.Outcome.NODE_NOT_OPEN) {
             sendJson(
                     exchange,
                     409,
@@ -444,7 +437,7 @@ public final class HttpEndpoint implements AutoCloseable {
 
     private void sendOperationFailure(
             HttpExchange exchange,
-            TimingNode.OperationException failure)
+            OperationException failure)
             throws IOException {
         switch (failure.reason()) {
             case BUSY:

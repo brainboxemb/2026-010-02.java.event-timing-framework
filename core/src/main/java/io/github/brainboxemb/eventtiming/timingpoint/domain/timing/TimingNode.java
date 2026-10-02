@@ -1,21 +1,19 @@
 package io.github.brainboxemb.eventtiming.timingpoint.domain.timing;
 
-import io.github.brainboxemb.eventtiming.timingdata.TimingData.ManualTimeSource;
-import io.github.brainboxemb.eventtiming.timingdata.LocationId;
-import io.github.brainboxemb.eventtiming.timingdata.RegistrationId;
 import io.github.brainboxemb.eventtiming.timingdata.TimingData;
-import io.github.brainboxemb.eventtiming.timingdata.TimingDataFactory.Context;
 import io.github.brainboxemb.eventtiming.timingdata.TimingDataFactory;
-import io.github.brainboxemb.eventtiming.timingdata.TimingTimestamp;
 import io.github.brainboxemb.eventtiming.timingdata.TimingNodeId;
-import io.github.brainboxemb.eventtiming.timingpoint.domain.logbook.LogBook;
 import io.github.brainboxemb.eventtiming.timingpoint.domain.system.TimeSource;
-import io.github.brainboxemb.eventtiming.timingpoint.domain.timingdata.TimingDataStore;
+import io.github.brainboxemb.eventtiming.timingpoint.domain.timingdata.TimingDataPersistence;
 import io.github.brainboxemb.eventtiming.timingpoint.platform.events.Event;
+import io.github.brainboxemb.eventtiming.timingpoint.platform.events.EventSource;
 import io.github.brainboxemb.eventtiming.timingpoint.platform.execution.SerialWorker;
+import io.github.brainboxemb.eventtiming.timingpoint.domain.timing.TimingNodeTypes.CommandAdmission;
+import io.github.brainboxemb.eventtiming.timingpoint.domain.timing.TimingNodeTypes.OperationException;
+import io.github.brainboxemb.eventtiming.timingpoint.domain.timing.TimingNodeTypes.RegistrationResult;
+import io.github.brainboxemb.eventtiming.timingpoint.domain.timing.TimingNodeTypes.Status;
+import io.github.brainboxemb.eventtiming.timingpoint.domain.timing.TimingNodeTypes.StartupException;
 
-import java.util.List;
-import java.util.function.Consumer;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
@@ -27,272 +25,81 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Logical timing unit that owns its mutable state behind one serial execution lane.
+ * Public component boundary for one logical timing node.
  *
- * <p>When TimingData support is configured, {@link #start()} first restores the
- * committed TimingData stream into the passive LogBook. Only after successful
- * recovery is the serial worker started and operational work accepted.</p>
+ * <p>The node serializes external operations and delegates its mutable domain
+ * behaviour to {@link TimingNodeLogic}. Higher layers use this component rather
+ * than the internal logic object directly.</p>
+ *
+ * <p>Result-bearing callers use {@link #invoke(TimingNodeCommand)} and typed
+ * reads use {@link #query(TimingNodeQuery)}. Producer/callback paths that must
+ * not wait for the processed result use {@link #submit(TimingNodeCommand)} and
+ * receive only immediate bounded-queue admission. The standard
+ * {@link TimingNodeCommands} and {@link TimingNodeQueries} keep this boundary
+ * compact without duplicating every operation implemented by TimingNodeLogic.</p>
  */
 public final class TimingNode {
     private static final Logger LOG = LoggerFactory.getLogger(TimingNode.class);
     private static final int DEFAULT_QUEUE_CAPACITY = 32;
     private static final long DEFAULT_OPERATION_TIMEOUT_MILLIS = 2000L;
 
-    public enum Lifecycle {
-        CLOSED,
-        OPEN
-    }
-
-    public enum OpenResult {
-        OPENED,
-        ALREADY_OPEN,
-        NO_LOCATION
-    }
-
-    public enum CloseResult {
-        CLOSED,
-        ALREADY_CLOSED
-    }
-
-    public enum SetLocationResult {
-        UPDATED,
-        NODE_NOT_CLOSED
-    }
-
-    public static final class RegistrationResult {
-        public enum Outcome {
-            COMMITTED,
-            NODE_NOT_OPEN
-        }
-
-        private final Outcome outcome;
-        private final TimingData timingData;
-
-        private RegistrationResult(Outcome outcome, TimingData timingData) {
-            this.outcome = outcome;
-            this.timingData = timingData;
-        }
-
-        private static RegistrationResult committed(TimingData timingData) {
-            return new RegistrationResult(Outcome.COMMITTED, timingData);
-        }
-
-        private static RegistrationResult nodeNotOpen() {
-            return new RegistrationResult(Outcome.NODE_NOT_OPEN, null);
-        }
-
-        public Outcome outcome() {
-            return outcome;
-        }
-
-        public boolean committed() {
-            return outcome == Outcome.COMMITTED;
-        }
-
-        public TimingData timingData() {
-            if (timingData == null) {
-                throw new IllegalStateException("registration did not commit TimingData");
-            }
-            return timingData;
-        }
-    }
-
-    public static final class Status {
-        private final TimingNodeId timingNodeId;
-        private final Lifecycle lifecycle;
-        private final LocationId locationId;
-        private final boolean timingDataTailRecovered;
-
-        private Status(
-                TimingNodeId timingNodeId,
-                Lifecycle lifecycle,
-                LocationId locationId,
-                boolean timingDataTailRecovered) {
-            this.timingNodeId = timingNodeId;
-            this.lifecycle = lifecycle;
-            this.locationId = locationId;
-            this.timingDataTailRecovered = timingDataTailRecovered;
-        }
-
-        public TimingNodeId timingNodeId() {
-            return timingNodeId;
-        }
-
-        public Lifecycle lifecycle() {
-            return lifecycle;
-        }
-
-        public boolean hasLocation() {
-            return locationId != null;
-        }
-
-        public LocationId locationId() {
-            return locationId;
-        }
-
-        /**
-         * Returns whether startup repaired one incomplete unterminated TimingData tail.
-         *
-         * <p>This is a recovery diagnostic only; it does not mean a complete
-         * committed record was discarded.</p>
-         */
-        public boolean timingDataTailRecovered() {
-            return timingDataTailRecovered;
-        }
-    }
-
-    /** Startup failure before the TimingNode begins accepting serial work. */
-    public static final class StartupException extends RuntimeException {
-        private StartupException(String message, Throwable cause) {
-            super(message, cause);
-        }
-    }
-
-    public static class OperationException extends RuntimeException {
-        public enum Reason {
-            BUSY,
-            UNAVAILABLE,
-            FAILED,
-            INTERRUPTED,
-            TIMEOUT
-        }
-
-        private final Reason reason;
-
-        private OperationException(Reason reason, String message) {
-            super(message);
-            this.reason = reason;
-        }
-
-        private OperationException(Reason reason, String message, Throwable cause) {
-            super(message, cause);
-            this.reason = reason;
-        }
-
-        public Reason reason() {
-            return reason;
-        }
-    }
-
-    /**
-     * The caller stopped waiting for an accepted operation.
-     *
-     * <p>The final domain outcome is unknown to that caller. Accepted work is not
-     * cancelled automatically.</p>
-     */
-    public static final class OperationTimeoutException extends OperationException {
-        private OperationTimeoutException(String message, Throwable cause) {
-            super(Reason.TIMEOUT, message, cause);
-        }
-    }
-
-    private final TimingNodeId timingNodeId;
+    private final TimingNodeLogic logic;
     private final SerialWorker serialWorker;
     private final long operationTimeoutMillis;
-    private final LogBook logBook;
-    private final TimingDataStore timingDataStore;
-    private final TimingDataFactory timingDataFactory;
-    private final TimeSource timeSource;
+    private final Event<Status> statusChangedEvent = new Event<>();
     private final Event<TimingData> newTimingDataEvent = new Event<>();
 
-    private Lifecycle lifecycle = Lifecycle.CLOSED;
-    private LocationId locationId;
-    private boolean timingDataTailRecovered;
     private Throwable startupFailure;
-    private Throwable timingDataCommitFailure;
-
-    public TimingNode(TimingNodeId timingNodeId) {
-        this(
-                timingNodeId,
-                new SerialWorker(
-                        DEFAULT_QUEUE_CAPACITY,
-                        "timing-node-" + requireId(timingNodeId).value()),
-                DEFAULT_OPERATION_TIMEOUT_MILLIS,
-                null,
-                null,
-                null);
-    }
 
     public TimingNode(
             TimingNodeId timingNodeId,
-            TimingDataStore timingDataStore,
+            TimingDataPersistence timingDataPersistence,
             TimingDataFactory timingDataFactory,
             TimeSource timeSource) {
         this(
-                timingNodeId,
-                new SerialWorker(
-                        DEFAULT_QUEUE_CAPACITY,
-                        "timing-node-" + requireId(timingNodeId).value()),
-                DEFAULT_OPERATION_TIMEOUT_MILLIS,
-                timingDataStore,
-                timingDataFactory,
-                timeSource);
+                new TimingNodeLogic(
+                        timingNodeId,
+                        timingDataPersistence,
+                        timingDataFactory,
+                        timeSource),
+                workerFor(timingNodeId),
+                DEFAULT_OPERATION_TIMEOUT_MILLIS);
     }
 
+    /**
+     * Package-private execution seam used only by TimingNode boundary tests.
+     *
+     * <p>Production composition always uses the public constructor and therefore
+     * the default bounded queue and timeout. Tests use this seam only when they
+     * must control worker scheduling or timeout behaviour; it is not an
+     * alternative application composition.</p>
+     */
     TimingNode(
-            TimingNodeId timingNodeId,
+            TimingNodeLogic logic,
             SerialWorker serialWorker,
             long operationTimeoutMillis) {
-        this(
-                timingNodeId,
-                serialWorker,
-                operationTimeoutMillis,
-                null,
-                null,
-                null);
-    }
-
-    TimingNode(
-            TimingNodeId timingNodeId,
-            SerialWorker serialWorker,
-            long operationTimeoutMillis,
-            TimingDataStore timingDataStore,
-            TimingDataFactory timingDataFactory,
-            TimeSource timeSource) {
-        this.timingNodeId = requireId(timingNodeId);
+        if (logic == null) {
+            throw new IllegalArgumentException("logic must not be null");
+        }
         if (serialWorker == null) {
             throw new IllegalArgumentException("serialWorker must not be null");
         }
         if (operationTimeoutMillis < 1L) {
             throw new IllegalArgumentException("operationTimeoutMillis must be positive");
         }
-
-        boolean hasTimingDataSupport =
-                timingDataStore != null || timingDataFactory != null || timeSource != null;
-        boolean hasCompleteTimingDataSupport =
-                timingDataStore != null && timingDataFactory != null && timeSource != null;
-        if (hasTimingDataSupport && !hasCompleteTimingDataSupport) {
-            throw new IllegalArgumentException(
-                    "timingDataStore, timingDataFactory and timeSource must be configured together");
-        }
-
+        this.logic = logic;
         this.serialWorker = serialWorker;
         this.operationTimeoutMillis = operationTimeoutMillis;
-        this.timingDataStore = timingDataStore;
-        this.timingDataFactory = timingDataFactory;
-        this.timeSource = timeSource;
-        this.logBook = hasCompleteTimingDataSupport ? new LogBook(this.timingNodeId) : null;
-    }
-
-    private static TimingNodeId requireId(TimingNodeId timingNodeId) {
-        if (timingNodeId == null) {
-            throw new IllegalArgumentException("timingNodeId must not be null");
-        }
-        return timingNodeId;
     }
 
     public TimingNodeId timingNodeId() {
-        return timingNodeId;
+        return logic.timingNodeId();
     }
 
     /**
-     * Restores committed TimingData, when configured, and then starts the serial worker.
+     * Recovers committed TimingData before accepting serial operations.
      *
-     * <p>Recovery never reopens the node and never restores an operational
-     * LocationId from historical TimingData. The node starts CLOSED and location
-     * selection remains an explicit current-session operation.</p>
-     *
-     * @throws StartupException when TimingData recovery/rebuild fails
+     * <p>Recovery does not restore the operational LocationId or OPEN state.</p>
      */
     public void start() {
         if (serialWorker.state() != SerialWorker.State.NEW) {
@@ -305,7 +112,14 @@ public final class TimingNode {
                     startupFailure);
         }
 
-        recoverTimingData();
+        try {
+            logic.recoverTimingData();
+        } catch (TimingDataPersistence.PersistenceException | RuntimeException ex) {
+            startupFailure = ex;
+            throw new StartupException(
+                    "TimingData recovery failed for " + timingNodeId().value(),
+                    ex);
+        }
         serialWorker.start();
     }
 
@@ -313,287 +127,148 @@ public final class TimingNode {
         serialWorker.close();
     }
 
-    public OpenResult open() {
-        return execute(this::doOpen, "open");
-    }
-
-    public CloseResult close() {
-        return execute(this::doClose, "close");
-    }
-
-    public SetLocationResult setLocation(LocationId newLocationId) {
-        if (newLocationId == null) {
-            throw new IllegalArgumentException("newLocationId must not be null");
+    /**
+     * Executes one typed state-changing command on the TimingNode serial lane.
+     *
+     * <p>The command contains the domain operation and its arguments. TimingNode
+     * remains responsible for admission, ordering, timeout/failure mapping and
+     * post-command component events.</p>
+     */
+    public <R> R invoke(TimingNodeCommand<R> command) {
+        if (command == null) {
+            throw new IllegalArgumentException("command must not be null");
         }
-        return execute(() -> doSetLocation(newLocationId), "setLocation");
+        return runSerialized(
+                () -> applyCommand(command),
+                command.name());
     }
 
     /**
-     * Commits one semantic registration that has already passed source-specific
-     * observation interpretation/filtering.
+     * Attempts to admit one command without waiting for its processed result.
      *
-     * <p>The caller supplies the resolved shared RegistrationId and accepted
-     * observation time only. TimingNode supplies its own identity, active
-     * LocationId, next committed sequence and recordedAt time on the serial
-     * lane. This is therefore the same domain boundary used by the later RFID
-     * path and by Step-4 direct-registration engineering simulation.</p>
+     * <p>This is the producer/callback path used when the caller must return
+     * promptly, for example after TagProcessor has produced accepted semantic
+     * work. ACCEPTED means only that the command entered the bounded serial
+     * lane; it does not mean that the later domain operation commits.</p>
      */
-    public RegistrationResult registerAccepted(
-            RegistrationId registrationId,
-            TimingTimestamp observationTime) {
-        if (registrationId == null) {
-            throw new IllegalArgumentException("registrationId must not be null");
+    public CommandAdmission submit(TimingNodeCommand<?> command) {
+        if (command == null) {
+            throw new IllegalArgumentException("command must not be null");
         }
-        if (observationTime == null) {
-            throw new IllegalArgumentException("observationTime must not be null");
-        }
-        requireTimingDataSupport("registerAccepted");
-        return execute(
-                () -> doRegisterAccepted(registrationId, observationTime),
-                "registerAccepted");
-    }
 
-    public RegistrationResult registerManual(
-            RegistrationId registrationId,
-            TimingTimestamp effectiveTime,
-            ManualTimeSource registrationTimeSource) {
-        if (registrationId == null) {
-            throw new IllegalArgumentException("registrationId must not be null");
-        }
-        if (effectiveTime == null) {
-            throw new IllegalArgumentException("effectiveTime must not be null");
-        }
-        if (registrationTimeSource == null) {
-            throw new IllegalArgumentException("registrationTimeSource must not be null");
-        }
-        requireTimingDataSupport("registerManual");
-        return execute(
-                () -> doRegisterManual(
-                        registrationId,
-                        effectiveTime,
-                        registrationTimeSource),
-                "registerManual");
-    }
-
-    /**
-     * Subscribes to TimingData committed after this subscription.
-     *
-     * <p>No historical LogBook replay occurs here. The listener runs synchronously
-     * on the TimingNode serial lane after durable append and LogBook visibility.
-     * It must therefore return quickly. Network I/O, retry or other potentially
-     * blocking work must be handed to the listener's own bounded mechanism.</p>
-     *
-     * <p>An ordinary RuntimeException from a listener is isolated by the event
-     * primitive and does not roll back the already committed TimingData.</p>
-     *
-     * @return true when the listener was newly subscribed
-     */
-    public boolean subscribeNewTimingData(Consumer<TimingData> listener) {
-        requireTimingDataSupport("subscribeNewTimingData");
-        return newTimingDataEvent.subscribe(listener);
-    }
-
-    /**
-     * Removes a previously registered new-TimingData listener.
-     *
-     * @return true when an existing subscription was removed
-     */
-    public boolean unsubscribeNewTimingData(Consumer<TimingData> listener) {
-        requireTimingDataSupport("unsubscribeNewTimingData");
-        return newTimingDataEvent.unsubscribe(listener);
-    }
-
-    public List<TimingData> timingDataSnapshot() {
-        requireTimingDataSupport("timingDataSnapshot");
-        return execute(logBook::snapshot, "timingDataSnapshot");
-    }
-
-    public int timingDataCount() {
-        requireTimingDataSupport("timingDataCount");
-        return execute(logBook::size, "timingDataCount");
-    }
-
-    public List<TimingData> timingDataRange(long fromSequence, int limit) {
-        requireTimingDataSupport("timingDataRange");
-        return execute(
-                () -> logBook.range(fromSequence, limit),
-                "timingDataRange");
-    }
-
-    public List<TimingData> latestTimingData(int limit) {
-        requireTimingDataSupport("latestTimingData");
-        return execute(
-                () -> logBook.latest(limit),
-                "latestTimingData");
-    }
-
-    public Status status() {
-        return execute(this::snapshotStatus, "status");
-    }
-
-    private OpenResult doOpen() {
-        if (lifecycle == Lifecycle.OPEN) {
-            return OpenResult.ALREADY_OPEN;
-        }
-        if (locationId == null) {
-            return OpenResult.NO_LOCATION;
-        }
-        lifecycle = Lifecycle.OPEN;
-        return OpenResult.OPENED;
-    }
-
-    private CloseResult doClose() {
-        if (lifecycle == Lifecycle.CLOSED) {
-            return CloseResult.ALREADY_CLOSED;
-        }
-        lifecycle = Lifecycle.CLOSED;
-        return CloseResult.CLOSED;
-    }
-
-    private SetLocationResult doSetLocation(LocationId newLocationId) {
-        if (lifecycle != Lifecycle.CLOSED) {
-            return SetLocationResult.NODE_NOT_CLOSED;
-        }
-        locationId = newLocationId;
-        return SetLocationResult.UPDATED;
-    }
-
-    private RegistrationResult doRegisterAccepted(
-            RegistrationId registrationId,
-            TimingTimestamp observationTime)
-            throws TimingDataStore.StoreException {
-        if (lifecycle != Lifecycle.OPEN) {
-            return RegistrationResult.nodeNotOpen();
-        }
-        ensureTimingDataCommitAvailable();
-
-        TimingData data = timingDataFactory.createAutomaticRegistration(
-                nextRegistrationContext(observationTime),
-                registrationId);
-        return commitRegistration(data);
-    }
-
-    private RegistrationResult doRegisterManual(
-            RegistrationId registrationId,
-            TimingTimestamp effectiveTime,
-            ManualTimeSource registrationTimeSource)
-            throws TimingDataStore.StoreException {
-        if (lifecycle != Lifecycle.OPEN) {
-            return RegistrationResult.nodeNotOpen();
-        }
-        ensureTimingDataCommitAvailable();
-
-        TimingData data = timingDataFactory.createManualRegistration(
-                nextRegistrationContext(effectiveTime),
-                registrationId,
-                registrationTimeSource);
-        return commitRegistration(data);
-    }
-
-    /**
-     * Creates the next registration context from state owned by the serial lane.
-     *
-     * <p>Sequence is read from committed LogBook state here, immediately before
-     * persistence. Merely queueing a command therefore never consumes a sequence.</p>
-     */
-    private Context nextRegistrationContext(TimingTimestamp effectiveTime) {
-        return new Context(
-                timingNodeId,
-                logBook.nextSequence(),
-                locationId,
-                effectiveTime,
-                timeSource.now());
-    }
-
-    private void ensureTimingDataCommitAvailable() {
-        if (timingDataCommitFailure != null) {
-            throw new IllegalStateException(
-                    "TimingData commit is blocked after an earlier persistence failure",
-                    timingDataCommitFailure);
+        SerialWorker.AdmissionResult admission =
+                serialWorker.offer(() -> applySubmitted(command));
+        switch (admission) {
+            case ACCEPTED:
+                return CommandAdmission.ACCEPTED;
+            case FULL:
+                return CommandAdmission.FULL;
+            case NOT_RUNNING:
+                return CommandAdmission.NOT_RUNNING;
+            default:
+                throw new IllegalStateException(
+                        "Unsupported admission result " + admission);
         }
     }
 
-    /**
-     * Shared durable commit path for every already-created TimingData variant.
-     *
-     * <p>This method is called only from the TimingNode serial lane. Durable
-     * store append precedes LogBook visibility, and the local event is emitted
-     * only after both have succeeded.</p>
-     */
-    private RegistrationResult commitRegistration(TimingData data)
-            throws TimingDataStore.StoreException {
-        if (data == null) {
-            throw new IllegalStateException("timingDataFactory returned null");
-        }
-
+    private <R> void applySubmitted(TimingNodeCommand<R> command) {
         try {
-            timingDataStore.append(data);
-        } catch (TimingDataStore.StoreException ex) {
-            timingDataCommitFailure = ex;
-            throw ex;
+            applyCommand(command);
+        } catch (Exception ex) {
+            LOG.warn(
+                    "Submitted TimingNode command {} failed after admission",
+                    command.name(),
+                    ex);
+        }
+    }
+
+    /** Returns the subscription-only stream of authoritative status changes. */
+    public EventSource<Status> statusChanged() {
+        return statusChangedEvent;
+    }
+
+    /** Returns the subscription-only stream of newly committed TimingData. */
+    public EventSource<TimingData> newTimingData() {
+        return newTimingDataEvent;
+    }
+
+    private <R> R applyCommand(TimingNodeCommand<R> command) throws Exception {
+        Status before = logic.status();
+        R result = command.apply(logic);
+        Status after = logic.status();
+        publishStatusChanged(before, after);
+        return command.complete(this, result);
+    }
+
+    private void publishStatusChanged(Status before, Status after) {
+        if (sameStatus(before, after)) {
+            return;
         }
 
-        try {
-            logBook.add(data);
-        } catch (RuntimeException ex) {
-            timingDataCommitFailure = ex;
-            throw ex;
+        Event.DeliveryReport delivery = statusChangedEvent.emit(after);
+        if (!delivery.successful()) {
+            LOG.warn(
+                    "TimingNode status changed but "
+                            + delivery.failureCount()
+                            + " status listener(s) failed for "
+                            + timingNodeId().value(),
+                    delivery.failures().get(0));
+        }
+    }
+
+
+    /**
+     * Executes a typed read against the same serial lane as state-changing commands.
+     *
+     * <p>Queries carry the read operation instead of requiring a forwarding method
+     * on TimingNode for every value exposed by TimingNodeLogic. This keeps reads
+     * ordered with commands while the visible TimingNode API stays compact.</p>
+     */
+    public <R> R query(TimingNodeQuery<R> query) {
+        if (query == null) {
+            throw new IllegalArgumentException("query must not be null");
+        }
+        return runSerialized(() -> query.read(logic), query.name());
+    }
+
+    private static boolean sameStatus(Status left, Status right) {
+        if (!left.timingNodeId().equals(right.timingNodeId())) {
+            return false;
+        }
+        if (left.lifecycle() != right.lifecycle()) {
+            return false;
+        }
+        if (left.timingDataTailRecovered() != right.timingDataTailRecovered()) {
+            return false;
+        }
+        if (!left.hasLocation()) {
+            return !right.hasLocation();
+        }
+        return right.hasLocation()
+                && left.locationId().equals(right.locationId());
+    }
+
+    RegistrationResult publishCommitted(RegistrationResult result) {
+        if (!result.committed()) {
+            return result;
         }
 
-        // Notification is post-commit. Listener RuntimeExceptions are isolated
-        // by Event and must never turn this successful persistence operation
-        // into a failed domain result.
+        TimingData data = result.timingData();
         Event.DeliveryReport delivery = newTimingDataEvent.emit(data);
         if (!delivery.successful()) {
             LOG.warn(
                     "TimingData committed but "
                             + delivery.failureCount()
                             + " newTimingData listener(s) failed for "
-                            + timingNodeId.value()
+                            + timingNodeId().value()
                             + ":"
                             + data.sequenceNumber(),
                     delivery.failures().get(0));
         }
-
-        return RegistrationResult.committed(data);
+        return result;
     }
 
-    private void recoverTimingData() {
-        if (logBook == null) {
-            return;
-        }
-
-        try {
-            TimingDataStore.LoadResult loadResult = timingDataStore.load();
-            for (TimingData data : loadResult.records()) {
-                logBook.add(data);
-            }
-            timingDataTailRecovered = loadResult.repairedIncompleteTail();
-        } catch (TimingDataStore.StoreException | RuntimeException ex) {
-            startupFailure = ex;
-            throw new StartupException(
-                    "TimingData recovery failed for " + timingNodeId.value(),
-                    ex);
-        }
-    }
-
-    private Status snapshotStatus() {
-        return new Status(
-                timingNodeId,
-                lifecycle,
-                locationId,
-                timingDataTailRecovered);
-    }
-
-    private void requireTimingDataSupport(String operation) {
-        if (logBook == null) {
-            throw new OperationException(
-                    OperationException.Reason.UNAVAILABLE,
-                    operation + " is unavailable because TimingData recording is not configured");
-        }
-    }
-
-    private <R> R execute(Callable<R> work, String operation) {
+    private <R> R runSerialized(Callable<R> work, String operation) {
         SerialWorker.SubmitResult<R> submitResult = serialWorker.submit(work);
         switch (submitResult.admission()) {
             case FULL:
@@ -622,7 +297,8 @@ public final class TimingNode {
         try {
             return future.get(operationTimeoutMillis, TimeUnit.MILLISECONDS);
         } catch (TimeoutException ex) {
-            throw new OperationTimeoutException(
+            throw new OperationException(
+                    OperationException.Reason.TIMEOUT,
                     operation + " timed out; final TimingNode outcome is unknown",
                     ex);
         } catch (InterruptedException ex) {
@@ -643,4 +319,19 @@ public final class TimingNode {
                     ex.getCause());
         }
     }
+
+    private static SerialWorker workerFor(TimingNodeId timingNodeId) {
+        TimingNodeId id = requireId(timingNodeId);
+        return new SerialWorker(
+                DEFAULT_QUEUE_CAPACITY,
+                "timing-node-" + id.value());
+    }
+
+    private static TimingNodeId requireId(TimingNodeId timingNodeId) {
+        if (timingNodeId == null) {
+            throw new IllegalArgumentException("timingNodeId must not be null");
+        }
+        return timingNodeId;
+    }
+
 }

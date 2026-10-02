@@ -1,11 +1,11 @@
-package io.github.brainboxemb.eventtiming.timingpoint.infra.bootstrap;
+package io.github.brainboxemb.eventtiming.timingpoint.runtime;
 
 import io.github.brainboxemb.eventtiming.timingdata.TimingNodeId;
 import io.github.brainboxemb.eventtiming.timingpoint.domain.timing.TimingNode;
+import io.github.brainboxemb.eventtiming.timingpoint.domain.timing.TimingNodeTypes;
 import io.github.brainboxemb.eventtiming.timingpoint.infra.BuildIdentity;
-import io.github.brainboxemb.eventtiming.timingpoint.infra.bootstrap.config.ApplicationConfig;
-import io.github.brainboxemb.eventtiming.timingpoint.infra.bootstrap.config.PresentationConfig;
-import io.github.brainboxemb.eventtiming.timingpoint.runtime.TimingApplication;
+import io.github.brainboxemb.eventtiming.timingpoint.runtime.config.Config;
+import io.github.brainboxemb.eventtiming.timingpoint.runtime.config.Presentation;
 
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -18,16 +18,16 @@ import org.junit.rules.TemporaryFolder;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
-public class ApplicationBootstrapTest {
+public class CompositionTest {
     @Rule
     public final TemporaryFolder temporaryFolder = new TemporaryFolder();
 
     @Test
     public void composesConfiguredTimingNodeIntoRuntime() {
-        ApplicationConfig config = config(
+        Config config = config(
                 temporaryFolder.getRoot().toPath().resolve("timing-data.jsonl"));
 
-        TimingApplication application = ApplicationBootstrap.compose(identity(), config);
+        Application application = Composition.create(identity(), config);
         application.start();
         try {
             assertEquals(
@@ -46,32 +46,31 @@ public class ApplicationBootstrapTest {
                 file,
                 "{not-json}\n".getBytes(StandardCharsets.UTF_8));
 
-        TimingApplication application =
-                ApplicationBootstrap.compose(identity(), config(file));
+        Application application = Composition.create(identity(), config(file));
 
         try {
             application.start();
             fail("expected TimingData recovery failure");
-        } catch (TimingNode.StartupException expected) {
-            // The malformed configured store was actually opened during startup.
+        } catch (TimingNodeTypes.StartupException expected) {
+            // The configured I/O store was opened during runtime startup.
         } finally {
             application.close();
         }
     }
 
     @Test(expected = IllegalArgumentException.class)
-    public void composeRejectsMissingTimingDataPath() {
-        ApplicationConfig config = new ApplicationConfig(
+    public void createRejectsMissingTimingDataPath() {
+        Config config = new Config(
                 new TimingNodeId("configured-node"),
-                new PresentationConfig(null, null));
+                new Presentation(null, null));
 
-        ApplicationBootstrap.compose(identity(), config);
+        Composition.create(identity(), config);
     }
 
-    private static ApplicationConfig config(Path timingDataPath) {
-        return new ApplicationConfig(
+    private static Config config(Path timingDataPath) {
+        return new Config(
                 new TimingNodeId("configured-node"),
-                new PresentationConfig(null, null),
+                new Presentation(null, null),
                 null,
                 null,
                 timingDataPath);

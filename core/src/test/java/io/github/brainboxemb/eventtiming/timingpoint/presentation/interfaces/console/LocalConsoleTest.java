@@ -2,7 +2,7 @@ package io.github.brainboxemb.eventtiming.timingpoint.presentation.interfaces.co
 
 import io.github.brainboxemb.eventtiming.timingpoint.application.ApplicationStatus;
 import io.github.brainboxemb.eventtiming.timingpoint.application.CommandHandler;
-import io.github.brainboxemb.eventtiming.timingpoint.domain.timing.TimingNode;
+import io.github.brainboxemb.eventtiming.timingpoint.domain.timing.TimingNodeTypes;
 import io.github.brainboxemb.eventtiming.timingdata.TimingNodeId;
 import io.github.brainboxemb.eventtiming.timingpoint.infra.BuildIdentity;
 
@@ -88,6 +88,6 @@ public class LocalConsoleTest {
                 identity,
                 () -> new ApplicationStatus(
                         new TimingNodeId("timing-node-01"),
-                        TimingNode.Lifecycle.CLOSED));
+                        TimingNodeTypes.Lifecycle.CLOSED));
     }
 }

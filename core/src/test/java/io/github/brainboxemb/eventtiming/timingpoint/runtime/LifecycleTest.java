@@ -11,7 +11,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
-public class TimingApplicationLifecycleTest {
+public class LifecycleTest {
     private static BuildIdentity testIdentity() {
         return BuildIdentity.firstApiVersion(
                 "event-timing-app",
@@ -24,19 +24,19 @@ public class TimingApplicationLifecycleTest {
 
     @Test
     public void startsAndStopsCleanly() {
-        TimingApplicationLifecycle lifecycle = new TimingApplicationLifecycle(testIdentity());
-        assertEquals(TimingApplicationLifecycle.State.NEW, lifecycle.state());
+        Lifecycle lifecycle = new Lifecycle(testIdentity());
+        assertEquals(Lifecycle.State.NEW, lifecycle.state());
 
         lifecycle.start();
-        assertEquals(TimingApplicationLifecycle.State.RUNNING, lifecycle.state());
+        assertEquals(Lifecycle.State.RUNNING, lifecycle.state());
 
         lifecycle.stop();
-        assertEquals(TimingApplicationLifecycle.State.STOPPED, lifecycle.state());
+        assertEquals(Lifecycle.State.STOPPED, lifecycle.state());
     }
 
     @Test
     public void waitsUntilLifecycleIsClosed() throws Exception {
-        TimingApplicationLifecycle lifecycle = new TimingApplicationLifecycle(testIdentity());
+        Lifecycle lifecycle = new Lifecycle(testIdentity());
         CountDownLatch waiting = new CountDownLatch(1);
         CountDownLatch completed = new CountDownLatch(1);
 
@@ -59,40 +59,36 @@ public class TimingApplicationLifecycleTest {
         lifecycle.close();
 
         assertTrue(completed.await(1, TimeUnit.SECONDS));
-        assertEquals(TimingApplicationLifecycle.State.STOPPED, lifecycle.state());
+        assertEquals(Lifecycle.State.STOPPED, lifecycle.state());
         waiter.join(1000);
         assertFalse(waiter.isAlive());
     }
 
     @Test(expected = IllegalStateException.class)
     public void cannotStartTwice() {
-        TimingApplicationLifecycle lifecycle = new TimingApplicationLifecycle(testIdentity());
+        Lifecycle lifecycle = new Lifecycle(testIdentity());
         lifecycle.start();
         lifecycle.start();
     }
 
     @Test(expected = IllegalStateException.class)
     public void cannotStopBeforeStart() {
-        TimingApplicationLifecycle lifecycle = new TimingApplicationLifecycle(testIdentity());
+        Lifecycle lifecycle = new Lifecycle(testIdentity());
         lifecycle.stop();
     }
 
     @Test
     public void closeStopsRunningLifecycle() {
-        TimingApplicationLifecycle lifecycle = new TimingApplicationLifecycle(testIdentity());
+        Lifecycle lifecycle = new Lifecycle(testIdentity());
         lifecycle.start();
-
         lifecycle.close();
-
-        assertEquals(TimingApplicationLifecycle.State.STOPPED, lifecycle.state());
+        assertEquals(Lifecycle.State.STOPPED, lifecycle.state());
     }
 
     @Test
     public void closeBeforeStartLeavesLifecycleStopped() {
-        TimingApplicationLifecycle lifecycle = new TimingApplicationLifecycle(testIdentity());
-
+        Lifecycle lifecycle = new Lifecycle(testIdentity());
         lifecycle.close();
-
-        assertEquals(TimingApplicationLifecycle.State.STOPPED, lifecycle.state());
+        assertEquals(Lifecycle.State.STOPPED, lifecycle.state());
     }
 }

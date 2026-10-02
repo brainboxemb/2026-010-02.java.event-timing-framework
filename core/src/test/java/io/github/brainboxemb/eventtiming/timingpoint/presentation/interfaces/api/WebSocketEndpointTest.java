@@ -8,7 +8,7 @@ import io.github.brainboxemb.eventtiming.timingdata.TimingTimestamp;
 import io.github.brainboxemb.eventtiming.timingdata.defaultprofile.DefaultTimingDataFactory;
 import io.github.brainboxemb.eventtiming.timingpoint.application.CommandHandler;
 import io.github.brainboxemb.eventtiming.timingpoint.domain.timing.TimingNode;
-import io.github.brainboxemb.eventtiming.timingpoint.domain.timingdata.TimingDataStore;
+import io.github.brainboxemb.eventtiming.timingpoint.domain.timingdata.TimingDataPersistence;
 import io.github.brainboxemb.eventtiming.timingpoint.infra.BuildIdentity;
 
 import java.net.URI;
@@ -44,7 +44,7 @@ public class WebSocketEndpointTest {
         // Commit history before the WebSocket endpoint/client exists.
         fixture.handler.setLocation(new LocationId(24));
         fixture.handler.open();
-        fixture.handler.registerAccepted(
+        fixture.handler.commitAutomaticRegistration(
                 new RegistrationId("N000"),
                 OBSERVATION_TIME);
 
@@ -110,7 +110,7 @@ public class WebSocketEndpointTest {
             assertTrue(opened.contains("\"eventType\":\"STATUS_CHANGED\""));
             assertTrue(opened.contains("\"state\":\"OPEN\""));
 
-            fixture.handler.registerAccepted(
+            fixture.handler.commitAutomaticRegistration(
                     new RegistrationId("N001"),
                     OBSERVATION_TIME);
             String committed = client.awaitMessage();
@@ -184,7 +184,7 @@ public class WebSocketEndpointTest {
         }
     }
 
-    private static final class MemoryStore implements TimingDataStore {
+    private static final class MemoryStore implements TimingDataPersistence {
         @Override
         public LoadResult load() {
             return new LoadResult(Collections.<TimingData>emptyList(), false);

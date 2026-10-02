@@ -1,4 +1,4 @@
-package io.github.brainboxemb.eventtiming.timingpoint.infra.bootstrap.config;
+package io.github.brainboxemb.eventtiming.timingpoint.runtime.config;
 
 import io.github.brainboxemb.eventtiming.timingdata.TimingNodeId;
 import io.github.brainboxemb.eventtiming.timingpoint.infra.logging.LoggingConfig;
@@ -20,8 +20,14 @@ import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.constructor.SafeConstructor;
 import org.yaml.snakeyaml.error.YAMLException;
 
-/** Maps the default IF-11 YAML syntax into the application-core configuration model. */
-public final class YamlApplicationConfigLoader {
+/**
+ * Maps the default IF-11 YAML syntax into the runtime configuration model.
+ *
+ * <p>This loader belongs with the runtime configuration because it knows the
+ * concrete application configuration schema. It is not a generic infrastructure
+ * YAML utility.</p>
+ */
+public final class YamlLoader {
     private static final String TIMING_NODE_ID = "timingNodeId";
     private static final String PRESENTATION = "presentation";
     private static final String IO = "io";
@@ -41,10 +47,10 @@ public final class YamlApplicationConfigLoader {
     private static final String BIND_ADDRESS = "bindAddress";
     private static final String PORT = "port";
 
-    private YamlApplicationConfigLoader() {
+    private YamlLoader() {
     }
 
-    public static ApplicationConfig load(Path path) throws IOException {
+    public static Config load(Path path) throws IOException {
         if (path == null) {
             throw new IllegalArgumentException("config path must not be null");
         }
@@ -70,7 +76,7 @@ public final class YamlApplicationConfigLoader {
 
         TimingNodeId timingNodeId = new TimingNodeId(
                 requireString(root.get(TIMING_NODE_ID), TIMING_NODE_ID));
-        return new ApplicationConfig(
+        return new Config(
                 timingNodeId,
                 mapPresentation(root.get(PRESENTATION)),
                 mapLogging(root.get(LOGGING)),
@@ -146,9 +152,7 @@ public final class YamlApplicationConfigLoader {
                     ex);
         }
 
-        return new LoggingConfig(
-                level,
-                mapLoggingFile(logging.get(FILE)));
+        return new LoggingConfig(level, mapLoggingFile(logging.get(FILE)));
     }
 
     private static LoggingFileConfig mapLoggingFile(Object rawFile) {
@@ -177,61 +181,61 @@ public final class YamlApplicationConfigLoader {
                 requirePort(values.get(PORT), field + "." + PORT));
     }
 
-    private static PresentationConfig mapPresentation(Object rawPresentation) {
+    private static Presentation mapPresentation(Object rawPresentation) {
         if (rawPresentation == null) {
-            return new PresentationConfig(null, null);
+            return new Presentation(null, null);
         }
 
         Map<?, ?> presentation = requireMapping(rawPresentation, PRESENTATION);
         rejectUnknownFields(presentation, PRESENTATION, REMOTE_SHELL, API);
 
-        return new PresentationConfig(
+        return new Presentation(
                 mapRemoteShell(presentation.get(REMOTE_SHELL)),
                 mapApi(presentation.get(API)));
     }
 
-    private static RemoteShellConfig mapRemoteShell(Object raw) {
+    private static Presentation.RemoteShell mapRemoteShell(Object raw) {
         if (raw == null) {
             return null;
         }
         Map<?, ?> values = endpointMapping(raw, PRESENTATION + "." + REMOTE_SHELL);
-        return new RemoteShellConfig(
+        return new Presentation.RemoteShell(
                 requireString(values.get(BIND_ADDRESS),
                         PRESENTATION + "." + REMOTE_SHELL + "." + BIND_ADDRESS),
                 requirePort(values.get(PORT),
                         PRESENTATION + "." + REMOTE_SHELL + "." + PORT));
     }
 
-    private static ApiConfig mapApi(Object raw) {
+    private static Api mapApi(Object raw) {
         if (raw == null) {
             return null;
         }
         String field = PRESENTATION + "." + API;
         Map<?, ?> values = requireMapping(raw, field);
         rejectUnknownFields(values, field, HTTP, WEB_SOCKET);
-        return new ApiConfig(
+        return new Api(
                 mapApiHttp(values.get(HTTP)),
                 mapApiWebSocket(values.get(WEB_SOCKET)));
     }
 
-    private static ApiHttpConfig mapApiHttp(Object raw) {
+    private static Api.Http mapApiHttp(Object raw) {
         if (raw == null) {
             return null;
         }
         String field = PRESENTATION + "." + API + "." + HTTP;
         Map<?, ?> values = endpointMapping(raw, field);
-        return new ApiHttpConfig(
+        return new Api.Http(
                 requireString(values.get(BIND_ADDRESS), field + "." + BIND_ADDRESS),
                 requirePort(values.get(PORT), field + "." + PORT));
     }
 
-    private static ApiWebSocketConfig mapApiWebSocket(Object raw) {
+    private static Api.WebSocket mapApiWebSocket(Object raw) {
         if (raw == null) {
             return null;
         }
         String field = PRESENTATION + "." + API + "." + WEB_SOCKET;
         Map<?, ?> values = endpointMapping(raw, field);
-        return new ApiWebSocketConfig(
+        return new Api.WebSocket(
                 requireString(values.get(BIND_ADDRESS), field + "." + BIND_ADDRESS),
                 requirePort(values.get(PORT), field + "." + PORT));
     }

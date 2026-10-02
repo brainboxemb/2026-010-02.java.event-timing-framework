@@ -1,8 +1,14 @@
 package io.github.brainboxemb.eventtiming.timingpoint.domain.timing;
 
 import io.github.brainboxemb.eventtiming.timingdata.LocationId;
+import io.github.brainboxemb.eventtiming.timingdata.TimingData;
 import io.github.brainboxemb.eventtiming.timingdata.TimingNodeId;
+import io.github.brainboxemb.eventtiming.timingdata.TimingTimestamp;
+import io.github.brainboxemb.eventtiming.timingdata.defaultprofile.DefaultTimingDataFactory;
+import io.github.brainboxemb.eventtiming.timingpoint.domain.timingdata.TimingDataPersistence;
 import io.github.brainboxemb.eventtiming.timingpoint.platform.execution.SerialWorker;
+
+import java.util.Collections;
 
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
@@ -19,14 +25,14 @@ public class TimingNodeTest {
     @Test
     public void startsClosedWithoutLocation() {
         TimingNodeId id = new TimingNodeId("timing-node-01");
-        TimingNode node = new TimingNode(id);
+        TimingNode node = node(id);
 
         node.start();
         try {
-            TimingNode.Status status = node.status();
+            TimingNodeTypes.Status status = node.query(TimingNodeQueries.status());
 
             assertSame(id, status.timingNodeId());
-            assertEquals(TimingNode.Lifecycle.CLOSED, status.lifecycle());
+            assertEquals(TimingNodeTypes.Lifecycle.CLOSED, status.lifecycle());
             assertFalse(status.hasLocation());
         } finally {
             node.stop();
@@ -35,27 +41,27 @@ public class TimingNodeTest {
 
     @Test
     public void configuresLocationWhileClosedThenOpensAndCloses() {
-        TimingNode node = new TimingNode(new TimingNodeId("timing-node-01"));
+        TimingNode node = node(new TimingNodeId("timing-node-01"));
         LocationId location = new LocationId(24);
 
         node.start();
         try {
-            assertEquals(TimingNode.SetLocationResult.UPDATED, node.setLocation(location));
-            assertEquals(TimingNode.OpenResult.OPENED, node.open());
+            assertEquals(TimingNodeTypes.SetLocationResult.UPDATED, node.invoke(TimingNodeCommands.setLocation(location)));
+            assertEquals(TimingNodeTypes.OpenResult.OPENED, node.invoke(TimingNodeCommands.open()));
 
-            TimingNode.Status openStatus = node.status();
-            assertEquals(TimingNode.Lifecycle.OPEN, openStatus.lifecycle());
+            TimingNodeTypes.Status openStatus = node.query(TimingNodeQueries.status());
+            assertEquals(TimingNodeTypes.Lifecycle.OPEN, openStatus.lifecycle());
             assertEquals(location, openStatus.locationId());
 
             assertEquals(
-                    TimingNode.SetLocationResult.NODE_NOT_CLOSED,
-                    node.setLocation(new LocationId(25)));
-            assertEquals(location, node.status().locationId());
+                    TimingNodeTypes.SetLocationResult.NODE_NOT_CLOSED,
+                    node.invoke(TimingNodeCommands.setLocation(new LocationId(25))));
+            assertEquals(location, node.query(TimingNodeQueries.status()).locationId());
 
-            assertEquals(TimingNode.CloseResult.CLOSED, node.close());
+            assertEquals(TimingNodeTypes.CloseResult.CLOSED, node.invoke(TimingNodeCommands.close()));
 
-            TimingNode.Status closedStatus = node.status();
-            assertEquals(TimingNode.Lifecycle.CLOSED, closedStatus.lifecycle());
+            TimingNodeTypes.Status closedStatus = node.query(TimingNodeQueries.status());
+            assertEquals(TimingNodeTypes.Lifecycle.CLOSED, closedStatus.lifecycle());
             assertEquals(location, closedStatus.locationId());
         } finally {
             node.stop();
@@ -64,12 +70,12 @@ public class TimingNodeTest {
 
     @Test
     public void openWithoutLocationIsProcessedDomainRejection() {
-        TimingNode node = new TimingNode(new TimingNodeId("timing-node-01"));
+        TimingNode node = node(new TimingNodeId("timing-node-01"));
 
         node.start();
         try {
-            assertEquals(TimingNode.OpenResult.NO_LOCATION, node.open());
-            assertEquals(TimingNode.Lifecycle.CLOSED, node.status().lifecycle());
+            assertEquals(TimingNodeTypes.OpenResult.NO_LOCATION, node.invoke(TimingNodeCommands.open()));
+            assertEquals(TimingNodeTypes.Lifecycle.CLOSED, node.query(TimingNodeQueries.status()).lifecycle());
         } finally {
             node.stop();
         }
@@ -77,15 +83,15 @@ public class TimingNodeTest {
 
     @Test
     public void repeatedLifecycleCommandsReturnProcessedResults() {
-        TimingNode node = new TimingNode(new TimingNodeId("timing-node-01"));
+        TimingNode node = node(new TimingNodeId("timing-node-01"));
 
         node.start();
         try {
-            node.setLocation(new LocationId(24));
-            assertEquals(TimingNode.OpenResult.OPENED, node.open());
-            assertEquals(TimingNode.OpenResult.ALREADY_OPEN, node.open());
-            assertEquals(TimingNode.CloseResult.CLOSED, node.close());
-            assertEquals(TimingNode.CloseResult.ALREADY_CLOSED, node.close());
+            node.invoke(TimingNodeCommands.setLocation(new LocationId(24)));
+            assertEquals(TimingNodeTypes.OpenResult.OPENED, node.invoke(TimingNodeCommands.open()));
+            assertEquals(TimingNodeTypes.OpenResult.ALREADY_OPEN, node.invoke(TimingNodeCommands.open()));
+            assertEquals(TimingNodeTypes.CloseResult.CLOSED, node.invoke(TimingNodeCommands.close()));
+            assertEquals(TimingNodeTypes.CloseResult.ALREADY_CLOSED, node.invoke(TimingNodeCommands.close()));
         } finally {
             node.stop();
         }
@@ -94,7 +100,7 @@ public class TimingNodeTest {
     @Test
     public void timeoutDoesNotCancelAcceptedOperation() throws Exception {
         SerialWorker worker = new SerialWorker(2, "timing-node-test");
-        TimingNode node = new TimingNode(
+        TimingNode node = node(
                 new TimingNodeId("timing-node-01"),
                 worker,
                 25L);
@@ -111,11 +117,11 @@ public class TimingNodeTest {
             assertTrue(blockerStarted.await(1, TimeUnit.SECONDS));
 
             try {
-                node.setLocation(new LocationId(24));
+                node.invoke(TimingNodeCommands.setLocation(new LocationId(24)));
                 fail("expected timeout");
-            } catch (TimingNode.OperationTimeoutException expected) {
+            } catch (TimingNodeTypes.OperationException expected) {
                 assertEquals(
-                        TimingNode.OperationException.Reason.TIMEOUT,
+                        TimingNodeTypes.OperationException.Reason.TIMEOUT,
                         expected.reason());
             }
 
@@ -124,7 +130,7 @@ public class TimingNodeTest {
             releaseBlocker.countDown();
 
             assertTrue(afterTimedOutOperation.await(1, TimeUnit.SECONDS));
-            TimingNode.Status status = node.status();
+            TimingNodeTypes.Status status = node.query(TimingNodeQueries.status());
             assertTrue(status.hasLocation());
             assertEquals(new LocationId(24), status.locationId());
         } finally {
@@ -136,7 +142,7 @@ public class TimingNodeTest {
     @Test
     public void stateDependentOperationsAreDecidedInQueueOrder() throws Exception {
         SerialWorker worker = new SerialWorker(4, "timing-node-test");
-        TimingNode node = new TimingNode(
+        TimingNode node = node(
                 new TimingNodeId("timing-node-01"),
                 worker,
                 1000L);
@@ -146,8 +152,8 @@ public class TimingNodeTest {
         node.start();
         try {
             assertEquals(
-                    TimingNode.SetLocationResult.UPDATED,
-                    node.setLocation(new LocationId(24)));
+                    TimingNodeTypes.SetLocationResult.UPDATED,
+                    node.invoke(TimingNodeCommands.setLocation(new LocationId(24))));
 
             worker.submit(() -> {
                 blockerStarted.countDown();
@@ -156,13 +162,13 @@ public class TimingNodeTest {
             });
             assertTrue(blockerStarted.await(1, TimeUnit.SECONDS));
 
-            final TimingNode.OpenResult[] openResult = new TimingNode.OpenResult[1];
-            final TimingNode.SetLocationResult[] setLocationResult =
-                    new TimingNode.SetLocationResult[1];
+            final TimingNodeTypes.OpenResult[] openResult = new TimingNodeTypes.OpenResult[1];
+            final TimingNodeTypes.SetLocationResult[] setLocationResult =
+                    new TimingNodeTypes.SetLocationResult[1];
 
-            Thread openCaller = new Thread(() -> openResult[0] = node.open());
+            Thread openCaller = new Thread(() -> openResult[0] = node.invoke(TimingNodeCommands.open()));
             Thread locationCaller = new Thread(
-                    () -> setLocationResult[0] = node.setLocation(new LocationId(25)));
+                    () -> setLocationResult[0] = node.invoke(TimingNodeCommands.setLocation(new LocationId(25))));
 
             openCaller.start();
             long queueDeadline = System.nanoTime() + TimeUnit.SECONDS.toNanos(1);
@@ -185,11 +191,69 @@ public class TimingNodeTest {
             assertFalse(openCaller.isAlive());
             assertFalse(locationCaller.isAlive());
 
-            assertEquals(TimingNode.OpenResult.OPENED, openResult[0]);
+            assertEquals(TimingNodeTypes.OpenResult.OPENED, openResult[0]);
             assertEquals(
-                    TimingNode.SetLocationResult.NODE_NOT_CLOSED,
+                    TimingNodeTypes.SetLocationResult.NODE_NOT_CLOSED,
                     setLocationResult[0]);
-            assertEquals(new LocationId(24), node.status().locationId());
+            assertEquals(new LocationId(24), node.query(TimingNodeQueries.status()).locationId());
+        } finally {
+            releaseBlocker.countDown();
+            node.stop();
+        }
+    }
+
+    @Test
+    public void submissionOnlyCommandReturnsAfterAdmissionWithoutWaitingForExecution()
+            throws Exception {
+        SerialWorker worker = new SerialWorker(2, "timing-node-submit-test");
+        TimingNode node = node(
+                new TimingNodeId("timing-node-01"),
+                worker,
+                1000L);
+        CountDownLatch blockerStarted = new CountDownLatch(1);
+        CountDownLatch releaseBlocker = new CountDownLatch(1);
+        CountDownLatch producerReturned = new CountDownLatch(1);
+        final TimingNodeTypes.CommandAdmission[] admission =
+                new TimingNodeTypes.CommandAdmission[1];
+
+        node.start();
+        try {
+            worker.submit(() -> {
+                blockerStarted.countDown();
+                releaseBlocker.await();
+                return null;
+            });
+            assertTrue(blockerStarted.await(1, TimeUnit.SECONDS));
+
+            Thread producer = new Thread(() -> {
+                admission[0] =
+                        node.submit(
+                                TimingNodeCommands.setLocation(
+                                        new LocationId(24)));
+                producerReturned.countDown();
+            });
+            producer.start();
+
+            assertTrue(
+                    "submission-only producer must not wait for command execution",
+                    producerReturned.await(250, TimeUnit.MILLISECONDS));
+            assertEquals(
+                    TimingNodeTypes.CommandAdmission.ACCEPTED,
+                    admission[0]);
+
+            releaseBlocker.countDown();
+            producer.join(1000);
+            assertFalse(producer.isAlive());
+
+            CountDownLatch afterSubmittedCommand = new CountDownLatch(1);
+            assertEquals(
+                    SerialWorker.AdmissionResult.ACCEPTED,
+                    worker.offer(afterSubmittedCommand::countDown));
+            assertTrue(afterSubmittedCommand.await(1, TimeUnit.SECONDS));
+
+            assertEquals(
+                    new LocationId(24),
+                    node.query(TimingNodeQueries.status()).locationId());
         } finally {
             releaseBlocker.countDown();
             node.stop();
@@ -198,20 +262,66 @@ public class TimingNodeTest {
 
     @Test
     public void operationBeforeStartIsUnavailable() {
-        TimingNode node = new TimingNode(new TimingNodeId("timing-node-01"));
+        TimingNode node = node(new TimingNodeId("timing-node-01"));
 
         try {
-            node.status();
+            node.query(TimingNodeQueries.status());
             fail("expected operation failure");
-        } catch (TimingNode.OperationException expected) {
+        } catch (TimingNodeTypes.OperationException expected) {
             assertEquals(
-                    TimingNode.OperationException.Reason.UNAVAILABLE,
+                    TimingNodeTypes.OperationException.Reason.UNAVAILABLE,
                     expected.reason());
         }
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void rejectsMissingIdentity() {
-        new TimingNode(null);
+        new TimingNode(
+                null,
+                new NoOpPersistence(),
+                new DefaultTimingDataFactory(),
+                TimingNodeTest::now);
+    }
+
+    private static TimingNode node(TimingNodeId id) {
+        return new TimingNode(
+                id,
+                new NoOpPersistence(),
+                new DefaultTimingDataFactory(),
+                TimingNodeTest::now);
+    }
+
+    /**
+     * Creates a complete node while exposing worker/timeout control only to
+     * these boundary tests. Production code never uses this construction path.
+     */
+    private static TimingNode node(
+            TimingNodeId id,
+            SerialWorker worker,
+            long timeoutMillis) {
+        TimingNodeLogic logic = new TimingNodeLogic(
+                id,
+                new NoOpPersistence(),
+                new DefaultTimingDataFactory(),
+                TimingNodeTest::now);
+        return new TimingNode(logic, worker, timeoutMillis);
+    }
+
+    private static TimingTimestamp now() {
+        return TimingTimestamp.parse("2026-10-02T08:00:00.000000000Z");
+    }
+
+    private static final class NoOpPersistence implements TimingDataPersistence {
+        @Override
+        public LoadResult load() {
+            return new LoadResult(
+                    Collections.<TimingData>emptyList(),
+                    false);
+        }
+
+        @Override
+        public void append(TimingData data) {
+            // TimingNodeTest exercises execution/state behaviour, not persistence.
+        }
     }
 }

@@ -5,12 +5,22 @@ import io.github.brainboxemb.eventtiming.timingdata.RegistrationId;
 import io.github.brainboxemb.eventtiming.timingdata.TimingData;
 import io.github.brainboxemb.eventtiming.timingdata.TimingTimestamp;
 import io.github.brainboxemb.eventtiming.timingpoint.domain.timing.TimingNode;
+import io.github.brainboxemb.eventtiming.timingpoint.domain.timing.TimingNodeCommands;
+import io.github.brainboxemb.eventtiming.timingpoint.domain.timing.TimingNodeQueries;
+import io.github.brainboxemb.eventtiming.timingpoint.domain.timing.TimingNodeTypes.CloseResult;
+import io.github.brainboxemb.eventtiming.timingpoint.domain.timing.TimingNodeTypes.OpenResult;
+import io.github.brainboxemb.eventtiming.timingpoint.domain.timing.TimingNodeTypes.RegistrationResult;
+import io.github.brainboxemb.eventtiming.timingpoint.domain.timing.TimingNodeTypes.SetLocationResult;
+import io.github.brainboxemb.eventtiming.timingpoint.domain.timing.TimingNodeTypes.Status;
 import io.github.brainboxemb.eventtiming.timingpoint.infra.BuildIdentity;
 import io.github.brainboxemb.eventtiming.timingpoint.platform.events.Event;
+import io.github.brainboxemb.eventtiming.timingpoint.platform.events.EventSource;
 
 import java.util.List;
-import java.util.function.Consumer;
 import java.util.function.Supplier;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Shared transport-independent application boundary for client commands and queries.
@@ -18,9 +28,11 @@ import java.util.function.Supplier;
  * <p>This class is intentionally small. It is not a command bus, mediator framework or generic
  * message registry. Presentation adapters use these methods instead of calling TimingNode
  * directly, so HTTP, WebSocket, terminal and Engineering Client paths share one application
- * operation boundary.</p>
+ * boundary. State-changing application commands map to typed TimingNode commands;
+ * application reads map to typed TimingNode queries.</p>
  */
 public final class CommandHandler {
+    private static final Logger LOG = LoggerFactory.getLogger(CommandHandler.class);
     /** First Step-4 engineering capability set. */
     public static final class Capabilities {
         private final boolean directRegistrationSimulationSupported;
@@ -90,6 +102,9 @@ public final class CommandHandler {
         this.buildIdentity = buildIdentity;
         this.statusSupplier = statusSupplier;
         this.timingNode = timingNode;
+        if (timingNode != null) {
+            timingNode.statusChanged().subscribe(this::updateStatus);
+        }
     }
 
     /** Returns the authoritative application build/version identity. */
@@ -113,30 +128,21 @@ public final class CommandHandler {
     }
 
     /** Sets the current operational LocationId through the TimingNode serial owner. */
-    public TimingNode.SetLocationResult setLocation(LocationId locationId) {
+    public SetLocationResult setLocation(LocationId locationId) {
         TimingNode node = requireOperationalTimingNode("setLocation");
-        ApplicationStatus before = status();
-        TimingNode.SetLocationResult result = node.setLocation(locationId);
-        publishStatusChangedWhenDifferent(before);
-        return result;
+        return node.invoke(TimingNodeCommands.setLocation(locationId));
     }
 
     /** Opens registration through the TimingNode serial owner. */
-    public TimingNode.OpenResult open() {
+    public OpenResult open() {
         TimingNode node = requireOperationalTimingNode("open");
-        ApplicationStatus before = status();
-        TimingNode.OpenResult result = node.open();
-        publishStatusChangedWhenDifferent(before);
-        return result;
+        return node.invoke(TimingNodeCommands.open());
     }
 
     /** Closes registration through the TimingNode serial owner. */
-    public TimingNode.CloseResult close() {
+    public CloseResult close() {
         TimingNode node = requireOperationalTimingNode("close");
-        ApplicationStatus before = status();
-        TimingNode.CloseResult result = node.close();
-        publishStatusChangedWhenDifferent(before);
-        return result;
+        return node.invoke(TimingNodeCommands.close());
     }
 
     /**
@@ -145,55 +151,60 @@ public final class CommandHandler {
      * <p>The caller does not supply TimingNode identity, active LocationId,
      * sequence number, recordedAt or final TimingData.</p>
      */
-    public TimingNode.RegistrationResult registerAccepted(
+    public RegistrationResult commitAutomaticRegistration(
             RegistrationId registrationId,
             TimingTimestamp observationTime) {
-        return requireOperationalTimingNode("registerAccepted")
-                .registerAccepted(registrationId, observationTime);
+        return requireOperationalTimingNode("commitAutomaticRegistration")
+                .invoke(TimingNodeCommands.commitAutomaticRegistration(
+                        registrationId,
+                        observationTime));
     }
 
     /** Returns the number of committed records in the current node LogBook. */
     public int logBookCount() {
         return requireOperationalTimingNode("logBookCount")
-                .timingDataCount();
+                .query(TimingNodeQueries.timingDataCount());
     }
 
     /** Returns a bounded committed LogBook range starting at an inclusive sequence. */
     public List<TimingData> logBookFrom(long fromSequence, int limit) {
         return requireOperationalTimingNode("logBookFrom")
-                .timingDataRange(fromSequence, limit);
+                .query(TimingNodeQueries.timingDataRange(fromSequence, limit));
     }
 
     /** Returns a bounded newest LogBook range in committed source order. */
     public List<TimingData> latestLogBook(int limit) {
         return requireOperationalTimingNode("latestLogBook")
-                .latestTimingData(limit);
+                .query(TimingNodeQueries.latestTimingData(limit));
     }
 
-    /** Subscribes to authoritative status changes caused through this application boundary. */
-    public boolean subscribeStatusChanged(Consumer<ApplicationStatus> listener) {
-        return statusChangedEvent.subscribe(listener);
+    /** Returns the subscription-only authoritative status-change event. */
+    public EventSource<ApplicationStatus> statusChanged() {
+        return statusChangedEvent;
     }
 
-    public boolean unsubscribeStatusChanged(Consumer<ApplicationStatus> listener) {
-        return statusChangedEvent.unsubscribe(listener);
+    /** Returns the subscription-only newly committed TimingData event. */
+    public EventSource<TimingData> newTimingData() {
+        return requireOperationalTimingNode("newTimingData").newTimingData();
     }
 
-    /** Subscribes to newly committed TimingData; no historical replay occurs. */
-    public boolean subscribeNewTimingData(Consumer<TimingData> listener) {
-        return requireOperationalTimingNode("subscribeNewTimingData")
-                .subscribeNewTimingData(listener);
-    }
-
-    public boolean unsubscribeNewTimingData(Consumer<TimingData> listener) {
-        return requireOperationalTimingNode("unsubscribeNewTimingData")
-                .unsubscribeNewTimingData(listener);
-    }
-
-    private void publishStatusChangedWhenDifferent(ApplicationStatus before) {
-        ApplicationStatus after = status();
-        if (!sameStatus(before, after)) {
-            statusChangedEvent.emit(after);
+    /**
+     * Updates the application-facing status stream from an authoritative
+     * TimingNode status change.
+     *
+     * <p>The TimingNode decides whether a real change occurred on its serial
+     * lane. Publishing that mapped fact is an implementation detail here.</p>
+     */
+    private void updateStatus(Status status) {
+        ApplicationStatus update = applicationStatus(status);
+        Event.DeliveryReport delivery = statusChangedEvent.emit(update);
+        if (!delivery.successful()) {
+            LOG.warn(
+                    "Application status changed but "
+                            + delivery.failureCount()
+                            + " status listener(s) failed for "
+                            + update.timingNodeId().value(),
+                    delivery.failures().get(0));
         }
     }
 
@@ -205,31 +216,17 @@ public final class CommandHandler {
         return timingNode;
     }
 
-    private static boolean sameStatus(
-            ApplicationStatus left,
-            ApplicationStatus right) {
-        if (!left.timingNodeId().equals(right.timingNodeId())) {
-            return false;
-        }
-        if (left.timingNodeLifecycle() != right.timingNodeLifecycle()) {
-            return false;
-        }
-        LocationId leftLocation = left.locationId();
-        LocationId rightLocation = right.locationId();
-        return leftLocation == null
-                ? rightLocation == null
-                : leftLocation.equals(rightLocation);
-    }
-
     private static Supplier<ApplicationStatus> statusSupplier(TimingNode timingNode) {
         TimingNode node = requireTimingNode(timingNode);
-        return () -> {
-            TimingNode.Status status = node.status();
-            return new ApplicationStatus(
-                    status.timingNodeId(),
-                    status.lifecycle(),
-                    status.locationId());
-        };
+        return () -> applicationStatus(
+                node.query(TimingNodeQueries.status()));
+    }
+
+    private static ApplicationStatus applicationStatus(Status status) {
+        return new ApplicationStatus(
+                status.timingNodeId(),
+                status.lifecycle(),
+                status.locationId());
     }
 
     private static TimingNode requireTimingNode(TimingNode timingNode) {
