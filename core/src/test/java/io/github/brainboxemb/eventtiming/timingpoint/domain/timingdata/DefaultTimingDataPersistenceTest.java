@@ -46,7 +46,12 @@ public class DefaultTimingDataPersistenceTest {
         TimingDataPersistence.LoadResult load = persistence.load();
         assertFalse(load.repairedIncompleteTail());
         assertEquals(1, load.records().size());
-        assertEquals(first, load.records().get(0));
+        TimingData loaded = load.records().get(0);
+        assertEquals(first.timingNodeId(), loaded.timingNodeId());
+        assertEquals(first.sequenceNumber(), loaded.sequenceNumber());
+        assertEquals(first.locationId(), loaded.locationId());
+        assertEquals(first.effectiveTime(), loaded.effectiveTime());
+        assertEquals(first.recordedAt(), loaded.recordedAt());
     }
 
     @Test
