@@ -1,8 +1,23 @@
 # Step-4 V04 Engineering Client demo
 
-This checklist is the manual running-system evidence for SIP Step 4 after
-VC-ST1-002 is green. It uses only public interfaces and the JavaFX Engineering
-Client.
+This checklist is the manual running-system Engineering Client evidence for SIP
+Step 4 after `VC-ST1-002` is green. It uses only public interfaces and the
+JavaFX Engineering Client.
+
+`VC-ST1-002` already proves the SI-01 server-side lifecycle, first registration,
+LogBook/history, WebSocket reconnect and persisted restart recovery. V04 does not
+repeat that proof. V04 verifies the client integration that the server-only
+black-box test cannot prove:
+
+- controls follow the current TimingNode lifecycle;
+- reconnect enters a rebuild/sync state before LIVE;
+- current status and bounded LogBook history are rebuilt before LIVE;
+- later live events are buffered while that baseline is rebuilt;
+- history/live overlap is merged by the stable TimingData record key;
+- recovered history is not presented as a new live commit.
+
+The restart remains in the demo because it gives a repeatable non-empty-history
+rebuild scenario.
 
 ## Prepare
 
@@ -92,7 +107,7 @@ The GUI deliberately prevents a LocationId change while OPEN. The server-side
 `NODE_NOT_CLOSED` rejection for a direct invalid request is already covered by
 VC-ST1-002.
 
-## Restart and recovery
+## Reconnect / rebuild scenario
 
 1. Open the **Terminal** tab, connect to `127.0.0.1:8023` and enter `quit`.
 2. Verify the application exits cleanly and the Timing view becomes stale or
@@ -100,15 +115,19 @@ VC-ST1-002.
 3. Keep `data\step4-demo-timing-data.jsonl`; restart SI-01 with the same demo
    config.
 4. Reconnect the Engineering Client.
-5. Verify:
-   - the TimingNode starts `CLOSED`;
-   - no operational LocationId is restored from historical TimingData;
-   - LogBook count is still `1`;
-   - sequence 1 / `N001` is visible after the bounded LogBook rebuild;
-   - the new WebSocket session starts with `STATUS_SNAPSHOT`;
-   - the old record is **not** replayed as a new
-     `TIMING_DATA_COMMITTED` event.
+5. Verify the **client**:
+   - enters syncing/reconnecting before becoming LIVE;
+   - keeps state-changing controls disabled while rebuilding;
+   - rebuilds current status to `CLOSED` with no operational LocationId;
+   - rebuilds LogBook count `1` with sequence 1 / `N001`;
+   - does not add the recovered sequence-1 row again as a new live event;
+   - merges any history/live overlap by stable TimingData record key;
+   - reaches LIVE only after the baseline and buffered events are reconciled.
 6. Shut SI-01 down cleanly.
+
+The fact that the server can recover the persisted row across the process restart
+is already automated in `VC-ST1-002`; here it is the stimulus used to verify the
+Engineering Client rebuild behaviour.
 
 ## Record evidence
 
@@ -128,8 +147,8 @@ Auto-reg N001 -> seq 1         PASS / FAIL
 Live committed event           PASS / FAIL
 LogBook count/row              PASS / FAIL
 Close + LocationId 25          PASS / FAIL
-Restart LogBook recovery       PASS / FAIL
-Recovered row not re-emitted   PASS / FAIL
+Reconnect/rebuild before LIVE PASS / FAIL
+History/live deduplication     PASS / FAIL
 Clean shutdown                 PASS / FAIL
 ```
 
