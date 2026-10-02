@@ -5,6 +5,7 @@ import io.github.brainboxemb.eventtiming.timingdata.TimingDataCodec;
 import io.github.brainboxemb.eventtiming.timingdata.defaultprofile.DefaultTimingDataCodec;
 import io.github.brainboxemb.eventtiming.timingpoint.application.ApplicationStatus;
 import io.github.brainboxemb.eventtiming.timingpoint.application.CommandHandler;
+import io.github.brainboxemb.eventtiming.timingpoint.platform.events.EventSource;
 
 import java.io.IOException;
 import java.net.InetAddress;
@@ -52,6 +53,8 @@ public final class WebSocketEndpoint implements AutoCloseable {
             this::broadcastStatusChanged;
     private final Consumer<TimingData> timingDataListener =
             this::broadcastTimingDataCommitted;
+    private final EventSource<ApplicationStatus> statusChanged;
+    private final EventSource<TimingData> newTimingData;
 
     private Server server;
     private boolean statusSubscribed;
@@ -91,6 +94,8 @@ public final class WebSocketEndpoint implements AutoCloseable {
         this.commandHandler = commandHandler;
         this.clock = clock;
         this.timingDataCodec = new DefaultTimingDataCodec();
+        this.statusChanged = commandHandler.statusChanged();
+        this.newTimingData = commandHandler.newTimingData();
     }
 
     /**
@@ -129,10 +134,8 @@ public final class WebSocketEndpoint implements AutoCloseable {
 
         server = candidate;
         try {
-            statusSubscribed =
-                    commandHandler.subscribeStatusChanged(statusChangedListener);
-            timingDataSubscribed =
-                    commandHandler.subscribeNewTimingData(timingDataListener);
+            statusSubscribed = statusChanged.subscribe(statusChangedListener);
+            timingDataSubscribed = newTimingData.subscribe(timingDataListener);
         } catch (RuntimeException ex) {
             unsubscribeApplicationEvents();
             server = null;
@@ -225,11 +228,11 @@ public final class WebSocketEndpoint implements AutoCloseable {
 
     private void unsubscribeApplicationEvents() {
         if (statusSubscribed) {
-            commandHandler.unsubscribeStatusChanged(statusChangedListener);
+            statusChanged.unsubscribe(statusChangedListener);
             statusSubscribed = false;
         }
         if (timingDataSubscribed) {
-            commandHandler.unsubscribeNewTimingData(timingDataListener);
+            newTimingData.unsubscribe(timingDataListener);
             timingDataSubscribed = false;
         }
     }

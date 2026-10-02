@@ -15,6 +15,20 @@ import java.util.function.Consumer;
  * retry or network delivery must hand the immutable value to its own bounded
  * execution/delivery mechanism and return quickly.</p>
  *
+ * <p>The subscription registry is thread-safe. Subscribe, unsubscribe and emit
+ * may be called from different threads without corrupting the listener set or
+ * causing concurrent-modification failures. Each emit iterates a stable
+ * listener snapshot: a listener added during that emit participates only in a
+ * later emit; a listener removed during that emit may still receive the value
+ * already being delivered.</p>
+ *
+ * <p>Event deliberately does <strong>not</strong> serialize concurrent emits.
+ * If two threads call {@code emit(...)} at the same time, the same listener may
+ * be invoked concurrently on those two emitting threads. An event owner that
+ * requires strict ordering/non-overlap must emit from its own serial execution
+ * boundary. Listener implementations must therefore be thread-safe whenever
+ * their owning event can be emitted concurrently.</p>
+ *
  * <p>Ordinary listener {@link RuntimeException}s are isolated per listener:
  * later listeners are still invoked and the failures are returned in a
  * {@link DeliveryReport}. Fatal {@link Error}s are not swallowed.</p>
@@ -34,7 +48,7 @@ import java.util.function.Consumer;
  *
  * @param <T> immutable/read-only value delivered to listeners
  */
-public final class Event<T> {
+public final class Event<T> implements EventSource<T> {
     private final CopyOnWriteArrayList<Consumer<T>> listeners =
             new CopyOnWriteArrayList<>();
 
@@ -47,6 +61,7 @@ public final class Event<T> {
      *
      * @return {@code true} when the listener was newly added
      */
+    @Override
     public boolean subscribe(Consumer<T> listener) {
         if (listener == null) {
             throw new IllegalArgumentException("listener must not be null");
@@ -59,6 +74,7 @@ public final class Event<T> {
      *
      * @return {@code true} when a subscription was removed
      */
+    @Override
     public boolean unsubscribe(Consumer<T> listener) {
         if (listener == null) {
             throw new IllegalArgumentException("listener must not be null");

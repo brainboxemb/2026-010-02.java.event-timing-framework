@@ -6,10 +6,12 @@ import io.github.brainboxemb.eventtiming.timingdata.TimingNodeId;
 import io.github.brainboxemb.eventtiming.timingpoint.domain.system.TimeSource;
 import io.github.brainboxemb.eventtiming.timingpoint.domain.timingdata.TimingDataPersistence;
 import io.github.brainboxemb.eventtiming.timingpoint.platform.events.Event;
+import io.github.brainboxemb.eventtiming.timingpoint.platform.events.EventSource;
 import io.github.brainboxemb.eventtiming.timingpoint.platform.execution.SerialWorker;
 import io.github.brainboxemb.eventtiming.timingpoint.domain.timing.TimingNodeTypes.CommandAdmission;
 import io.github.brainboxemb.eventtiming.timingpoint.domain.timing.TimingNodeTypes.OperationException;
 import io.github.brainboxemb.eventtiming.timingpoint.domain.timing.TimingNodeTypes.RegistrationResult;
+import io.github.brainboxemb.eventtiming.timingpoint.domain.timing.TimingNodeTypes.Status;
 import io.github.brainboxemb.eventtiming.timingpoint.domain.timing.TimingNodeTypes.StartupException;
 
 import java.util.concurrent.Callable;
@@ -18,7 +20,6 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
-import java.util.function.Consumer;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -45,6 +46,7 @@ public final class TimingNode {
     private final TimingNodeLogic logic;
     private final SerialWorker serialWorker;
     private final long operationTimeoutMillis;
+    private final Event<Status> statusChangedEvent = new Event<>();
     private final Event<TimingData> newTimingDataEvent = new Event<>();
 
     private Throwable startupFailure;
@@ -137,7 +139,7 @@ public final class TimingNode {
             throw new IllegalArgumentException("command must not be null");
         }
         return runSerialized(
-                () -> command.complete(this, command.apply(logic)),
+                () -> applyCommand(command),
                 command.name());
     }
 
@@ -171,8 +173,7 @@ public final class TimingNode {
 
     private <R> void applySubmitted(TimingNodeCommand<R> command) {
         try {
-            R result = command.apply(logic);
-            command.complete(this, result);
+            applyCommand(command);
         } catch (Exception ex) {
             LOG.warn(
                     "Submitted TimingNode command {} failed after admission",
@@ -181,13 +182,40 @@ public final class TimingNode {
         }
     }
 
-    public boolean subscribeNewTimingData(Consumer<TimingData> listener) {
-        return newTimingDataEvent.subscribe(listener);
+    /** Returns the subscription-only stream of authoritative status changes. */
+    public EventSource<Status> statusChanged() {
+        return statusChangedEvent;
     }
 
-    public boolean unsubscribeNewTimingData(Consumer<TimingData> listener) {
-        return newTimingDataEvent.unsubscribe(listener);
+    /** Returns the subscription-only stream of newly committed TimingData. */
+    public EventSource<TimingData> newTimingData() {
+        return newTimingDataEvent;
     }
+
+    private <R> R applyCommand(TimingNodeCommand<R> command) throws Exception {
+        Status before = logic.status();
+        R result = command.apply(logic);
+        Status after = logic.status();
+        publishStatusChanged(before, after);
+        return command.complete(this, result);
+    }
+
+    private void publishStatusChanged(Status before, Status after) {
+        if (sameStatus(before, after)) {
+            return;
+        }
+
+        Event.DeliveryReport delivery = statusChangedEvent.emit(after);
+        if (!delivery.successful()) {
+            LOG.warn(
+                    "TimingNode status changed but "
+                            + delivery.failureCount()
+                            + " status listener(s) failed for "
+                            + timingNodeId().value(),
+                    delivery.failures().get(0));
+        }
+    }
+
 
     /**
      * Executes a typed read against the same serial lane as state-changing commands.
@@ -201,6 +229,23 @@ public final class TimingNode {
             throw new IllegalArgumentException("query must not be null");
         }
         return runSerialized(() -> query.read(logic), query.name());
+    }
+
+    private static boolean sameStatus(Status left, Status right) {
+        if (!left.timingNodeId().equals(right.timingNodeId())) {
+            return false;
+        }
+        if (left.lifecycle() != right.lifecycle()) {
+            return false;
+        }
+        if (left.timingDataTailRecovered() != right.timingDataTailRecovered()) {
+            return false;
+        }
+        if (!left.hasLocation()) {
+            return !right.hasLocation();
+        }
+        return right.hasLocation()
+                && left.locationId().equals(right.locationId());
     }
 
     RegistrationResult publishCommitted(RegistrationResult result) {
