@@ -58,6 +58,7 @@ final class TimingPane extends VBox {
     private final TableView<ApiClient.TimingDataInfo> logBook = new TableView<>();
 
     private boolean updatingNodeSelection;
+    private final List<ApiEventClient.ApiEvent> bufferedEvents = new ArrayList<>();
 
     TimingPane(
             Supplier<ApiClient> clientSupplier,
@@ -172,12 +173,16 @@ final class TimingPane extends VBox {
     }
 
     void connected() {
+        bufferedEvents.clear();
+        model.viewState(TimingViewModel.ViewState.RECONNECTING);
         connection.setText("CONNECTED / syncing");
         connect.setDisable(true);
         disconnect.setDisable(false);
+        refresh();
     }
 
     void disconnected(boolean stale) {
+        bufferedEvents.clear();
         model.viewState(stale
                 ? TimingViewModel.ViewState.STALE
                 : TimingViewModel.ViewState.DISCONNECTED);
@@ -194,18 +199,38 @@ final class TimingPane extends VBox {
     }
 
     void applyStatusEvent(ApiEventClient.StatusEvent event) {
-        applyStatus(event.status());
         if ("STATUS_SNAPSHOT".equals(event.eventType())) {
+            applyStatus(event.status());
             rebuild();
+            return;
         }
+
+        if (model.viewState() == TimingViewModel.ViewState.RECONNECTING) {
+            bufferedEvents.add(event);
+            return;
+        }
+        if (model.viewState() != TimingViewModel.ViewState.LIVE) {
+            return;
+        }
+
+        applyStatus(event.status());
     }
 
     void applyTimingDataEvent(ApiEventClient.TimingDataEvent event) {
+        if (model.viewState() == TimingViewModel.ViewState.RECONNECTING) {
+            bufferedEvents.add(event);
+            return;
+        }
+        if (model.viewState() != TimingViewModel.ViewState.LIVE) {
+            return;
+        }
+
         model.mergeCommitted(event.timingData());
         refreshLogBook();
     }
 
     void rebuild() {
+        bufferedEvents.clear();
         model.viewState(TimingViewModel.ViewState.RECONNECTING);
         connection.setText("RECONNECTING");
         refresh();
@@ -294,10 +319,30 @@ final class TimingPane extends VBox {
                     for (ApiClient.LogBookPage page : result.pages()) {
                         model.mergeLogBookPage(page);
                     }
+                    applyBufferedEvents();
                     model.viewState(TimingViewModel.ViewState.LIVE);
                     connection.setText("LIVE");
                     refresh();
                 }));
+    }
+
+    /**
+     * Applies live events received after the rebuild baseline in delivery order.
+     *
+     * <p>This method runs on the JavaFX application thread. Events are buffered
+     * only while the Timing view is RECONNECTING; raw Events-tab diagnostics are
+     * still shown immediately by the outer application.</p>
+     */
+    private void applyBufferedEvents() {
+        for (ApiEventClient.ApiEvent event : bufferedEvents) {
+            if (event instanceof ApiEventClient.StatusEvent statusEvent) {
+                model.applyStatus(statusEvent.status());
+                syncNodeChoice();
+            } else if (event instanceof ApiEventClient.TimingDataEvent timingDataEvent) {
+                model.mergeCommitted(timingDataEvent.timingData());
+            }
+        }
+        bufferedEvents.clear();
     }
 
     private void loadSelectedLogBook() {
