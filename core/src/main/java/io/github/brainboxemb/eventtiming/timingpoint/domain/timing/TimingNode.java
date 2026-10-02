@@ -1,12 +1,9 @@
 package io.github.brainboxemb.eventtiming.timingpoint.domain.timing;
 
 import io.github.brainboxemb.eventtiming.timingdata.LocationId;
-import io.github.brainboxemb.eventtiming.timingdata.RegistrationId;
 import io.github.brainboxemb.eventtiming.timingdata.TimingData;
-import io.github.brainboxemb.eventtiming.timingdata.TimingData.ManualTimeSource;
 import io.github.brainboxemb.eventtiming.timingdata.TimingDataFactory;
 import io.github.brainboxemb.eventtiming.timingdata.TimingNodeId;
-import io.github.brainboxemb.eventtiming.timingdata.TimingTimestamp;
 import io.github.brainboxemb.eventtiming.timingpoint.domain.system.TimeSource;
 import io.github.brainboxemb.eventtiming.timingpoint.domain.timingdata.TimingDataStore;
 import io.github.brainboxemb.eventtiming.timingpoint.platform.events.Event;
@@ -30,10 +27,11 @@ import org.slf4j.LoggerFactory;
  * behaviour to {@link TimingNodeLogic}. Higher layers use this component rather
  * than the internal logic object directly.</p>
  *
- * <p>State-changing domain commands remain explicit methods because their names
- * describe intent. Read-only operations enter through {@link #query(TimingNodeQuery)}
- * and the standard {@link TimingNodeQueries}; this avoids duplicating every
- * TimingNodeLogic getter on the visible component boundary.</p>
+ * <p>Higher layers send typed state-changing commands through
+ * {@link #execute(TimingNodeCommand)} and typed reads through
+ * {@link #query(TimingNodeQuery)}. The standard {@link TimingNodeCommands} and
+ * {@link TimingNodeQueries} keep the public boundary compact without duplicating
+ * every operation implemented by TimingNodeLogic.</p>
  */
 public final class TimingNode {
     private static final Logger LOG = LoggerFactory.getLogger(TimingNode.class);
@@ -149,64 +147,23 @@ public final class TimingNode {
         serialWorker.close();
     }
 
-    public OpenResult open() {
-        return execute(logic::open, "open");
-    }
-
-    public CloseResult close() {
-        return execute(logic::close, "close");
-    }
-
-    public SetLocationResult setLocation(LocationId locationId) {
-        if (locationId == null) {
-            throw new IllegalArgumentException("locationId must not be null");
-        }
-        return execute(() -> logic.setLocation(locationId), "setLocation");
-    }
-
     /**
-     * Commits one automatic registration that already passed source-specific
-     * interpretation and filtering.
+     * Executes one typed state-changing command on the TimingNode serial lane.
+     *
+     * <p>The command contains the domain operation and its arguments. TimingNode
+     * remains responsible for admission, ordering, timeout/failure mapping and
+     * post-command component events.</p>
      */
-    public RegistrationResult commitAutomaticRegistration(
-            RegistrationId registrationId,
-            TimingTimestamp observationTime) {
-        if (registrationId == null) {
-            throw new IllegalArgumentException("registrationId must not be null");
+    public <R> R execute(TimingNodeCommand<R> command) {
+        if (command == null) {
+            throw new IllegalArgumentException("command must not be null");
         }
-        if (observationTime == null) {
-            throw new IllegalArgumentException("observationTime must not be null");
+        if (command.requiresTimingData()) {
+            requireTimingDataSupport(command.name());
         }
-        requireTimingDataSupport("commitAutomaticRegistration");
-        return execute(
-                () -> publishCommitted(
-                        logic.commitAutomaticRegistration(
-                                registrationId,
-                                observationTime)),
-                "commitAutomaticRegistration");
-    }
-
-    public RegistrationResult commitManualRegistration(
-            RegistrationId registrationId,
-            TimingTimestamp effectiveTime,
-            ManualTimeSource registrationTimeSource) {
-        if (registrationId == null) {
-            throw new IllegalArgumentException("registrationId must not be null");
-        }
-        if (effectiveTime == null) {
-            throw new IllegalArgumentException("effectiveTime must not be null");
-        }
-        if (registrationTimeSource == null) {
-            throw new IllegalArgumentException("registrationTimeSource must not be null");
-        }
-        requireTimingDataSupport("commitManualRegistration");
-        return execute(
-                () -> publishCommitted(
-                        logic.commitManualRegistration(
-                                registrationId,
-                                effectiveTime,
-                                registrationTimeSource)),
-                "commitManualRegistration");
+        return invoke(
+                () -> command.complete(this, command.apply(logic)),
+                command.name());
     }
 
     public boolean subscribeNewTimingData(Consumer<TimingData> listener) {
@@ -233,10 +190,10 @@ public final class TimingNode {
         if (query.requiresTimingData()) {
             requireTimingDataSupport(query.name());
         }
-        return execute(() -> query.read(logic), query.name());
+        return invoke(() -> query.read(logic), query.name());
     }
 
-    private RegistrationResult publishCommitted(RegistrationResult result) {
+    RegistrationResult publishCommitted(RegistrationResult result) {
         if (!result.committed()) {
             return result;
         }
@@ -264,7 +221,7 @@ public final class TimingNode {
         }
     }
 
-    private <R> R execute(Callable<R> work, String operation) {
+    private <R> R invoke(Callable<R> work, String operation) {
         SerialWorker.SubmitResult<R> submitResult = serialWorker.submit(work);
         switch (submitResult.admission()) {
             case FULL:

@@ -5,6 +5,7 @@ import io.github.brainboxemb.eventtiming.timingdata.RegistrationId;
 import io.github.brainboxemb.eventtiming.timingdata.TimingData;
 import io.github.brainboxemb.eventtiming.timingdata.TimingTimestamp;
 import io.github.brainboxemb.eventtiming.timingpoint.domain.timing.TimingNode;
+import io.github.brainboxemb.eventtiming.timingpoint.domain.timing.TimingNodeCommands;
 import io.github.brainboxemb.eventtiming.timingpoint.domain.timing.TimingNodeQueries;
 import io.github.brainboxemb.eventtiming.timingpoint.infra.BuildIdentity;
 import io.github.brainboxemb.eventtiming.timingpoint.platform.events.Event;
@@ -19,7 +20,7 @@ import java.util.function.Supplier;
  * <p>This class is intentionally small. It is not a command bus, mediator framework or generic
  * message registry. Presentation adapters use these methods instead of calling TimingNode
  * directly, so HTTP, WebSocket, terminal and Engineering Client paths share one application
- * boundary. State-changing application commands map to explicit TimingNode command methods;
+ * boundary. State-changing application commands map to typed TimingNode commands;
  * application reads map to typed TimingNode queries.</p>
  */
 public final class CommandHandler {
@@ -118,7 +119,8 @@ public final class CommandHandler {
     public TimingNode.SetLocationResult setLocation(LocationId locationId) {
         TimingNode node = requireOperationalTimingNode("setLocation");
         ApplicationStatus before = status();
-        TimingNode.SetLocationResult result = node.setLocation(locationId);
+        TimingNode.SetLocationResult result =
+                node.execute(TimingNodeCommands.setLocation(locationId));
         publishStatusChangedWhenDifferent(before);
         return result;
     }
@@ -127,7 +129,7 @@ public final class CommandHandler {
     public TimingNode.OpenResult open() {
         TimingNode node = requireOperationalTimingNode("open");
         ApplicationStatus before = status();
-        TimingNode.OpenResult result = node.open();
+        TimingNode.OpenResult result = node.execute(TimingNodeCommands.open());
         publishStatusChangedWhenDifferent(before);
         return result;
     }
@@ -136,7 +138,7 @@ public final class CommandHandler {
     public TimingNode.CloseResult close() {
         TimingNode node = requireOperationalTimingNode("close");
         ApplicationStatus before = status();
-        TimingNode.CloseResult result = node.close();
+        TimingNode.CloseResult result = node.execute(TimingNodeCommands.close());
         publishStatusChangedWhenDifferent(before);
         return result;
     }
@@ -151,7 +153,9 @@ public final class CommandHandler {
             RegistrationId registrationId,
             TimingTimestamp observationTime) {
         return requireOperationalTimingNode("commitAutomaticRegistration")
-                .commitAutomaticRegistration(registrationId, observationTime);
+                .execute(TimingNodeCommands.commitAutomaticRegistration(
+                        registrationId,
+                        observationTime));
     }
 
     /** Returns the number of committed records in the current node LogBook. */
