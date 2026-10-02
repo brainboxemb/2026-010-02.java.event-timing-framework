@@ -9,9 +9,10 @@ import io.github.brainboxemb.eventtiming.timingdata.TimingDataFactory.Context;
 import io.github.brainboxemb.eventtiming.timingdata.TimingNodeId;
 import io.github.brainboxemb.eventtiming.timingdata.TimingTimestamp;
 import io.github.brainboxemb.eventtiming.timingpoint.domain.logbook.LogBook;
-import io.github.brainboxemb.eventtiming.timingpoint.domain.logbook.LogBookVisitor;
 import io.github.brainboxemb.eventtiming.timingpoint.domain.system.TimeSource;
 import io.github.brainboxemb.eventtiming.timingpoint.domain.timingdata.TimingDataStore;
+
+import java.util.List;
 
 /**
  * Internal mutable logic of one TimingNode.
@@ -128,25 +129,20 @@ final class TimingNodeLogic {
         return commitRegistration(data);
     }
 
-    <R> R visitTimingData(LogBookVisitor<R> visitor) {
-        return logBook.visitAll(visitor);
+    List<TimingData> timingDataSnapshot() {
+        return logBook.snapshot();
     }
 
     int timingDataCount() {
         return logBook.size();
     }
 
-    <R> R visitTimingDataRange(
-            long fromSequence,
-            int limit,
-            LogBookVisitor<R> visitor) {
-        return logBook.visitRange(fromSequence, limit, visitor);
+    List<TimingData> timingDataRange(long fromSequence, int limit) {
+        return logBook.range(fromSequence, limit);
     }
 
-    <R> R visitLatestTimingData(
-            int limit,
-            LogBookVisitor<R> visitor) {
-        return logBook.visitLatest(limit, visitor);
+    List<TimingData> latestTimingData(int limit) {
+        return logBook.latest(limit);
     }
 
     TimingNode.Status status() {

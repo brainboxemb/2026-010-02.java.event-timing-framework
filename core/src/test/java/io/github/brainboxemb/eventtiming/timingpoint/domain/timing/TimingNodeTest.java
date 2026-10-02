@@ -40,8 +40,8 @@ public class TimingNodeTest {
 
         node.start();
         try {
-            assertEquals(TimingNode.SetLocationResult.UPDATED, node.execute(TimingNodeCommands.setLocation(location)));
-            assertEquals(TimingNode.OpenResult.OPENED, node.execute(TimingNodeCommands.open()));
+            assertEquals(TimingNode.SetLocationResult.UPDATED, node.invoke(TimingNodeCommands.setLocation(location)));
+            assertEquals(TimingNode.OpenResult.OPENED, node.invoke(TimingNodeCommands.open()));
 
             TimingNode.Status openStatus = node.query(TimingNodeQueries.status());
             assertEquals(TimingNode.Lifecycle.OPEN, openStatus.lifecycle());
@@ -49,10 +49,10 @@ public class TimingNodeTest {
 
             assertEquals(
                     TimingNode.SetLocationResult.NODE_NOT_CLOSED,
-                    node.execute(TimingNodeCommands.setLocation(new LocationId(25))));
+                    node.invoke(TimingNodeCommands.setLocation(new LocationId(25))));
             assertEquals(location, node.query(TimingNodeQueries.status()).locationId());
 
-            assertEquals(TimingNode.CloseResult.CLOSED, node.execute(TimingNodeCommands.close()));
+            assertEquals(TimingNode.CloseResult.CLOSED, node.invoke(TimingNodeCommands.close()));
 
             TimingNode.Status closedStatus = node.query(TimingNodeQueries.status());
             assertEquals(TimingNode.Lifecycle.CLOSED, closedStatus.lifecycle());
@@ -68,7 +68,7 @@ public class TimingNodeTest {
 
         node.start();
         try {
-            assertEquals(TimingNode.OpenResult.NO_LOCATION, node.execute(TimingNodeCommands.open()));
+            assertEquals(TimingNode.OpenResult.NO_LOCATION, node.invoke(TimingNodeCommands.open()));
             assertEquals(TimingNode.Lifecycle.CLOSED, node.query(TimingNodeQueries.status()).lifecycle());
         } finally {
             node.stop();
@@ -81,11 +81,11 @@ public class TimingNodeTest {
 
         node.start();
         try {
-            node.execute(TimingNodeCommands.setLocation(new LocationId(24)));
-            assertEquals(TimingNode.OpenResult.OPENED, node.execute(TimingNodeCommands.open()));
-            assertEquals(TimingNode.OpenResult.ALREADY_OPEN, node.execute(TimingNodeCommands.open()));
-            assertEquals(TimingNode.CloseResult.CLOSED, node.execute(TimingNodeCommands.close()));
-            assertEquals(TimingNode.CloseResult.ALREADY_CLOSED, node.execute(TimingNodeCommands.close()));
+            node.invoke(TimingNodeCommands.setLocation(new LocationId(24)));
+            assertEquals(TimingNode.OpenResult.OPENED, node.invoke(TimingNodeCommands.open()));
+            assertEquals(TimingNode.OpenResult.ALREADY_OPEN, node.invoke(TimingNodeCommands.open()));
+            assertEquals(TimingNode.CloseResult.CLOSED, node.invoke(TimingNodeCommands.close()));
+            assertEquals(TimingNode.CloseResult.ALREADY_CLOSED, node.invoke(TimingNodeCommands.close()));
         } finally {
             node.stop();
         }
@@ -111,7 +111,7 @@ public class TimingNodeTest {
             assertTrue(blockerStarted.await(1, TimeUnit.SECONDS));
 
             try {
-                node.execute(TimingNodeCommands.setLocation(new LocationId(24)));
+                node.invoke(TimingNodeCommands.setLocation(new LocationId(24)));
                 fail("expected timeout");
             } catch (TimingNode.OperationTimeoutException expected) {
                 assertEquals(
@@ -147,7 +147,7 @@ public class TimingNodeTest {
         try {
             assertEquals(
                     TimingNode.SetLocationResult.UPDATED,
-                    node.execute(TimingNodeCommands.setLocation(new LocationId(24))));
+                    node.invoke(TimingNodeCommands.setLocation(new LocationId(24))));
 
             worker.submit(() -> {
                 blockerStarted.countDown();
@@ -160,9 +160,9 @@ public class TimingNodeTest {
             final TimingNode.SetLocationResult[] setLocationResult =
                     new TimingNode.SetLocationResult[1];
 
-            Thread openCaller = new Thread(() -> openResult[0] = node.execute(TimingNodeCommands.open()));
+            Thread openCaller = new Thread(() -> openResult[0] = node.invoke(TimingNodeCommands.open()));
             Thread locationCaller = new Thread(
-                    () -> setLocationResult[0] = node.execute(TimingNodeCommands.setLocation(new LocationId(25))));
+                    () -> setLocationResult[0] = node.invoke(TimingNodeCommands.setLocation(new LocationId(25))));
 
             openCaller.start();
             long queueDeadline = System.nanoTime() + TimeUnit.SECONDS.toNanos(1);

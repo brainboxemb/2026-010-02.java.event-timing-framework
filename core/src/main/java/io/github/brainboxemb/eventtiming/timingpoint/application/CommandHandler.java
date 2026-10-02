@@ -6,11 +6,11 @@ import io.github.brainboxemb.eventtiming.timingdata.TimingData;
 import io.github.brainboxemb.eventtiming.timingdata.TimingTimestamp;
 import io.github.brainboxemb.eventtiming.timingpoint.domain.timing.TimingNode;
 import io.github.brainboxemb.eventtiming.timingpoint.domain.timing.TimingNodeCommands;
-import io.github.brainboxemb.eventtiming.timingpoint.domain.logbook.LogBookVisitor;
 import io.github.brainboxemb.eventtiming.timingpoint.domain.timing.TimingNodeQueries;
 import io.github.brainboxemb.eventtiming.timingpoint.infra.BuildIdentity;
 import io.github.brainboxemb.eventtiming.timingpoint.platform.events.Event;
 
+import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
@@ -164,24 +164,16 @@ public final class CommandHandler {
                 .query(TimingNodeQueries.timingDataCount());
     }
 
-    /** Visits a bounded committed LogBook range starting at an inclusive sequence. */
-    public <R> R logBookFrom(
-            long fromSequence,
-            int limit,
-            LogBookVisitor<R> visitor) {
+    /** Returns a bounded committed LogBook range starting at an inclusive sequence. */
+    public List<TimingData> logBookFrom(long fromSequence, int limit) {
         return requireOperationalTimingNode("logBookFrom")
-                .query(TimingNodeQueries.timingDataRange(
-                        fromSequence,
-                        limit,
-                        visitor));
+                .query(TimingNodeQueries.timingDataRange(fromSequence, limit));
     }
 
-    /** Visits a bounded newest LogBook range in committed source order. */
-    public <R> R latestLogBook(
-            int limit,
-            LogBookVisitor<R> visitor) {
+    /** Returns a bounded newest LogBook range in committed source order. */
+    public List<TimingData> latestLogBook(int limit) {
         return requireOperationalTimingNode("latestLogBook")
-                .query(TimingNodeQueries.latestTimingData(limit, visitor));
+                .query(TimingNodeQueries.latestTimingData(limit));
     }
 
     /** Subscribes to authoritative status changes caused through this application boundary. */

@@ -1,17 +1,25 @@
 package io.github.brainboxemb.eventtiming.timingpoint.domain.timing;
 
-import io.github.brainboxemb.eventtiming.timingpoint.domain.logbook.LogBookVisitor;
+import io.github.brainboxemb.eventtiming.timingdata.TimingData;
+
+import java.util.List;
 
 /**
  * Standard read operations supported by TimingNode.
  *
- * <p>Queries describe read intent. Bulk LogBook queries accept a visitor so the
- * caller can build the required result directly while the selected records are
- * visited on the TimingNode serial lane; no intermediate record List is required.</p>
+ * <p>Commands remain explicit methods on TimingNode because they express
+ * state-changing domain intent. Queries are represented as typed values so a
+ * new read does not require another forwarding method on the TimingNode
+ * component boundary.</p>
  */
 public final class TimingNodeQueries {
     private static final TimingNodeQuery<TimingNode.Status> STATUS =
             new TimingNodeQuery<>("status", false, TimingNodeLogic::status);
+    private static final TimingNodeQuery<List<TimingData>> TIMING_DATA_SNAPSHOT =
+            new TimingNodeQuery<>(
+                    "timingDataSnapshot",
+                    true,
+                    TimingNodeLogic::timingDataSnapshot);
     private static final TimingNodeQuery<Integer> TIMING_DATA_COUNT =
             new TimingNodeQuery<>(
                     "timingDataCount",
@@ -25,46 +33,27 @@ public final class TimingNodeQueries {
         return STATUS;
     }
 
+    public static TimingNodeQuery<List<TimingData>> timingDataSnapshot() {
+        return TIMING_DATA_SNAPSHOT;
+    }
+
     public static TimingNodeQuery<Integer> timingDataCount() {
         return TIMING_DATA_COUNT;
     }
 
-    public static <R> TimingNodeQuery<R> timingData(
-            LogBookVisitor<R> visitor) {
-        requireVisitor(visitor);
-        return new TimingNodeQuery<>(
-                "timingData",
-                true,
-                logic -> logic.visitTimingData(visitor));
-    }
-
-    public static <R> TimingNodeQuery<R> timingDataRange(
+    public static TimingNodeQuery<List<TimingData>> timingDataRange(
             long fromSequence,
-            int limit,
-            LogBookVisitor<R> visitor) {
-        requireVisitor(visitor);
+            int limit) {
         return new TimingNodeQuery<>(
                 "timingDataRange",
                 true,
-                logic -> logic.visitTimingDataRange(
-                        fromSequence,
-                        limit,
-                        visitor));
+                logic -> logic.timingDataRange(fromSequence, limit));
     }
 
-    public static <R> TimingNodeQuery<R> latestTimingData(
-            int limit,
-            LogBookVisitor<R> visitor) {
-        requireVisitor(visitor);
+    public static TimingNodeQuery<List<TimingData>> latestTimingData(int limit) {
         return new TimingNodeQuery<>(
                 "latestTimingData",
                 true,
-                logic -> logic.visitLatestTimingData(limit, visitor));
-    }
-
-    private static void requireVisitor(LogBookVisitor<?> visitor) {
-        if (visitor == null) {
-            throw new IllegalArgumentException("visitor must not be null");
-        }
+                logic -> logic.latestTimingData(limit));
     }
 }

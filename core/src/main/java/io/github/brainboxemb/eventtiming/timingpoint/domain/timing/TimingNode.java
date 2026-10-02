@@ -27,11 +27,12 @@ import org.slf4j.LoggerFactory;
  * behaviour to {@link TimingNodeLogic}. Higher layers use this component rather
  * than the internal logic object directly.</p>
  *
- * <p>Higher layers send typed state-changing commands through
- * {@link #invoke(TimingNodeCommand)} and typed reads through
- * {@link #query(TimingNodeQuery)}. The standard {@link TimingNodeCommands} and
- * {@link TimingNodeQueries} keep the public boundary compact without duplicating
- * every operation implemented by TimingNodeLogic.</p>
+ * <p>Result-bearing callers use {@link #invoke(TimingNodeCommand)} and typed
+ * reads use {@link #query(TimingNodeQuery)}. Producer/callback paths that must
+ * not wait for the processed result use {@link #submit(TimingNodeCommand)} and
+ * receive only immediate bounded-queue admission. The standard
+ * {@link TimingNodeCommands} and {@link TimingNodeQueries} keep this boundary
+ * compact without duplicating every operation implemented by TimingNodeLogic.</p>
  */
 public final class TimingNode {
     private static final Logger LOG = LoggerFactory.getLogger(TimingNode.class);
@@ -166,6 +167,49 @@ public final class TimingNode {
                 command.name());
     }
 
+    /**
+     * Attempts to admit one command without waiting for its processed result.
+     *
+     * <p>This is the producer/callback path used when the caller must return
+     * promptly, for example after TagProcessor has produced accepted semantic
+     * work. ACCEPTED means only that the command entered the bounded serial
+     * lane; it does not mean that the later domain operation commits.</p>
+     */
+    public CommandAdmission submit(TimingNodeCommand<?> command) {
+        if (command == null) {
+            throw new IllegalArgumentException("command must not be null");
+        }
+        if (command.requiresTimingData()) {
+            requireTimingDataSupport(command.name());
+        }
+
+        SerialWorker.AdmissionResult admission =
+                serialWorker.offer(() -> applySubmitted(command));
+        switch (admission) {
+            case ACCEPTED:
+                return CommandAdmission.ACCEPTED;
+            case FULL:
+                return CommandAdmission.FULL;
+            case NOT_RUNNING:
+                return CommandAdmission.NOT_RUNNING;
+            default:
+                throw new IllegalStateException(
+                        "Unsupported admission result " + admission);
+        }
+    }
+
+    private <R> void applySubmitted(TimingNodeCommand<R> command) {
+        try {
+            R result = command.apply(logic);
+            command.complete(this, result);
+        } catch (Exception ex) {
+            LOG.warn(
+                    "Submitted TimingNode command {} failed after admission",
+                    command.name(),
+                    ex);
+        }
+    }
+
     public boolean subscribeNewTimingData(Consumer<TimingData> listener) {
         requireTimingDataSupport("subscribeNewTimingData");
         return newTimingDataEvent.subscribe(listener);
@@ -284,6 +328,17 @@ public final class TimingNode {
             throw new IllegalArgumentException("timingNodeId must not be null");
         }
         return timingNodeId;
+    }
+
+    /**
+     * Immediate result of submission-only command ingress.
+     *
+     * <p>This is deliberately not the later domain result.</p>
+     */
+    public enum CommandAdmission {
+        ACCEPTED,
+        FULL,
+        NOT_RUNNING
     }
 
     public enum Lifecycle {

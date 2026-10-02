@@ -4,6 +4,8 @@ import io.github.brainboxemb.eventtiming.timingdata.TimingData;
 import io.github.brainboxemb.eventtiming.timingdata.TimingNodeId;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 /**
  * Passive committed TimingData history owned by one TimingNode serial lane.
@@ -62,76 +64,43 @@ public final class LogBook {
     }
 
     /**
-     * Visits at most {@code limit} committed records starting at the inclusive
-     * source sequence without creating an intermediate List.
+     * Returns at most {@code limit} committed records starting at the inclusive
+     * source sequence.
      */
-    public <R> R visitRange(
-            long fromSequence,
-            int limit,
-            LogBookVisitor<R> visitor) {
+    public List<TimingData> range(long fromSequence, int limit) {
         if (fromSequence < 1L) {
             throw new IllegalArgumentException("fromSequence must be >= 1");
         }
         if (limit < 1) {
             throw new IllegalArgumentException("limit must be >= 1");
         }
-        if (visitor == null) {
-            throw new IllegalArgumentException("visitor must not be null");
-        }
 
         long startLong = fromSequence - 1L;
-        int totalCount = records.size();
-        if (startLong >= totalCount) {
-            visitor.begin(totalCount, null);
-            return visitor.finish();
+        if (startLong >= records.size()) {
+            return Collections.emptyList();
         }
-
         int start = (int) startLong;
-        int end = (int) Math.min((long) totalCount, startLong + limit);
-        Long nextSequence =
-                end < totalCount ? Long.valueOf((long) end + 1L) : null;
-
-        visitor.begin(totalCount, nextSequence);
-        for (int index = start; index < end; index++) {
-            visitor.visit(records.get(index));
-        }
-        return visitor.finish();
+        int end = (int) Math.min((long) records.size(), startLong + limit);
+        return Collections.unmodifiableList(
+                new ArrayList<>(records.subList(start, end)));
     }
 
     /**
-     * Visits at most {@code limit} newest committed records in source order
-     * without creating an intermediate List.
+     * Returns at most {@code limit} newest committed records in source order.
      */
-    public <R> R visitLatest(int limit, LogBookVisitor<R> visitor) {
+    public List<TimingData> latest(int limit) {
         if (limit < 1) {
             throw new IllegalArgumentException("limit must be >= 1");
         }
-        if (visitor == null) {
-            throw new IllegalArgumentException("visitor must not be null");
-        }
-
-        int totalCount = records.size();
-        int start = Math.max(0, totalCount - limit);
-        visitor.begin(totalCount, null);
-        for (int index = start; index < totalCount; index++) {
-            visitor.visit(records.get(index));
-        }
-        return visitor.finish();
+        int start = Math.max(0, records.size() - limit);
+        return Collections.unmodifiableList(
+                new ArrayList<>(records.subList(start, records.size())));
     }
 
     /**
-     * Visits the complete committed LogBook without creating an intermediate List.
+     * Returns a stable shallow immutable view for calculation outside the owner lane.
      */
-    public <R> R visitAll(LogBookVisitor<R> visitor) {
-        if (visitor == null) {
-            throw new IllegalArgumentException("visitor must not be null");
-        }
-
-        int totalCount = records.size();
-        visitor.begin(totalCount, null);
-        for (TimingData data : records) {
-            visitor.visit(data);
-        }
-        return visitor.finish();
+    public List<TimingData> snapshot() {
+        return Collections.unmodifiableList(new ArrayList<>(records));
     }
 }

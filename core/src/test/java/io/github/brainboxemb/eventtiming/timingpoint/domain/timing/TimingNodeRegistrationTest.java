@@ -41,12 +41,12 @@ public class TimingNodeRegistrationTest {
 
         node.start();
         try {
-            node.execute(TimingNodeCommands.setLocation(new LocationId(24)));
-            node.execute(TimingNodeCommands.open());
+            node.invoke(TimingNodeCommands.setLocation(new LocationId(24)));
+            node.invoke(TimingNodeCommands.open());
 
             RegistrationId registrationId = new RegistrationId("1001");
             TimingNode.RegistrationResult result =
-                    node.execute(TimingNodeCommands.commitAutomaticRegistration(registrationId, EFFECTIVE_TIME));
+                    node.invoke(TimingNodeCommands.commitAutomaticRegistration(registrationId, EFFECTIVE_TIME));
 
             assertTrue(result.committed());
             assertTrue(result.timingData() instanceof AutomaticRegistration);
@@ -75,10 +75,10 @@ public class TimingNodeRegistrationTest {
 
         node.start();
         try {
-            node.execute(TimingNodeCommands.setLocation(new LocationId(24)));
+            node.invoke(TimingNodeCommands.setLocation(new LocationId(24)));
 
             TimingNode.RegistrationResult rejected =
-                    node.execute(TimingNodeCommands.commitAutomaticRegistration(
+                    node.invoke(TimingNodeCommands.commitAutomaticRegistration(
                             new RegistrationId("1001"),
                             EFFECTIVE_TIME));
 
@@ -88,9 +88,9 @@ public class TimingNodeRegistrationTest {
             assertEquals(0, store.attempts);
             assertTrue(node.query(TimingNodeQueries.timingDataSnapshot()).isEmpty());
 
-            node.execute(TimingNodeCommands.open());
+            node.invoke(TimingNodeCommands.open());
             TimingNode.RegistrationResult committed =
-                    node.execute(TimingNodeCommands.commitAutomaticRegistration(
+                    node.invoke(TimingNodeCommands.commitAutomaticRegistration(
                             new RegistrationId("1002"),
                             EFFECTIVE_TIME));
             assertEquals(1L, committed.timingData().sequenceNumber());
@@ -106,10 +106,10 @@ public class TimingNodeRegistrationTest {
 
         node.start();
         try {
-            node.execute(TimingNodeCommands.setLocation(new LocationId(24)));
-            assertEquals(TimingNode.OpenResult.OPENED, node.execute(TimingNodeCommands.open()));
+            node.invoke(TimingNodeCommands.setLocation(new LocationId(24)));
+            assertEquals(TimingNode.OpenResult.OPENED, node.invoke(TimingNodeCommands.open()));
 
-            TimingNode.RegistrationResult result = node.execute(TimingNodeCommands.commitManualRegistration(
+            TimingNode.RegistrationResult result = node.invoke(TimingNodeCommands.commitManualRegistration(
                     new RegistrationId("1001"),
                     EFFECTIVE_TIME,
                     ManualTimeSource.OPERATOR_ENTERED));
@@ -148,13 +148,13 @@ public class TimingNodeRegistrationTest {
 
         node.start();
         try {
-            node.execute(TimingNodeCommands.setLocation(new LocationId(24)));
-            node.execute(TimingNodeCommands.open());
+            node.invoke(TimingNodeCommands.setLocation(new LocationId(24)));
+            node.invoke(TimingNodeCommands.open());
 
-            TimingNode.RegistrationResult first = node.execute(TimingNodeCommands.commitAutomaticRegistration(
+            TimingNode.RegistrationResult first = node.invoke(TimingNodeCommands.commitAutomaticRegistration(
                     new RegistrationId("1001"),
                     EFFECTIVE_TIME));
-            TimingNode.RegistrationResult second = node.execute(TimingNodeCommands.commitManualRegistration(
+            TimingNode.RegistrationResult second = node.invoke(TimingNodeCommands.commitManualRegistration(
                     new RegistrationId("1002"),
                     EFFECTIVE_TIME,
                     ManualTimeSource.SYSTEM_ASSIGNED));
@@ -174,9 +174,9 @@ public class TimingNodeRegistrationTest {
 
         node.start();
         try {
-            node.execute(TimingNodeCommands.setLocation(new LocationId(24)));
+            node.invoke(TimingNodeCommands.setLocation(new LocationId(24)));
 
-            TimingNode.RegistrationResult rejected = node.execute(TimingNodeCommands.commitManualRegistration(
+            TimingNode.RegistrationResult rejected = node.invoke(TimingNodeCommands.commitManualRegistration(
                     new RegistrationId("1001"),
                     EFFECTIVE_TIME,
                     ManualTimeSource.OPERATOR_ENTERED));
@@ -187,8 +187,8 @@ public class TimingNodeRegistrationTest {
             assertEquals(0, store.appended.size());
             assertEquals(0, node.query(TimingNodeQueries.timingDataSnapshot()).size());
 
-            node.execute(TimingNodeCommands.open());
-            TimingNode.RegistrationResult committed = node.execute(TimingNodeCommands.commitManualRegistration(
+            node.invoke(TimingNodeCommands.open());
+            TimingNode.RegistrationResult committed = node.invoke(TimingNodeCommands.commitManualRegistration(
                     new RegistrationId("1002"),
                     EFFECTIVE_TIME,
                     ManualTimeSource.OPERATOR_ENTERED));
@@ -206,11 +206,11 @@ public class TimingNodeRegistrationTest {
 
         node.start();
         try {
-            node.execute(TimingNodeCommands.setLocation(new LocationId(24)));
-            node.execute(TimingNodeCommands.open());
+            node.invoke(TimingNodeCommands.setLocation(new LocationId(24)));
+            node.invoke(TimingNodeCommands.open());
 
             try {
-                node.execute(TimingNodeCommands.commitManualRegistration(
+                node.invoke(TimingNodeCommands.commitManualRegistration(
                         new RegistrationId("1001"),
                         EFFECTIVE_TIME,
                         ManualTimeSource.OPERATOR_ENTERED));
@@ -225,7 +225,7 @@ public class TimingNodeRegistrationTest {
             assertEquals(1, store.attempts);
 
             try {
-                node.execute(TimingNodeCommands.commitManualRegistration(
+                node.invoke(TimingNodeCommands.commitManualRegistration(
                         new RegistrationId("1002"),
                         EFFECTIVE_TIME,
                         ManualTimeSource.OPERATOR_ENTERED));
@@ -254,9 +254,9 @@ public class TimingNodeRegistrationTest {
 
         node.start();
         try {
-            node.execute(TimingNodeCommands.setLocation(new LocationId(24)));
+            node.invoke(TimingNodeCommands.setLocation(new LocationId(24)));
 
-            TimingNode.RegistrationResult rejected = node.execute(TimingNodeCommands.commitManualRegistration(
+            TimingNode.RegistrationResult rejected = node.invoke(TimingNodeCommands.commitManualRegistration(
                     new RegistrationId("1001"),
                     EFFECTIVE_TIME,
                     ManualTimeSource.OPERATOR_ENTERED));
@@ -265,8 +265,8 @@ public class TimingNodeRegistrationTest {
                     rejected.outcome());
             assertTrue(delivered.isEmpty());
 
-            node.execute(TimingNodeCommands.open());
-            TimingNode.RegistrationResult committed = node.execute(TimingNodeCommands.commitManualRegistration(
+            node.invoke(TimingNodeCommands.open());
+            TimingNode.RegistrationResult committed = node.invoke(TimingNodeCommands.commitManualRegistration(
                     new RegistrationId("1002"),
                     EFFECTIVE_TIME,
                     ManualTimeSource.OPERATOR_ENTERED));
@@ -277,7 +277,7 @@ public class TimingNodeRegistrationTest {
             assertSame(committed.timingData(), delivered.get(0));
 
             assertTrue(node.unsubscribeNewTimingData(listener));
-            node.execute(TimingNodeCommands.commitManualRegistration(
+            node.invoke(TimingNodeCommands.commitManualRegistration(
                     new RegistrationId("1003"),
                     EFFECTIVE_TIME,
                     ManualTimeSource.OPERATOR_ENTERED));
@@ -297,11 +297,11 @@ public class TimingNodeRegistrationTest {
 
         node.start();
         try {
-            node.execute(TimingNodeCommands.setLocation(new LocationId(24)));
-            node.execute(TimingNodeCommands.open());
+            node.invoke(TimingNodeCommands.setLocation(new LocationId(24)));
+            node.invoke(TimingNodeCommands.open());
 
             try {
-                node.execute(TimingNodeCommands.commitManualRegistration(
+                node.invoke(TimingNodeCommands.commitManualRegistration(
                         new RegistrationId("1001"),
                         EFFECTIVE_TIME,
                         ManualTimeSource.OPERATOR_ENTERED));
@@ -332,10 +332,10 @@ public class TimingNodeRegistrationTest {
 
         node.start();
         try {
-            node.execute(TimingNodeCommands.setLocation(new LocationId(24)));
-            node.execute(TimingNodeCommands.open());
+            node.invoke(TimingNodeCommands.setLocation(new LocationId(24)));
+            node.invoke(TimingNodeCommands.open());
 
-            TimingNode.RegistrationResult committed = node.execute(TimingNodeCommands.commitManualRegistration(
+            TimingNode.RegistrationResult committed = node.invoke(TimingNodeCommands.commitManualRegistration(
                     new RegistrationId("1001"),
                     EFFECTIVE_TIME,
                     ManualTimeSource.SYSTEM_ASSIGNED));
@@ -382,11 +382,11 @@ public class TimingNodeRegistrationTest {
             assertFalse(status.timingDataTailRecovered());
             assertEquals(2, node.query(TimingNodeQueries.timingDataSnapshot()).size());
 
-            assertEquals(TimingNode.OpenResult.NO_LOCATION, node.execute(TimingNodeCommands.open()));
+            assertEquals(TimingNode.OpenResult.NO_LOCATION, node.invoke(TimingNodeCommands.open()));
 
-            node.execute(TimingNodeCommands.setLocation(new LocationId(24)));
-            node.execute(TimingNodeCommands.open());
-            TimingNode.RegistrationResult committed = node.execute(TimingNodeCommands.commitManualRegistration(
+            node.invoke(TimingNodeCommands.setLocation(new LocationId(24)));
+            node.invoke(TimingNodeCommands.open());
+            TimingNode.RegistrationResult committed = node.invoke(TimingNodeCommands.commitManualRegistration(
                     new RegistrationId("1003"),
                     EFFECTIVE_TIME,
                     ManualTimeSource.SYSTEM_ASSIGNED));
