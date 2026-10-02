@@ -11,6 +11,12 @@ import io.github.brainboxemb.eventtiming.timingdata.TimingTimestamp;
 import io.github.brainboxemb.eventtiming.timingpoint.domain.logbook.LogBook;
 import io.github.brainboxemb.eventtiming.timingpoint.domain.system.TimeSource;
 import io.github.brainboxemb.eventtiming.timingpoint.domain.timingdata.TimingDataPersistence;
+import io.github.brainboxemb.eventtiming.timingpoint.domain.timing.TimingNodeTypes.CloseResult;
+import io.github.brainboxemb.eventtiming.timingpoint.domain.timing.TimingNodeTypes.Lifecycle;
+import io.github.brainboxemb.eventtiming.timingpoint.domain.timing.TimingNodeTypes.OpenResult;
+import io.github.brainboxemb.eventtiming.timingpoint.domain.timing.TimingNodeTypes.RegistrationResult;
+import io.github.brainboxemb.eventtiming.timingpoint.domain.timing.TimingNodeTypes.SetLocationResult;
+import io.github.brainboxemb.eventtiming.timingpoint.domain.timing.TimingNodeTypes.Status;
 
 import java.util.List;
 
@@ -24,11 +30,11 @@ import java.util.List;
 final class TimingNodeLogic {
     private final TimingNodeId timingNodeId;
     private final LogBook logBook;
-    private final TimingDataPersistence timingDataStore;
+    private final TimingDataPersistence timingDataPersistence;
     private final TimingDataFactory timingDataFactory;
     private final TimeSource timeSource;
 
-    private TimingNode.Lifecycle lifecycle = TimingNode.Lifecycle.CLOSED;
+    private Lifecycle lifecycle = Lifecycle.CLOSED;
     private LocationId locationId;
     private boolean timingDataTailRecovered;
     private Throwable timingDataCommitFailure;
@@ -39,7 +45,7 @@ final class TimingNodeLogic {
 
     TimingNodeLogic(
             TimingNodeId timingNodeId,
-            TimingDataPersistence timingDataStore,
+            TimingDataPersistence timingDataPersistence,
             TimingDataFactory timingDataFactory,
             TimeSource timeSource) {
         if (timingNodeId == null) {
@@ -47,16 +53,16 @@ final class TimingNodeLogic {
         }
 
         boolean hasTimingDataSupport =
-                timingDataStore != null || timingDataFactory != null || timeSource != null;
+                timingDataPersistence != null || timingDataFactory != null || timeSource != null;
         boolean hasCompleteTimingDataSupport =
-                timingDataStore != null && timingDataFactory != null && timeSource != null;
+                timingDataPersistence != null && timingDataFactory != null && timeSource != null;
         if (hasTimingDataSupport && !hasCompleteTimingDataSupport) {
             throw new IllegalArgumentException(
-                    "timingDataStore, timingDataFactory and timeSource must be configured together");
+                    "timingDataPersistence, timingDataFactory and timeSource must be configured together");
         }
 
         this.timingNodeId = timingNodeId;
-        this.timingDataStore = timingDataStore;
+        this.timingDataPersistence = timingDataPersistence;
         this.timingDataFactory = timingDataFactory;
         this.timeSource = timeSource;
         this.logBook = hasCompleteTimingDataSupport ? new LogBook(timingNodeId) : null;
@@ -70,39 +76,39 @@ final class TimingNodeLogic {
         return logBook != null;
     }
 
-    TimingNode.OpenResult open() {
-        if (lifecycle == TimingNode.Lifecycle.OPEN) {
-            return TimingNode.OpenResult.ALREADY_OPEN;
+    OpenResult open() {
+        if (lifecycle == Lifecycle.OPEN) {
+            return OpenResult.ALREADY_OPEN;
         }
         if (locationId == null) {
-            return TimingNode.OpenResult.NO_LOCATION;
+            return OpenResult.NO_LOCATION;
         }
-        lifecycle = TimingNode.Lifecycle.OPEN;
-        return TimingNode.OpenResult.OPENED;
+        lifecycle = Lifecycle.OPEN;
+        return OpenResult.OPENED;
     }
 
-    TimingNode.CloseResult close() {
-        if (lifecycle == TimingNode.Lifecycle.CLOSED) {
-            return TimingNode.CloseResult.ALREADY_CLOSED;
+    CloseResult close() {
+        if (lifecycle == Lifecycle.CLOSED) {
+            return CloseResult.ALREADY_CLOSED;
         }
-        lifecycle = TimingNode.Lifecycle.CLOSED;
-        return TimingNode.CloseResult.CLOSED;
+        lifecycle = Lifecycle.CLOSED;
+        return CloseResult.CLOSED;
     }
 
-    TimingNode.SetLocationResult setLocation(LocationId newLocationId) {
-        if (lifecycle != TimingNode.Lifecycle.CLOSED) {
-            return TimingNode.SetLocationResult.NODE_NOT_CLOSED;
+    SetLocationResult setLocation(LocationId newLocationId) {
+        if (lifecycle != Lifecycle.CLOSED) {
+            return SetLocationResult.NODE_NOT_CLOSED;
         }
         locationId = newLocationId;
-        return TimingNode.SetLocationResult.UPDATED;
+        return SetLocationResult.UPDATED;
     }
 
-    TimingNode.RegistrationResult commitAutomaticRegistration(
+    RegistrationResult commitAutomaticRegistration(
             RegistrationId registrationId,
             TimingTimestamp observationTime)
             throws TimingDataPersistence.PersistenceException {
-        if (lifecycle != TimingNode.Lifecycle.OPEN) {
-            return TimingNode.RegistrationResult.nodeNotOpen();
+        if (lifecycle != Lifecycle.OPEN) {
+            return RegistrationResult.nodeNotOpen();
         }
         ensureTimingDataCommitAvailable();
 
@@ -112,13 +118,13 @@ final class TimingNodeLogic {
         return commitRegistration(data);
     }
 
-    TimingNode.RegistrationResult commitManualRegistration(
+    RegistrationResult commitManualRegistration(
             RegistrationId registrationId,
             TimingTimestamp effectiveTime,
             ManualTimeSource registrationTimeSource)
             throws TimingDataPersistence.PersistenceException {
-        if (lifecycle != TimingNode.Lifecycle.OPEN) {
-            return TimingNode.RegistrationResult.nodeNotOpen();
+        if (lifecycle != Lifecycle.OPEN) {
+            return RegistrationResult.nodeNotOpen();
         }
         ensureTimingDataCommitAvailable();
 
@@ -145,8 +151,8 @@ final class TimingNodeLogic {
         return logBook.latest(limit);
     }
 
-    TimingNode.Status status() {
-        return new TimingNode.Status(
+    Status status() {
+        return new Status(
                 timingNodeId,
                 lifecycle,
                 locationId,
@@ -158,7 +164,7 @@ final class TimingNodeLogic {
             return;
         }
 
-        TimingDataPersistence.LoadResult loadResult = timingDataStore.load();
+        TimingDataPersistence.LoadResult loadResult = timingDataPersistence.load();
         for (TimingData data : loadResult.records()) {
             logBook.add(data);
         }
@@ -182,14 +188,14 @@ final class TimingNodeLogic {
         }
     }
 
-    private TimingNode.RegistrationResult commitRegistration(TimingData data)
+    private RegistrationResult commitRegistration(TimingData data)
             throws TimingDataPersistence.PersistenceException {
         if (data == null) {
             throw new IllegalStateException("timingDataFactory returned null");
         }
 
         try {
-            timingDataStore.append(data);
+            timingDataPersistence.append(data);
         } catch (TimingDataPersistence.PersistenceException ex) {
             timingDataCommitFailure = ex;
             throw ex;
@@ -202,6 +208,6 @@ final class TimingNodeLogic {
             throw ex;
         }
 
-        return TimingNode.RegistrationResult.committed(data);
+        return RegistrationResult.committed(data);
     }
 }

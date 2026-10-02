@@ -1,6 +1,5 @@
 package io.github.brainboxemb.eventtiming.timingpoint.domain.timing;
 
-import io.github.brainboxemb.eventtiming.timingdata.LocationId;
 import io.github.brainboxemb.eventtiming.timingdata.TimingData;
 import io.github.brainboxemb.eventtiming.timingdata.TimingDataFactory;
 import io.github.brainboxemb.eventtiming.timingdata.TimingNodeId;
@@ -8,6 +7,10 @@ import io.github.brainboxemb.eventtiming.timingpoint.domain.system.TimeSource;
 import io.github.brainboxemb.eventtiming.timingpoint.domain.timingdata.TimingDataPersistence;
 import io.github.brainboxemb.eventtiming.timingpoint.platform.events.Event;
 import io.github.brainboxemb.eventtiming.timingpoint.platform.execution.SerialWorker;
+import io.github.brainboxemb.eventtiming.timingpoint.domain.timing.TimingNodeTypes.CommandAdmission;
+import io.github.brainboxemb.eventtiming.timingpoint.domain.timing.TimingNodeTypes.OperationException;
+import io.github.brainboxemb.eventtiming.timingpoint.domain.timing.TimingNodeTypes.RegistrationResult;
+import io.github.brainboxemb.eventtiming.timingpoint.domain.timing.TimingNodeTypes.StartupException;
 
 import java.util.concurrent.Callable;
 import java.util.concurrent.CancellationException;
@@ -55,13 +58,13 @@ public final class TimingNode {
 
     public TimingNode(
             TimingNodeId timingNodeId,
-            TimingDataPersistence timingDataStore,
+            TimingDataPersistence timingDataPersistence,
             TimingDataFactory timingDataFactory,
             TimeSource timeSource) {
         this(
                 new TimingNodeLogic(
                         timingNodeId,
-                        timingDataStore,
+                        timingDataPersistence,
                         timingDataFactory,
                         timeSource),
                 workerFor(timingNodeId),
@@ -82,13 +85,13 @@ public final class TimingNode {
             TimingNodeId timingNodeId,
             SerialWorker serialWorker,
             long operationTimeoutMillis,
-            TimingDataPersistence timingDataStore,
+            TimingDataPersistence timingDataPersistence,
             TimingDataFactory timingDataFactory,
             TimeSource timeSource) {
         this(
                 new TimingNodeLogic(
                         timingNodeId,
-                        timingDataStore,
+                        timingDataPersistence,
                         timingDataFactory,
                         timeSource),
                 serialWorker,
@@ -294,7 +297,8 @@ public final class TimingNode {
         try {
             return future.get(operationTimeoutMillis, TimeUnit.MILLISECONDS);
         } catch (TimeoutException ex) {
-            throw new OperationTimeoutException(
+            throw new OperationException(
+                    OperationException.Reason.TIMEOUT,
                     operation + " timed out; final TimingNode outcome is unknown",
                     ex);
         } catch (InterruptedException ex) {
@@ -330,149 +334,4 @@ public final class TimingNode {
         return timingNodeId;
     }
 
-    /**
-     * Immediate result of submission-only command ingress.
-     *
-     * <p>This is deliberately not the later domain result.</p>
-     */
-    public enum CommandAdmission {
-        ACCEPTED,
-        FULL,
-        NOT_RUNNING
-    }
-
-    public enum Lifecycle {
-        CLOSED,
-        OPEN
-    }
-
-    public enum OpenResult {
-        OPENED,
-        ALREADY_OPEN,
-        NO_LOCATION
-    }
-
-    public enum CloseResult {
-        CLOSED,
-        ALREADY_CLOSED
-    }
-
-    public enum SetLocationResult {
-        UPDATED,
-        NODE_NOT_CLOSED
-    }
-
-    public static final class RegistrationResult {
-        public enum Outcome {
-            COMMITTED,
-            NODE_NOT_OPEN
-        }
-
-        private final Outcome outcome;
-        private final TimingData timingData;
-
-        private RegistrationResult(Outcome outcome, TimingData timingData) {
-            this.outcome = outcome;
-            this.timingData = timingData;
-        }
-
-        static RegistrationResult committed(TimingData timingData) {
-            return new RegistrationResult(Outcome.COMMITTED, timingData);
-        }
-
-        static RegistrationResult nodeNotOpen() {
-            return new RegistrationResult(Outcome.NODE_NOT_OPEN, null);
-        }
-
-        public Outcome outcome() {
-            return outcome;
-        }
-
-        public boolean committed() {
-            return outcome == Outcome.COMMITTED;
-        }
-
-        public TimingData timingData() {
-            if (timingData == null) {
-                throw new IllegalStateException("registration did not commit TimingData");
-            }
-            return timingData;
-        }
-    }
-
-    public static final class Status {
-        private final TimingNodeId timingNodeId;
-        private final Lifecycle lifecycle;
-        private final LocationId locationId;
-        private final boolean timingDataTailRecovered;
-
-        Status(
-                TimingNodeId timingNodeId,
-                Lifecycle lifecycle,
-                LocationId locationId,
-                boolean timingDataTailRecovered) {
-            this.timingNodeId = timingNodeId;
-            this.lifecycle = lifecycle;
-            this.locationId = locationId;
-            this.timingDataTailRecovered = timingDataTailRecovered;
-        }
-
-        public TimingNodeId timingNodeId() {
-            return timingNodeId;
-        }
-
-        public Lifecycle lifecycle() {
-            return lifecycle;
-        }
-
-        public boolean hasLocation() {
-            return locationId != null;
-        }
-
-        public LocationId locationId() {
-            return locationId;
-        }
-
-        public boolean timingDataTailRecovered() {
-            return timingDataTailRecovered;
-        }
-    }
-
-    public static final class StartupException extends RuntimeException {
-        private StartupException(String message, Throwable cause) {
-            super(message, cause);
-        }
-    }
-
-    public static class OperationException extends RuntimeException {
-        public enum Reason {
-            BUSY,
-            UNAVAILABLE,
-            FAILED,
-            INTERRUPTED,
-            TIMEOUT
-        }
-
-        private final Reason reason;
-
-        private OperationException(Reason reason, String message) {
-            super(message);
-            this.reason = reason;
-        }
-
-        private OperationException(Reason reason, String message, Throwable cause) {
-            super(message, cause);
-            this.reason = reason;
-        }
-
-        public Reason reason() {
-            return reason;
-        }
-    }
-
-    public static final class OperationTimeoutException extends OperationException {
-        private OperationTimeoutException(String message, Throwable cause) {
-            super(Reason.TIMEOUT, message, cause);
-        }
-    }
 }

@@ -4,6 +4,10 @@ import io.github.brainboxemb.eventtiming.timingdata.LocationId;
 import io.github.brainboxemb.eventtiming.timingdata.RegistrationId;
 import io.github.brainboxemb.eventtiming.timingdata.TimingData.ManualTimeSource;
 import io.github.brainboxemb.eventtiming.timingdata.TimingTimestamp;
+import io.github.brainboxemb.eventtiming.timingpoint.domain.timing.TimingNodeTypes.CloseResult;
+import io.github.brainboxemb.eventtiming.timingpoint.domain.timing.TimingNodeTypes.OpenResult;
+import io.github.brainboxemb.eventtiming.timingpoint.domain.timing.TimingNodeTypes.RegistrationResult;
+import io.github.brainboxemb.eventtiming.timingpoint.domain.timing.TimingNodeTypes.SetLocationResult;
 
 /**
  * Standard state-changing commands supported by TimingNode.
@@ -13,23 +17,23 @@ import io.github.brainboxemb.eventtiming.timingdata.TimingTimestamp;
  * package-private logic on the serial lane.</p>
  */
 public final class TimingNodeCommands {
-    private static final TimingNodeCommand<TimingNode.OpenResult> OPEN =
+    private static final TimingNodeCommand<OpenResult> OPEN =
             simple("open", false, TimingNodeLogic::open);
-    private static final TimingNodeCommand<TimingNode.CloseResult> CLOSE =
+    private static final TimingNodeCommand<CloseResult> CLOSE =
             simple("close", false, TimingNodeLogic::close);
 
     private TimingNodeCommands() {
     }
 
-    public static TimingNodeCommand<TimingNode.OpenResult> open() {
+    public static TimingNodeCommand<OpenResult> open() {
         return OPEN;
     }
 
-    public static TimingNodeCommand<TimingNode.CloseResult> close() {
+    public static TimingNodeCommand<CloseResult> close() {
         return CLOSE;
     }
 
-    public static TimingNodeCommand<TimingNode.SetLocationResult> setLocation(
+    public static TimingNodeCommand<SetLocationResult> setLocation(
             LocationId locationId) {
         if (locationId == null) {
             throw new IllegalArgumentException("locationId must not be null");
@@ -40,7 +44,7 @@ public final class TimingNodeCommands {
                 logic -> logic.setLocation(locationId));
     }
 
-    public static TimingNodeCommand<TimingNode.RegistrationResult>
+    public static TimingNodeCommand<RegistrationResult>
             commitAutomaticRegistration(
                     RegistrationId registrationId,
                     TimingTimestamp observationTime) {
@@ -58,7 +62,7 @@ public final class TimingNodeCommands {
                         observationTime));
     }
 
-    public static TimingNodeCommand<TimingNode.RegistrationResult>
+    public static TimingNodeCommand<RegistrationResult>
             commitManualRegistration(
                     RegistrationId registrationId,
                     TimingTimestamp effectiveTime,
@@ -93,10 +97,10 @@ public final class TimingNodeCommands {
                 (node, result) -> result);
     }
 
-    private static TimingNodeCommand<TimingNode.RegistrationResult>
+    private static TimingNodeCommand<RegistrationResult>
             registrationCommand(
                     String name,
-                    TimingNodeCommand.Action<TimingNode.RegistrationResult> action) {
+                    TimingNodeCommand.Action<RegistrationResult> action) {
         return new TimingNodeCommand<>(
                 name,
                 true,

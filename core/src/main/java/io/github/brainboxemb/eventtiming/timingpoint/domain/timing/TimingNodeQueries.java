@@ -1,19 +1,19 @@
 package io.github.brainboxemb.eventtiming.timingpoint.domain.timing;
 
 import io.github.brainboxemb.eventtiming.timingdata.TimingData;
+import io.github.brainboxemb.eventtiming.timingpoint.domain.timing.TimingNodeTypes.Status;
 
 import java.util.List;
 
 /**
  * Standard read operations supported by TimingNode.
  *
- * <p>Commands remain explicit methods on TimingNode because they express
- * state-changing domain intent. Queries are represented as typed values so a
- * new read does not require another forwarding method on the TimingNode
- * component boundary.</p>
+ * <p>Queries are represented as typed values so a new read does not require
+ * another forwarding method on the TimingNode component boundary. Commands use
+ * the matching TimingNodeCommand/TimingNodeCommands path.</p>
  */
 public final class TimingNodeQueries {
-    private static final TimingNodeQuery<TimingNode.Status> STATUS =
+    private static final TimingNodeQuery<Status> STATUS =
             new TimingNodeQuery<>("status", false, TimingNodeLogic::status);
     private static final TimingNodeQuery<List<TimingData>> TIMING_DATA_SNAPSHOT =
             new TimingNodeQuery<>(
@@ -29,7 +29,7 @@ public final class TimingNodeQueries {
     private TimingNodeQueries() {
     }
 
-    public static TimingNodeQuery<TimingNode.Status> status() {
+    public static TimingNodeQuery<Status> status() {
         return STATUS;
     }
 
