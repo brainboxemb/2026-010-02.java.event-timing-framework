@@ -175,10 +175,4 @@ public final class CommandHandler {
                 status.locationId());
     }
 
-    private static TimingNode requireTimingNode(TimingNode timingNode) {
-        if (timingNode == null) {
-            throw new IllegalArgumentException("timingNode must not be null");
-        }
-        return timingNode;
-    }
 }
