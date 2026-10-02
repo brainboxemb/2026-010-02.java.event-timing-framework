@@ -55,6 +55,7 @@ io.github.brainboxemb.eventtiming.timingpoint.application.CommandHandler
 io.github.brainboxemb.eventtiming.timingpoint.application.ApplicationStatus
 io.github.brainboxemb.eventtiming.timingpoint.domain.timing.TimingNode
 io.github.brainboxemb.eventtiming.timingpoint.domain.timing.TimingNodeLogic   # package-private
+io.github.brainboxemb.eventtiming.timingpoint.domain.timing.TimingNodeTypes   # source-code grouping
 io.github.brainboxemb.eventtiming.timingpoint.domain.timingdata.DefaultTimingDataPersistence
 io.github.brainboxemb.eventtiming.timingpoint.io.storage.AppendOnlyRecordStore
 io.github.brainboxemb.eventtiming.timingpoint.io.storage.FileAppendOnlyRecordStore
@@ -105,6 +106,8 @@ TimingData-specific persistence semantics remain above the generic storage layer
 `runtime.Composition` owns knowledge of the concrete running application graph. Infrastructure provides supporting/cross-cutting mechanisms only; I/O and Platform remain separate responsibilities. The package namespace carries the context, so runtime classes use the short names `Application`, `Composition` and `Lifecycle`. There is no second bootstrap object and no application builder.
 
 A constructed `TimingNode` is always complete: TimingData persistence, factory and TimeSource are required constructor dependencies. There is no lifecycle-only or capability-partial production node.
+
+`TimingNodeTypes` groups the public status/result/exception value types in one Java source file; it has no runtime state and is not a separate architecture component.
 
 `TimingNode` remains the visible Domain component boundary used by higher layers. It serializes typed commands and consistency-sensitive queries through `SerialWorker`, while package-private `TimingNodeLogic` keeps the mutable node state, `LocationId`, LogBook interaction and registration commit behaviour readable. Result-bearing callers use `invoke(TimingNodeCommands....)` and may wait for the processed domain result. Producer/callback paths use `submit(TimingNodeCommands....)` and receive only immediate bounded-queue admission, so RFID/TagProcessor ingress does not wait for later node processing. Reads use `query(TimingNodeQueries....)`; bounded LogBook reads copy a stable shallow view on the serial lane and perform longer formatting/calculation afterwards. The automatic registration command is `commitAutomaticRegistration(...)`; the IF-03 engineering resource remains `/auto-reg`.
 
