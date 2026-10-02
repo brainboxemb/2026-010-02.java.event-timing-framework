@@ -56,8 +56,8 @@ public class CommandHandlerTest {
 
         node.start();
         try {
-            handler.subscribeStatusChanged(statusChanges::add);
-            handler.subscribeNewTimingData(committed::add);
+            handler.statusChanged().subscribe(statusChanges::add);
+            handler.newTimingData().subscribe(committed::add);
 
             CommandHandler.Capabilities capabilities = handler.capabilities();
             assertTrue(capabilities.directRegistrationSimulationSupported());

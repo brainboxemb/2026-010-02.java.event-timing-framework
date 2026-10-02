@@ -3,6 +3,8 @@ package io.github.brainboxemb.eventtiming.timingpoint.platform.events;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 
 import org.junit.Test;
@@ -69,6 +71,53 @@ public class EventTest {
         assertEquals(1, report.failureCount());
         assertEquals(failure, report.failures().get(0));
         assertEquals(Arrays.asList("value"), delivered);
+    }
+
+    @Test
+    public void subscriptionOnlyViewUsesSameThreadSafeRegistry() {
+        Event<String> event = new Event<>();
+        EventSource<String> source = event;
+        List<String> delivered = new ArrayList<>();
+
+        assertTrue(source.subscribe(delivered::add));
+        event.emit("value");
+
+        assertEquals(Arrays.asList("value"), delivered);
+    }
+
+    @Test
+    public void concurrentEmitsAreNotSerializedByEvent() throws Exception {
+        Event<String> event = new Event<>();
+        CountDownLatch entered = new CountDownLatch(2);
+        CountDownLatch release = new CountDownLatch(1);
+
+        event.subscribe(value -> {
+            entered.countDown();
+            try {
+                release.await();
+            } catch (InterruptedException ex) {
+                Thread.currentThread().interrupt();
+                throw new IllegalStateException(ex);
+            }
+        });
+
+        Thread first = new Thread(() -> event.emit("first"), "event-test-first");
+        Thread second = new Thread(() -> event.emit("second"), "event-test-second");
+        first.start();
+        second.start();
+
+        try {
+            assertTrue(
+                    "both emits should enter the listener concurrently",
+                    entered.await(1, TimeUnit.SECONDS));
+        } finally {
+            release.countDown();
+            first.join(1000);
+            second.join(1000);
+        }
+
+        assertFalse(first.isAlive());
+        assertFalse(second.isAlive());
     }
 
     @Test

@@ -36,7 +36,7 @@ public class TimingNodeRegistrationTest {
         RecordingStore store = new RecordingStore();
         TimingNode node = node(store);
         List<TimingData> delivered = new ArrayList<>();
-        node.subscribeNewTimingData(delivered::add);
+        node.newTimingData().subscribe(delivered::add);
 
         node.start();
         try {
@@ -249,7 +249,7 @@ public class TimingNodeRegistrationTest {
         List<TimingData> delivered = new ArrayList<>();
         Consumer<TimingData> listener = delivered::add;
 
-        assertTrue(node.subscribeNewTimingData(listener));
+        assertTrue(node.newTimingData().subscribe(listener));
 
         node.start();
         try {
@@ -275,7 +275,7 @@ public class TimingNodeRegistrationTest {
             assertEquals(1, delivered.size());
             assertSame(committed.timingData(), delivered.get(0));
 
-            assertTrue(node.unsubscribeNewTimingData(listener));
+            assertTrue(node.newTimingData().unsubscribe(listener));
             node.invoke(TimingNodeCommands.commitManualRegistration(
                     new RegistrationId("1003"),
                     EFFECTIVE_TIME,
@@ -292,7 +292,7 @@ public class TimingNodeRegistrationTest {
         store.failNext = true;
         TimingNode node = node(store);
         List<TimingData> delivered = new ArrayList<>();
-        node.subscribeNewTimingData(delivered::add);
+        node.newTimingData().subscribe(delivered::add);
 
         node.start();
         try {
@@ -324,10 +324,10 @@ public class TimingNodeRegistrationTest {
         TimingNode node = node(store);
         List<TimingData> delivered = new ArrayList<>();
 
-        node.subscribeNewTimingData(data -> {
+        node.newTimingData().subscribe(data -> {
             throw new IllegalStateException("expected listener failure");
         });
-        node.subscribeNewTimingData(delivered::add);
+        node.newTimingData().subscribe(delivered::add);
 
         node.start();
         try {
@@ -355,7 +355,7 @@ public class TimingNodeRegistrationTest {
         store.loaded.add(recoveredData(1L, 11));
         TimingNode node = node(store);
         List<TimingData> delivered = new ArrayList<>();
-        node.subscribeNewTimingData(delivered::add);
+        node.newTimingData().subscribe(delivered::add);
 
         node.start();
         try {
