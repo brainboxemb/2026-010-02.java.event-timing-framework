@@ -30,7 +30,7 @@ public class TimingDataFactoryTest {
     }
 
     @Test(expected = IllegalArgumentException.class)
-    public void contextRejectsMissingTimingDataTypes.LocationId() {
+    public void contextRejectsMissingLocationId() {
         new TimingDataFactory.Context(new TimingDataTypes.NodeId("timing-node-01"), 1L, null, EFFECTIVE, RECORDED);
     }
 

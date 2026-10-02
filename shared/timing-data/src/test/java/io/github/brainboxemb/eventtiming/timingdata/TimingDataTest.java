@@ -30,12 +30,12 @@ public class TimingDataTest {
     }
 
     @Test(expected = IllegalArgumentException.class)
-    public void recordKeyRejectsMissingTimingDataTypes.NodeIdentity() {
+    public void recordKeyRejectsMissingNodeIdentity() {
         new TimingData.RecordKey(null, 1L);
     }
 
     @Test
-    public void recordKeyUsesSharedNormalizedTimingDataTypes.NodeIdentity() {
+    public void recordKeyUsesSharedNormalizedNodeIdentity() {
         TimingData.RecordKey key = new TimingData.RecordKey(new TimingDataTypes.NodeId(" timing-node-01 "), 1L);
         assertEquals(new TimingDataTypes.NodeId("timing-node-01"), key.timingNodeId());
     }
