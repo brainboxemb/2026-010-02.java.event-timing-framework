@@ -10,7 +10,7 @@ import io.github.brainboxemb.eventtiming.timingdata.TimingNodeId;
 import io.github.brainboxemb.eventtiming.timingdata.TimingTimestamp;
 import io.github.brainboxemb.eventtiming.timingpoint.domain.logbook.LogBook;
 import io.github.brainboxemb.eventtiming.timingpoint.domain.system.TimeSource;
-import io.github.brainboxemb.eventtiming.timingpoint.domain.timingdata.TimingDataStore;
+import io.github.brainboxemb.eventtiming.timingpoint.domain.timingdata.TimingDataPersistence;
 
 import java.util.List;
 
@@ -24,7 +24,7 @@ import java.util.List;
 final class TimingNodeLogic {
     private final TimingNodeId timingNodeId;
     private final LogBook logBook;
-    private final TimingDataStore timingDataStore;
+    private final TimingDataPersistence timingDataStore;
     private final TimingDataFactory timingDataFactory;
     private final TimeSource timeSource;
 
@@ -39,7 +39,7 @@ final class TimingNodeLogic {
 
     TimingNodeLogic(
             TimingNodeId timingNodeId,
-            TimingDataStore timingDataStore,
+            TimingDataPersistence timingDataStore,
             TimingDataFactory timingDataFactory,
             TimeSource timeSource) {
         if (timingNodeId == null) {
@@ -100,7 +100,7 @@ final class TimingNodeLogic {
     TimingNode.RegistrationResult commitAutomaticRegistration(
             RegistrationId registrationId,
             TimingTimestamp observationTime)
-            throws TimingDataStore.StoreException {
+            throws TimingDataPersistence.PersistenceException {
         if (lifecycle != TimingNode.Lifecycle.OPEN) {
             return TimingNode.RegistrationResult.nodeNotOpen();
         }
@@ -116,7 +116,7 @@ final class TimingNodeLogic {
             RegistrationId registrationId,
             TimingTimestamp effectiveTime,
             ManualTimeSource registrationTimeSource)
-            throws TimingDataStore.StoreException {
+            throws TimingDataPersistence.PersistenceException {
         if (lifecycle != TimingNode.Lifecycle.OPEN) {
             return TimingNode.RegistrationResult.nodeNotOpen();
         }
@@ -153,12 +153,12 @@ final class TimingNodeLogic {
                 timingDataTailRecovered);
     }
 
-    void recoverTimingData() throws TimingDataStore.StoreException {
+    void recoverTimingData() throws TimingDataPersistence.PersistenceException {
         if (logBook == null) {
             return;
         }
 
-        TimingDataStore.LoadResult loadResult = timingDataStore.load();
+        TimingDataPersistence.LoadResult loadResult = timingDataStore.load();
         for (TimingData data : loadResult.records()) {
             logBook.add(data);
         }
@@ -183,14 +183,14 @@ final class TimingNodeLogic {
     }
 
     private TimingNode.RegistrationResult commitRegistration(TimingData data)
-            throws TimingDataStore.StoreException {
+            throws TimingDataPersistence.PersistenceException {
         if (data == null) {
             throw new IllegalStateException("timingDataFactory returned null");
         }
 
         try {
             timingDataStore.append(data);
-        } catch (TimingDataStore.StoreException ex) {
+        } catch (TimingDataPersistence.PersistenceException ex) {
             timingDataCommitFailure = ex;
             throw ex;
         }

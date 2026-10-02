@@ -5,7 +5,7 @@ import io.github.brainboxemb.eventtiming.timingdata.TimingData;
 import io.github.brainboxemb.eventtiming.timingdata.TimingDataFactory;
 import io.github.brainboxemb.eventtiming.timingdata.TimingNodeId;
 import io.github.brainboxemb.eventtiming.timingpoint.domain.system.TimeSource;
-import io.github.brainboxemb.eventtiming.timingpoint.domain.timingdata.TimingDataStore;
+import io.github.brainboxemb.eventtiming.timingpoint.domain.timingdata.TimingDataPersistence;
 import io.github.brainboxemb.eventtiming.timingpoint.platform.events.Event;
 import io.github.brainboxemb.eventtiming.timingpoint.platform.execution.SerialWorker;
 
@@ -55,7 +55,7 @@ public final class TimingNode {
 
     public TimingNode(
             TimingNodeId timingNodeId,
-            TimingDataStore timingDataStore,
+            TimingDataPersistence timingDataStore,
             TimingDataFactory timingDataFactory,
             TimeSource timeSource) {
         this(
@@ -82,7 +82,7 @@ public final class TimingNode {
             TimingNodeId timingNodeId,
             SerialWorker serialWorker,
             long operationTimeoutMillis,
-            TimingDataStore timingDataStore,
+            TimingDataPersistence timingDataStore,
             TimingDataFactory timingDataFactory,
             TimeSource timeSource) {
         this(
@@ -135,7 +135,7 @@ public final class TimingNode {
 
         try {
             logic.recoverTimingData();
-        } catch (TimingDataStore.StoreException | RuntimeException ex) {
+        } catch (TimingDataPersistence.PersistenceException | RuntimeException ex) {
             startupFailure = ex;
             throw new StartupException(
                     "TimingData recovery failed for " + timingNodeId().value(),

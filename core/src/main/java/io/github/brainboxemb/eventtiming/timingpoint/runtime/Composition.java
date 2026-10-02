@@ -5,7 +5,9 @@ import io.github.brainboxemb.eventtiming.timingdata.defaultprofile.DefaultTiming
 import io.github.brainboxemb.eventtiming.timingdata.defaultprofile.DefaultTimingDataFactory;
 import io.github.brainboxemb.eventtiming.timingpoint.domain.timing.TimingNode;
 import io.github.brainboxemb.eventtiming.timingpoint.infra.BuildIdentity;
-import io.github.brainboxemb.eventtiming.timingpoint.io.storage.FileTimingDataStore;
+import io.github.brainboxemb.eventtiming.timingpoint.domain.timingdata.DefaultTimingDataPersistence;
+import io.github.brainboxemb.eventtiming.timingpoint.domain.timingdata.TimingDataPersistence;
+import io.github.brainboxemb.eventtiming.timingpoint.io.storage.FileAppendOnlyRecordStore;
 import io.github.brainboxemb.eventtiming.timingpoint.presentation.interfaces.api.HttpEndpoint;
 import io.github.brainboxemb.eventtiming.timingpoint.presentation.interfaces.api.WebSocketEndpoint;
 import io.github.brainboxemb.eventtiming.timingpoint.presentation.interfaces.console.LocalConsole;
@@ -78,14 +80,15 @@ public final class Composition {
         }
 
         DefaultTimingDataFactory timingDataFactory = new DefaultTimingDataFactory();
-        FileTimingDataStore timingDataStore = new FileTimingDataStore(
-                config.timingDataPath(),
-                config.timingNodeId(),
-                new DefaultTimingDataCodec());
+        TimingDataPersistence timingDataPersistence =
+                new DefaultTimingDataPersistence(
+                        new FileAppendOnlyRecordStore(config.timingDataPath()),
+                        config.timingNodeId(),
+                        new DefaultTimingDataCodec());
 
         TimingNode timingNode = new TimingNode(
                 config.timingNodeId(),
-                timingDataStore,
+                timingDataPersistence,
                 timingDataFactory,
                 () -> new TimingTimestamp(Instant.now()));
 
