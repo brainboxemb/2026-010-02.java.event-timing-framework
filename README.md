@@ -99,7 +99,7 @@ platform/
 
 `runtime.Composition` owns knowledge of the concrete running application graph. Infrastructure provides supporting/cross-cutting mechanisms only; I/O and Platform remain separate responsibilities. The package namespace carries the context, so runtime classes use the short names `Application`, `Composition` and `Lifecycle`. There is no second bootstrap object and no application builder.
 
-`TimingNode` remains the visible Domain component boundary used by higher layers. It serializes operations through `SerialWorker`, while package-private `TimingNodeLogic` keeps the mutable node state, `LocationId`, LogBook interaction and registration commit behaviour readable. The internal operation is `commitAutomaticRegistration(...)`; the IF-03 engineering resource remains `/auto-reg`.
+`TimingNode` remains the visible Domain component boundary used by higher layers. It serializes both typed commands and typed queries through `SerialWorker`, while package-private `TimingNodeLogic` keeps the mutable node state, `LocationId`, LogBook interaction and registration commit behaviour readable. Higher layers use `execute(TimingNodeCommands....)` for state-changing commands and `query(TimingNodeQueries....)` for reads, so TimingNode does not mirror every logic method. The automatic registration command is `commitAutomaticRegistration(...)`; the IF-03 engineering resource remains `/auto-reg`.
 
 The executable artifact remains thin:
 
