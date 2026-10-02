@@ -1,7 +1,7 @@
 package io.github.brainboxemb.eventtiming.timingpoint.domain.logbook;
 
 import io.github.brainboxemb.eventtiming.timingdata.TimingData;
-import io.github.brainboxemb.eventtiming.timingdata.TimingNodeId;
+import io.github.brainboxemb.eventtiming.timingdata.TimingDataTypes.NodeId;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -14,10 +14,10 @@ import java.util.function.Consumer;
  * when mutations and reads occur.</p>
  */
 public final class LogBook {
-    private final TimingNodeId timingNodeId;
+    private final NodeId timingNodeId;
     private final List<TimingData> records = new ArrayList<>();
 
-    public LogBook(TimingNodeId timingNodeId) {
+    public LogBook(NodeId timingNodeId) {
         if (timingNodeId == null) {
             throw new IllegalArgumentException("timingNodeId must not be null");
         }

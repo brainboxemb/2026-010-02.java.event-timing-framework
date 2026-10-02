@@ -1,23 +1,23 @@
 package io.github.brainboxemb.eventtiming.timingpoint.application;
 
-import io.github.brainboxemb.eventtiming.timingdata.LocationId;
-import io.github.brainboxemb.eventtiming.timingdata.TimingNodeId;
+import io.github.brainboxemb.eventtiming.timingdata.TimingDataTypes.LocationId;
+import io.github.brainboxemb.eventtiming.timingdata.TimingDataTypes.NodeId;
 import io.github.brainboxemb.eventtiming.timingpoint.domain.timing.TimingNodeTypes.Lifecycle;
 
 /** Transport-independent current TimingNode status used by presentation adapters. */
 public final class ApplicationStatus {
-    private final TimingNodeId timingNodeId;
+    private final NodeId timingNodeId;
     private final Lifecycle timingNodeLifecycle;
     private final LocationId locationId;
 
     public ApplicationStatus(
-            TimingNodeId timingNodeId,
+            NodeId timingNodeId,
             Lifecycle timingNodeLifecycle) {
         this(timingNodeId, timingNodeLifecycle, null);
     }
 
     public ApplicationStatus(
-            TimingNodeId timingNodeId,
+            NodeId timingNodeId,
             Lifecycle timingNodeLifecycle,
             LocationId locationId) {
         if (timingNodeId == null) {
@@ -31,7 +31,7 @@ public final class ApplicationStatus {
         this.locationId = locationId;
     }
 
-    public TimingNodeId timingNodeId() {
+    public NodeId timingNodeId() {
         return timingNodeId;
     }
 
