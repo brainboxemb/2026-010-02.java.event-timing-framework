@@ -55,7 +55,9 @@ io.github.brainboxemb.eventtiming.timingpoint.application.CommandHandler
 io.github.brainboxemb.eventtiming.timingpoint.application.ApplicationStatus
 io.github.brainboxemb.eventtiming.timingpoint.domain.timing.TimingNode
 io.github.brainboxemb.eventtiming.timingpoint.domain.timing.TimingNodeLogic   # package-private
-io.github.brainboxemb.eventtiming.timingpoint.io.storage.FileTimingDataStore
+io.github.brainboxemb.eventtiming.timingpoint.domain.timingdata.DefaultTimingDataPersistence
+io.github.brainboxemb.eventtiming.timingpoint.io.storage.AppendOnlyRecordStore
+io.github.brainboxemb.eventtiming.timingpoint.io.storage.FileAppendOnlyRecordStore
 io.github.brainboxemb.eventtiming.timingpoint.platform.execution.SerialWorker
 io.github.brainboxemb.eventtiming.timingpoint.infra.BuildIdentity
 io.github.brainboxemb.eventtiming.timingpoint.infra.config.YamlLoader
@@ -88,7 +90,8 @@ infra/
 
 io/
   storage/
-    FileTimingDataStore
+    AppendOnlyRecordStore
+    FileAppendOnlyRecordStore
 
 platform/
   execution/
@@ -96,6 +99,8 @@ platform/
   events/
     Event
 ```
+
+TimingData-specific persistence semantics remain above the generic storage layer: `DefaultTimingDataPersistence` owns codec, TimingNodeId and sequence validation; `io.storage` owns only opaque record/file mechanics and imports no Domain/Application classes.
 
 `runtime.Composition` owns knowledge of the concrete running application graph. Infrastructure provides supporting/cross-cutting mechanisms only; I/O and Platform remain separate responsibilities. The package namespace carries the context, so runtime classes use the short names `Application`, `Composition` and `Lifecycle`. There is no second bootstrap object and no application builder.
 
