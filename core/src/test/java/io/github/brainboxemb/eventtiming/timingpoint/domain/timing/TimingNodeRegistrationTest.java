@@ -11,7 +11,7 @@ import io.github.brainboxemb.eventtiming.timingdata.TimingTimestamp;
 import io.github.brainboxemb.eventtiming.timingdata.TimingNodeId;
 import io.github.brainboxemb.eventtiming.timingdata.defaultprofile.DefaultTimingDataFactory;
 import io.github.brainboxemb.eventtiming.timingpoint.domain.system.TimeSource;
-import io.github.brainboxemb.eventtiming.timingpoint.domain.timingdata.TimingDataStore;
+import io.github.brainboxemb.eventtiming.timingpoint.domain.timingdata.TimingDataPersistence;
 import io.github.brainboxemb.eventtiming.timingpoint.platform.execution.SerialWorker;
 
 import java.util.ArrayList;
@@ -423,7 +423,7 @@ public class TimingNodeRegistrationTest {
             node.start();
             fail("expected startup recovery failure");
         } catch (TimingNode.StartupException expected) {
-            assertTrue(expected.getCause() instanceof TimingDataStore.StoreException);
+            assertTrue(expected.getCause() instanceof TimingDataPersistence.PersistenceException);
         }
 
         try {
@@ -439,7 +439,7 @@ public class TimingNodeRegistrationTest {
             node.start();
             fail("expected failed node not to restart");
         } catch (TimingNode.StartupException expected) {
-            assertTrue(expected.getCause() instanceof TimingDataStore.StoreException);
+            assertTrue(expected.getCause() instanceof TimingDataPersistence.PersistenceException);
         }
     }
 
@@ -485,7 +485,7 @@ public class TimingNodeRegistrationTest {
                 timeSource);
     }
 
-    private static final class RecordingStore implements TimingDataStore {
+    private static final class RecordingStore implements TimingDataPersistence {
         private final List<TimingData> appended = new ArrayList<>();
         private final List<TimingData> loaded = new ArrayList<>();
         private int attempts;
@@ -494,19 +494,19 @@ public class TimingNodeRegistrationTest {
         private boolean repairedIncompleteTail;
 
         @Override
-        public LoadResult load() throws StoreException {
+        public LoadResult load() throws PersistenceException {
             if (failLoad) {
-                throw new StoreException("expected recovery failure");
+                throw new PersistenceException("expected recovery failure");
             }
             return new LoadResult(loaded, repairedIncompleteTail);
         }
 
         @Override
-        public void append(TimingData data) throws StoreException {
+        public void append(TimingData data) throws PersistenceException {
             attempts++;
             if (failNext) {
                 failNext = false;
-                throw new StoreException("expected test failure");
+                throw new PersistenceException("expected test failure");
             }
             appended.add(data);
         }
