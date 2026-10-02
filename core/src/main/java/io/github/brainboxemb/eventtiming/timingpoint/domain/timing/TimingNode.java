@@ -28,7 +28,7 @@ import org.slf4j.LoggerFactory;
  * than the internal logic object directly.</p>
  *
  * <p>Higher layers send typed state-changing commands through
- * {@link #execute(TimingNodeCommand)} and typed reads through
+ * {@link #invoke(TimingNodeCommand)} and typed reads through
  * {@link #query(TimingNodeQuery)}. The standard {@link TimingNodeCommands} and
  * {@link TimingNodeQueries} keep the public boundary compact without duplicating
  * every operation implemented by TimingNodeLogic.</p>
@@ -154,14 +154,14 @@ public final class TimingNode {
      * remains responsible for admission, ordering, timeout/failure mapping and
      * post-command component events.</p>
      */
-    public <R> R execute(TimingNodeCommand<R> command) {
+    public <R> R invoke(TimingNodeCommand<R> command) {
         if (command == null) {
             throw new IllegalArgumentException("command must not be null");
         }
         if (command.requiresTimingData()) {
             requireTimingDataSupport(command.name());
         }
-        return invoke(
+        return runSerialized(
                 () -> command.complete(this, command.apply(logic)),
                 command.name());
     }
@@ -190,7 +190,7 @@ public final class TimingNode {
         if (query.requiresTimingData()) {
             requireTimingDataSupport(query.name());
         }
-        return invoke(() -> query.read(logic), query.name());
+        return runSerialized(() -> query.read(logic), query.name());
     }
 
     RegistrationResult publishCommitted(RegistrationResult result) {
@@ -221,7 +221,7 @@ public final class TimingNode {
         }
     }
 
-    private <R> R invoke(Callable<R> work, String operation) {
+    private <R> R runSerialized(Callable<R> work, String operation) {
         SerialWorker.SubmitResult<R> submitResult = serialWorker.submit(work);
         switch (submitResult.admission()) {
             case FULL:

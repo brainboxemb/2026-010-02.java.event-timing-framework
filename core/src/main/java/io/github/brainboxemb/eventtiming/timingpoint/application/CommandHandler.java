@@ -6,11 +6,11 @@ import io.github.brainboxemb.eventtiming.timingdata.TimingData;
 import io.github.brainboxemb.eventtiming.timingdata.TimingTimestamp;
 import io.github.brainboxemb.eventtiming.timingpoint.domain.timing.TimingNode;
 import io.github.brainboxemb.eventtiming.timingpoint.domain.timing.TimingNodeCommands;
+import io.github.brainboxemb.eventtiming.timingpoint.domain.logbook.LogBookVisitor;
 import io.github.brainboxemb.eventtiming.timingpoint.domain.timing.TimingNodeQueries;
 import io.github.brainboxemb.eventtiming.timingpoint.infra.BuildIdentity;
 import io.github.brainboxemb.eventtiming.timingpoint.platform.events.Event;
 
-import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
@@ -120,7 +120,7 @@ public final class CommandHandler {
         TimingNode node = requireOperationalTimingNode("setLocation");
         ApplicationStatus before = status();
         TimingNode.SetLocationResult result =
-                node.execute(TimingNodeCommands.setLocation(locationId));
+                node.invoke(TimingNodeCommands.setLocation(locationId));
         publishStatusChangedWhenDifferent(before);
         return result;
     }
@@ -129,7 +129,7 @@ public final class CommandHandler {
     public TimingNode.OpenResult open() {
         TimingNode node = requireOperationalTimingNode("open");
         ApplicationStatus before = status();
-        TimingNode.OpenResult result = node.execute(TimingNodeCommands.open());
+        TimingNode.OpenResult result = node.invoke(TimingNodeCommands.open());
         publishStatusChangedWhenDifferent(before);
         return result;
     }
@@ -138,7 +138,7 @@ public final class CommandHandler {
     public TimingNode.CloseResult close() {
         TimingNode node = requireOperationalTimingNode("close");
         ApplicationStatus before = status();
-        TimingNode.CloseResult result = node.execute(TimingNodeCommands.close());
+        TimingNode.CloseResult result = node.invoke(TimingNodeCommands.close());
         publishStatusChangedWhenDifferent(before);
         return result;
     }
@@ -153,7 +153,7 @@ public final class CommandHandler {
             RegistrationId registrationId,
             TimingTimestamp observationTime) {
         return requireOperationalTimingNode("commitAutomaticRegistration")
-                .execute(TimingNodeCommands.commitAutomaticRegistration(
+                .invoke(TimingNodeCommands.commitAutomaticRegistration(
                         registrationId,
                         observationTime));
     }
@@ -164,16 +164,24 @@ public final class CommandHandler {
                 .query(TimingNodeQueries.timingDataCount());
     }
 
-    /** Returns a bounded committed LogBook range starting at an inclusive sequence. */
-    public List<TimingData> logBookFrom(long fromSequence, int limit) {
+    /** Visits a bounded committed LogBook range starting at an inclusive sequence. */
+    public <R> R logBookFrom(
+            long fromSequence,
+            int limit,
+            LogBookVisitor<R> visitor) {
         return requireOperationalTimingNode("logBookFrom")
-                .query(TimingNodeQueries.timingDataRange(fromSequence, limit));
+                .query(TimingNodeQueries.timingDataRange(
+                        fromSequence,
+                        limit,
+                        visitor));
     }
 
-    /** Returns a bounded newest LogBook range in committed source order. */
-    public List<TimingData> latestLogBook(int limit) {
+    /** Visits a bounded newest LogBook range in committed source order. */
+    public <R> R latestLogBook(
+            int limit,
+            LogBookVisitor<R> visitor) {
         return requireOperationalTimingNode("latestLogBook")
-                .query(TimingNodeQueries.latestTimingData(limit));
+                .query(TimingNodeQueries.latestTimingData(limit, visitor));
     }
 
     /** Subscribes to authoritative status changes caused through this application boundary. */
