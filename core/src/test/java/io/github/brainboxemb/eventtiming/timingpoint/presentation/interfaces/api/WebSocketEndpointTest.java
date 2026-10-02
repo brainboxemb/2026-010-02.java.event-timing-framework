@@ -8,7 +8,7 @@ import io.github.brainboxemb.eventtiming.timingdata.TimingTimestamp;
 import io.github.brainboxemb.eventtiming.timingdata.defaultprofile.DefaultTimingDataFactory;
 import io.github.brainboxemb.eventtiming.timingpoint.application.CommandHandler;
 import io.github.brainboxemb.eventtiming.timingpoint.domain.timing.TimingNode;
-import io.github.brainboxemb.eventtiming.timingpoint.domain.timingdata.TimingDataStore;
+import io.github.brainboxemb.eventtiming.timingpoint.domain.timingdata.TimingDataPersistence;
 import io.github.brainboxemb.eventtiming.timingpoint.infra.BuildIdentity;
 
 import java.net.URI;
@@ -184,7 +184,7 @@ public class WebSocketEndpointTest {
         }
     }
 
-    private static final class MemoryStore implements TimingDataStore {
+    private static final class MemoryStore implements TimingDataPersistence {
         @Override
         public LoadResult load() {
             return new LoadResult(Collections.<TimingData>emptyList(), false);

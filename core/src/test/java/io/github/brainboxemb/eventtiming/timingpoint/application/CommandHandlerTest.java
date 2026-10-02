@@ -7,7 +7,7 @@ import io.github.brainboxemb.eventtiming.timingdata.TimingNodeId;
 import io.github.brainboxemb.eventtiming.timingdata.TimingTimestamp;
 import io.github.brainboxemb.eventtiming.timingdata.defaultprofile.DefaultTimingDataFactory;
 import io.github.brainboxemb.eventtiming.timingpoint.domain.timing.TimingNode;
-import io.github.brainboxemb.eventtiming.timingpoint.domain.timingdata.TimingDataStore;
+import io.github.brainboxemb.eventtiming.timingpoint.domain.timingdata.TimingDataPersistence;
 import io.github.brainboxemb.eventtiming.timingpoint.infra.BuildIdentity;
 
 import java.util.ArrayList;
@@ -143,7 +143,7 @@ public class CommandHandlerTest {
                 false);
     }
 
-    private static final class RecordingStore implements TimingDataStore {
+    private static final class RecordingStore implements TimingDataPersistence {
         private final List<TimingData> appended = new ArrayList<>();
 
         @Override
