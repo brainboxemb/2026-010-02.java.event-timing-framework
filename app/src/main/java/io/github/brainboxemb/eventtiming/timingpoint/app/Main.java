@@ -2,7 +2,7 @@ package io.github.brainboxemb.eventtiming.timingpoint.app;
 
 import io.github.brainboxemb.eventtiming.timingpoint.infra.BuildIdentity;
 import io.github.brainboxemb.eventtiming.timingpoint.infra.EmbeddedBuildIdentityLoader;
-import io.github.brainboxemb.eventtiming.timingpoint.infra.config.YamlLoader;
+import io.github.brainboxemb.eventtiming.timingpoint.runtime.config.YamlLoader;
 import io.github.brainboxemb.eventtiming.timingpoint.infra.logging.Logging;
 import io.github.brainboxemb.eventtiming.timingpoint.infra.loggingserver.LoggingServer;
 import io.github.brainboxemb.eventtiming.timingpoint.runtime.Application;

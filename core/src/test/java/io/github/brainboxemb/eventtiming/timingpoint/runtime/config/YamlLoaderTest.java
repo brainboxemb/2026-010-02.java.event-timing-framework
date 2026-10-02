@@ -1,4 +1,4 @@
-package io.github.brainboxemb.eventtiming.timingpoint.infra.config;
+package io.github.brainboxemb.eventtiming.timingpoint.runtime.config;
 
 import io.github.brainboxemb.eventtiming.timingpoint.runtime.config.Config;
 

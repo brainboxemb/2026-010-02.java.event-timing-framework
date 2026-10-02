@@ -1,13 +1,10 @@
-package io.github.brainboxemb.eventtiming.timingpoint.infra.config;
+package io.github.brainboxemb.eventtiming.timingpoint.runtime.config;
 
 import io.github.brainboxemb.eventtiming.timingdata.TimingNodeId;
 import io.github.brainboxemb.eventtiming.timingpoint.infra.logging.LoggingConfig;
 import io.github.brainboxemb.eventtiming.timingpoint.infra.logging.LoggingFileConfig;
 import io.github.brainboxemb.eventtiming.timingpoint.infra.logging.LoggingLevel;
 import io.github.brainboxemb.eventtiming.timingpoint.infra.loggingserver.LoggingServerConfig;
-import io.github.brainboxemb.eventtiming.timingpoint.runtime.config.Api;
-import io.github.brainboxemb.eventtiming.timingpoint.runtime.config.Config;
-import io.github.brainboxemb.eventtiming.timingpoint.runtime.config.Presentation;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -23,7 +20,13 @@ import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.constructor.SafeConstructor;
 import org.yaml.snakeyaml.error.YAMLException;
 
-/** Maps the default IF-11 YAML syntax into the runtime configuration model. */
+/**
+ * Maps the default IF-11 YAML syntax into the runtime configuration model.
+ *
+ * <p>This loader belongs with the runtime configuration because it knows the
+ * concrete application configuration schema. It is not a generic infrastructure
+ * YAML utility.</p>
+ */
 public final class YamlLoader {
     private static final String TIMING_NODE_ID = "timingNodeId";
     private static final String PRESENTATION = "presentation";
