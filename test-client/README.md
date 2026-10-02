@@ -56,7 +56,7 @@ With `JAVA_HOME` pointing to a JDK 17 installation:
 ```
 
 Start SI-01 separately from the normal Java-8 project/NetBeans run configuration.
-For the formal Step-4 V04 running-system check, follow
+For the formal Step-4 V04 / `VC-ST1-003` running-system check, follow
 [STEP4-DEMO.md](STEP4-DEMO.md); it uses a dedicated demo storage file so normal
 development TimingData is not modified.
 
