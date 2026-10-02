@@ -38,7 +38,7 @@ import static org.junit.Assert.fail;
  */
 public class FirstRegistrationBlackBoxTest {
     private static final String LOOPBACK = "127.0.0.1";
-    private static final String NODE_ID = "timing-node-blackbox";
+    private static final String NODE_ID = "Test";
     private static final long START_TIMEOUT_MILLIS = 15000L;
     private static final long EXIT_TIMEOUT_MILLIS = 10000L;
 
@@ -150,7 +150,7 @@ public class FirstRegistrationBlackBoxTest {
                     "/api/v1/dev/node/" + NODE_ID + "/auto-reg",
                     "{"
                             + "\"id\":\"N001\","
-                            + "\"time\":\"2026-10-01T12:00:00.000000000Z\""
+                            + "\"time\":\"2026-10-01T12:00:00Z\""
                             + "}");
             assertEquals("Unexpected auto-reg status", 200, registration.status);
             assertContains(registration.body, "\"seq\":1");
@@ -272,16 +272,17 @@ public class FirstRegistrationBlackBoxTest {
     }
 
     private static void assertCommittedRegistration(String json) {
-        assertContains(json, "\"timingNodeId\":\"" + NODE_ID + "\"");
-        assertContains(json, "\"sequenceNumber\":1");
-        assertContains(json, "\"locationId\":24");
-        assertContains(json, "\"recordType\":\"REGISTRATION\"");
+        assertContains(json, "\"v\":1");
+        assertContains(json, "\"nodeId\":\"" + NODE_ID + "\"");
+        assertContains(json, "\"seqNr\":1");
+        assertContains(json, "\"locId\":24");
+        assertContains(json, "\"recType\":\"AUTO_REG\"");
         assertContains(
                 json,
-                "\"effectiveTime\":\"2026-10-01T12:00:00.000000000Z\"");
-        assertContains(json, "\"registrationId\":\"N001\"");
-        assertContains(json, "\"origin\":\"AUTOMATIC\"");
-        assertContains(json, "\"timeSource\":\"OBSERVED\"");
+                "\"time\":\"2026-10-01T12:00:00Z\"");
+        assertContains(json, "\"regId\":\"N001\"");
+        assertContains(json, "\"code\":[\"ADD\"]");
+        assertContains(json, "\"recTime\":");
     }
 
     private static void awaitHttpReady(
