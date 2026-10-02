@@ -352,6 +352,7 @@ final class TimingPane extends VBox {
             return;
         }
 
+        bufferedEvents.clear();
         model.viewState(TimingViewModel.ViewState.RECONNECTING);
         connection.setText("RECONNECTING");
         refresh();
@@ -382,6 +383,7 @@ final class TimingPane extends VBox {
                         if (result.page() != null) {
                             model.mergeLogBookPage(result.page());
                         }
+                        applyBufferedEvents();
                         model.viewState(TimingViewModel.ViewState.LIVE);
                         connection.setText("LIVE");
                     }
@@ -468,6 +470,7 @@ final class TimingPane extends VBox {
             if ("OUTCOME_UNKNOWN".equals(apiError.code())) {
                 model.viewState(TimingViewModel.ViewState.STALE);
                 connection.setText("STALE");
+                rebuild();
             }
         } else {
             lastOperation.setText("Error: " + rootMessage(error));
