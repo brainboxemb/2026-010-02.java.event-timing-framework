@@ -23,10 +23,10 @@ public class TimingNodeTest {
 
         node.start();
         try {
-            TimingNode.Status status = node.query(TimingNodeQueries.status());
+            TimingNodeTypes.Status status = node.query(TimingNodeQueries.status());
 
             assertSame(id, status.timingNodeId());
-            assertEquals(TimingNode.Lifecycle.CLOSED, status.lifecycle());
+            assertEquals(TimingNodeTypes.Lifecycle.CLOSED, status.lifecycle());
             assertFalse(status.hasLocation());
         } finally {
             node.stop();
@@ -40,22 +40,22 @@ public class TimingNodeTest {
 
         node.start();
         try {
-            assertEquals(TimingNode.SetLocationResult.UPDATED, node.invoke(TimingNodeCommands.setLocation(location)));
-            assertEquals(TimingNode.OpenResult.OPENED, node.invoke(TimingNodeCommands.open()));
+            assertEquals(TimingNodeTypes.SetLocationResult.UPDATED, node.invoke(TimingNodeCommands.setLocation(location)));
+            assertEquals(TimingNodeTypes.OpenResult.OPENED, node.invoke(TimingNodeCommands.open()));
 
-            TimingNode.Status openStatus = node.query(TimingNodeQueries.status());
-            assertEquals(TimingNode.Lifecycle.OPEN, openStatus.lifecycle());
+            TimingNodeTypes.Status openStatus = node.query(TimingNodeQueries.status());
+            assertEquals(TimingNodeTypes.Lifecycle.OPEN, openStatus.lifecycle());
             assertEquals(location, openStatus.locationId());
 
             assertEquals(
-                    TimingNode.SetLocationResult.NODE_NOT_CLOSED,
+                    TimingNodeTypes.SetLocationResult.NODE_NOT_CLOSED,
                     node.invoke(TimingNodeCommands.setLocation(new LocationId(25))));
             assertEquals(location, node.query(TimingNodeQueries.status()).locationId());
 
-            assertEquals(TimingNode.CloseResult.CLOSED, node.invoke(TimingNodeCommands.close()));
+            assertEquals(TimingNodeTypes.CloseResult.CLOSED, node.invoke(TimingNodeCommands.close()));
 
-            TimingNode.Status closedStatus = node.query(TimingNodeQueries.status());
-            assertEquals(TimingNode.Lifecycle.CLOSED, closedStatus.lifecycle());
+            TimingNodeTypes.Status closedStatus = node.query(TimingNodeQueries.status());
+            assertEquals(TimingNodeTypes.Lifecycle.CLOSED, closedStatus.lifecycle());
             assertEquals(location, closedStatus.locationId());
         } finally {
             node.stop();
@@ -68,8 +68,8 @@ public class TimingNodeTest {
 
         node.start();
         try {
-            assertEquals(TimingNode.OpenResult.NO_LOCATION, node.invoke(TimingNodeCommands.open()));
-            assertEquals(TimingNode.Lifecycle.CLOSED, node.query(TimingNodeQueries.status()).lifecycle());
+            assertEquals(TimingNodeTypes.OpenResult.NO_LOCATION, node.invoke(TimingNodeCommands.open()));
+            assertEquals(TimingNodeTypes.Lifecycle.CLOSED, node.query(TimingNodeQueries.status()).lifecycle());
         } finally {
             node.stop();
         }
@@ -82,10 +82,10 @@ public class TimingNodeTest {
         node.start();
         try {
             node.invoke(TimingNodeCommands.setLocation(new LocationId(24)));
-            assertEquals(TimingNode.OpenResult.OPENED, node.invoke(TimingNodeCommands.open()));
-            assertEquals(TimingNode.OpenResult.ALREADY_OPEN, node.invoke(TimingNodeCommands.open()));
-            assertEquals(TimingNode.CloseResult.CLOSED, node.invoke(TimingNodeCommands.close()));
-            assertEquals(TimingNode.CloseResult.ALREADY_CLOSED, node.invoke(TimingNodeCommands.close()));
+            assertEquals(TimingNodeTypes.OpenResult.OPENED, node.invoke(TimingNodeCommands.open()));
+            assertEquals(TimingNodeTypes.OpenResult.ALREADY_OPEN, node.invoke(TimingNodeCommands.open()));
+            assertEquals(TimingNodeTypes.CloseResult.CLOSED, node.invoke(TimingNodeCommands.close()));
+            assertEquals(TimingNodeTypes.CloseResult.ALREADY_CLOSED, node.invoke(TimingNodeCommands.close()));
         } finally {
             node.stop();
         }
@@ -115,7 +115,7 @@ public class TimingNodeTest {
                 fail("expected timeout");
             } catch (TimingNode.OperationTimeoutException expected) {
                 assertEquals(
-                        TimingNode.OperationException.Reason.TIMEOUT,
+                        TimingNodeTypes.OperationException.Reason.TIMEOUT,
                         expected.reason());
             }
 
@@ -124,7 +124,7 @@ public class TimingNodeTest {
             releaseBlocker.countDown();
 
             assertTrue(afterTimedOutOperation.await(1, TimeUnit.SECONDS));
-            TimingNode.Status status = node.query(TimingNodeQueries.status());
+            TimingNodeTypes.Status status = node.query(TimingNodeQueries.status());
             assertTrue(status.hasLocation());
             assertEquals(new LocationId(24), status.locationId());
         } finally {
@@ -146,7 +146,7 @@ public class TimingNodeTest {
         node.start();
         try {
             assertEquals(
-                    TimingNode.SetLocationResult.UPDATED,
+                    TimingNodeTypes.SetLocationResult.UPDATED,
                     node.invoke(TimingNodeCommands.setLocation(new LocationId(24))));
 
             worker.submit(() -> {
@@ -156,9 +156,9 @@ public class TimingNodeTest {
             });
             assertTrue(blockerStarted.await(1, TimeUnit.SECONDS));
 
-            final TimingNode.OpenResult[] openResult = new TimingNode.OpenResult[1];
-            final TimingNode.SetLocationResult[] setLocationResult =
-                    new TimingNode.SetLocationResult[1];
+            final TimingNodeTypes.OpenResult[] openResult = new TimingNodeTypes.OpenResult[1];
+            final TimingNodeTypes.SetLocationResult[] setLocationResult =
+                    new TimingNodeTypes.SetLocationResult[1];
 
             Thread openCaller = new Thread(() -> openResult[0] = node.invoke(TimingNodeCommands.open()));
             Thread locationCaller = new Thread(
@@ -185,9 +185,9 @@ public class TimingNodeTest {
             assertFalse(openCaller.isAlive());
             assertFalse(locationCaller.isAlive());
 
-            assertEquals(TimingNode.OpenResult.OPENED, openResult[0]);
+            assertEquals(TimingNodeTypes.OpenResult.OPENED, openResult[0]);
             assertEquals(
-                    TimingNode.SetLocationResult.NODE_NOT_CLOSED,
+                    TimingNodeTypes.SetLocationResult.NODE_NOT_CLOSED,
                     setLocationResult[0]);
             assertEquals(new LocationId(24), node.query(TimingNodeQueries.status()).locationId());
         } finally {
@@ -207,8 +207,8 @@ public class TimingNodeTest {
         CountDownLatch blockerStarted = new CountDownLatch(1);
         CountDownLatch releaseBlocker = new CountDownLatch(1);
         CountDownLatch producerReturned = new CountDownLatch(1);
-        final TimingNode.CommandAdmission[] admission =
-                new TimingNode.CommandAdmission[1];
+        final TimingNodeTypes.CommandAdmission[] admission =
+                new TimingNodeTypes.CommandAdmission[1];
 
         node.start();
         try {
@@ -232,7 +232,7 @@ public class TimingNodeTest {
                     "submission-only producer must not wait for command execution",
                     producerReturned.await(250, TimeUnit.MILLISECONDS));
             assertEquals(
-                    TimingNode.CommandAdmission.ACCEPTED,
+                    TimingNodeTypes.CommandAdmission.ACCEPTED,
                     admission[0]);
 
             releaseBlocker.countDown();
@@ -261,9 +261,9 @@ public class TimingNodeTest {
         try {
             node.query(TimingNodeQueries.status());
             fail("expected operation failure");
-        } catch (TimingNode.OperationException expected) {
+        } catch (TimingNodeTypes.OperationException expected) {
             assertEquals(
-                    TimingNode.OperationException.Reason.UNAVAILABLE,
+                    TimingNodeTypes.OperationException.Reason.UNAVAILABLE,
                     expected.reason());
         }
     }

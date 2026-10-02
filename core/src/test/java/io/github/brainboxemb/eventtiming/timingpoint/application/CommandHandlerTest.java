@@ -7,6 +7,7 @@ import io.github.brainboxemb.eventtiming.timingdata.TimingNodeId;
 import io.github.brainboxemb.eventtiming.timingdata.TimingTimestamp;
 import io.github.brainboxemb.eventtiming.timingdata.defaultprofile.DefaultTimingDataFactory;
 import io.github.brainboxemb.eventtiming.timingpoint.domain.timing.TimingNode;
+import io.github.brainboxemb.eventtiming.timingpoint.domain.timing.TimingNodeTypes;
 import io.github.brainboxemb.eventtiming.timingpoint.domain.timingdata.TimingDataPersistence;
 import io.github.brainboxemb.eventtiming.timingpoint.infra.BuildIdentity;
 
@@ -65,7 +66,7 @@ public class CommandHandlerTest {
             assertFalse(handler.status().hasLocation());
 
             assertEquals(
-                    TimingNode.SetLocationResult.UPDATED,
+                    TimingNodeTypes.SetLocationResult.UPDATED,
                     handler.setLocation(new LocationId(24)));
             assertEquals(1, statusChanges.size());
             assertEquals(new LocationId(24), statusChanges.get(0).locationId());
@@ -73,17 +74,17 @@ public class CommandHandlerTest {
             // The domain returns UPDATED again, but the authoritative state did
             // not change, so no duplicate STATUS_CHANGED event is manufactured.
             assertEquals(
-                    TimingNode.SetLocationResult.UPDATED,
+                    TimingNodeTypes.SetLocationResult.UPDATED,
                     handler.setLocation(new LocationId(24)));
             assertEquals(1, statusChanges.size());
 
-            assertEquals(TimingNode.OpenResult.OPENED, handler.open());
+            assertEquals(TimingNodeTypes.OpenResult.OPENED, handler.open());
             assertEquals(2, statusChanges.size());
             assertEquals(
-                    TimingNode.Lifecycle.OPEN,
+                    TimingNodeTypes.Lifecycle.OPEN,
                     statusChanges.get(1).timingNodeLifecycle());
 
-            TimingNode.RegistrationResult registration = handler.commitAutomaticRegistration(
+            TimingNodeTypes.RegistrationResult registration = handler.commitAutomaticRegistration(
                     new RegistrationId("N001"),
                     OBSERVATION_TIME);
             assertTrue(registration.committed());
@@ -94,10 +95,10 @@ public class CommandHandlerTest {
             assertSame(registration.timingData(), handler.logBookFrom(1L, 10).get(0));
             assertSame(registration.timingData(), handler.latestLogBook(10).get(0));
 
-            assertEquals(TimingNode.CloseResult.CLOSED, handler.close());
+            assertEquals(TimingNodeTypes.CloseResult.CLOSED, handler.close());
             assertEquals(3, statusChanges.size());
             assertEquals(
-                    TimingNode.Lifecycle.CLOSED,
+                    TimingNodeTypes.Lifecycle.CLOSED,
                     statusChanges.get(2).timingNodeLifecycle());
         } finally {
             node.stop();
@@ -122,7 +123,7 @@ public class CommandHandlerTest {
     private static ApplicationStatus status() {
         return new ApplicationStatus(
                 new TimingNodeId("timing-node-01"),
-                TimingNode.Lifecycle.CLOSED);
+                TimingNodeTypes.Lifecycle.CLOSED);
     }
 
     private static TimingNode node(RecordingStore store) {

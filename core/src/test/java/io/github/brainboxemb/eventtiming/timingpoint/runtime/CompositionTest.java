@@ -2,6 +2,7 @@ package io.github.brainboxemb.eventtiming.timingpoint.runtime;
 
 import io.github.brainboxemb.eventtiming.timingdata.TimingNodeId;
 import io.github.brainboxemb.eventtiming.timingpoint.domain.timing.TimingNode;
+import io.github.brainboxemb.eventtiming.timingpoint.domain.timing.TimingNodeTypes;
 import io.github.brainboxemb.eventtiming.timingpoint.infra.BuildIdentity;
 import io.github.brainboxemb.eventtiming.timingpoint.runtime.config.Config;
 import io.github.brainboxemb.eventtiming.timingpoint.runtime.config.Presentation;
@@ -50,7 +51,7 @@ public class CompositionTest {
         try {
             application.start();
             fail("expected TimingData recovery failure");
-        } catch (TimingNode.StartupException expected) {
+        } catch (TimingNodeTypes.StartupException expected) {
             // The configured I/O store was opened during runtime startup.
         } finally {
             application.close();

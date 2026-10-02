@@ -2,6 +2,7 @@ package io.github.brainboxemb.eventtiming.timingpoint.runtime;
 
 import io.github.brainboxemb.eventtiming.timingdata.TimingNodeId;
 import io.github.brainboxemb.eventtiming.timingpoint.domain.timing.TimingNode;
+import io.github.brainboxemb.eventtiming.timingpoint.domain.timing.TimingNodeTypes;
 import io.github.brainboxemb.eventtiming.timingpoint.domain.timing.TimingNodeQueries;
 import io.github.brainboxemb.eventtiming.timingpoint.infra.BuildIdentity;
 
@@ -29,7 +30,7 @@ public class ApplicationTest {
                     "timing-node-01",
                     application.commandHandler().status().timingNodeId().value());
             assertEquals(
-                    TimingNode.Lifecycle.CLOSED,
+                    TimingNodeTypes.Lifecycle.CLOSED,
                     application.commandHandler().status().timingNodeLifecycle());
         } finally {
             application.close();
@@ -38,9 +39,9 @@ public class ApplicationTest {
         try {
             timingNode.query(TimingNodeQueries.status());
             fail("expected TimingNode to be unavailable after application close");
-        } catch (TimingNode.OperationException expected) {
+        } catch (TimingNodeTypes.OperationException expected) {
             assertEquals(
-                    TimingNode.OperationException.Reason.UNAVAILABLE,
+                    TimingNodeTypes.OperationException.Reason.UNAVAILABLE,
                     expected.reason());
         }
     }

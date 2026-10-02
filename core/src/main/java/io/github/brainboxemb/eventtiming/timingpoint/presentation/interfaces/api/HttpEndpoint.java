@@ -13,7 +13,7 @@ import io.github.brainboxemb.eventtiming.timingdata.TimingDataCodec;
 import io.github.brainboxemb.eventtiming.timingdata.TimingTimestamp;
 import io.github.brainboxemb.eventtiming.timingdata.defaultprofile.DefaultTimingDataCodec;
 import io.github.brainboxemb.eventtiming.timingpoint.application.CommandHandler;
-import io.github.brainboxemb.eventtiming.timingpoint.domain.timing.TimingNode;
+import io.github.brainboxemb.eventtiming.timingpoint.domain.timing.TimingNodeTypes.OperationException;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -111,7 +111,7 @@ public final class HttpEndpoint implements AutoCloseable {
             // Method validation already wrote and closed the HTTP response.
         } catch (RequestException ex) {
             sendJson(exchange, 400, MessageWriter.error(ex.code, ex.getMessage()));
-        } catch (TimingNode.OperationException ex) {
+        } catch (OperationException ex) {
             sendOperationFailure(exchange, ex);
         } catch (RuntimeException ex) {
             LOG.warn("IF-03 request failed", ex);
@@ -444,7 +444,7 @@ public final class HttpEndpoint implements AutoCloseable {
 
     private void sendOperationFailure(
             HttpExchange exchange,
-            TimingNode.OperationException failure)
+            OperationException failure)
             throws IOException {
         switch (failure.reason()) {
             case BUSY:

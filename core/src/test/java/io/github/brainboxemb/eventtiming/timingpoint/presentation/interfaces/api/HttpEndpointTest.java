@@ -7,6 +7,7 @@ import io.github.brainboxemb.eventtiming.timingdata.defaultprofile.DefaultTiming
 import io.github.brainboxemb.eventtiming.timingpoint.application.ApplicationStatus;
 import io.github.brainboxemb.eventtiming.timingpoint.application.CommandHandler;
 import io.github.brainboxemb.eventtiming.timingpoint.domain.timing.TimingNode;
+import io.github.brainboxemb.eventtiming.timingpoint.domain.timing.TimingNodeTypes;
 import io.github.brainboxemb.eventtiming.timingpoint.domain.timingdata.TimingDataPersistence;
 import io.github.brainboxemb.eventtiming.timingpoint.infra.BuildIdentity;
 
@@ -229,7 +230,7 @@ public class HttpEndpointTest {
     private static CommandHandler statusOnlyHandler() {
         ApplicationStatus status = new ApplicationStatus(
                 new TimingNodeId("timing-node-01"),
-                TimingNode.Lifecycle.CLOSED);
+                TimingNodeTypes.Lifecycle.CLOSED);
         return new CommandHandler(identity(), () -> status);
     }
 

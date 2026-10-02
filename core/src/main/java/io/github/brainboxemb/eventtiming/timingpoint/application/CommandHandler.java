@@ -7,6 +7,11 @@ import io.github.brainboxemb.eventtiming.timingdata.TimingTimestamp;
 import io.github.brainboxemb.eventtiming.timingpoint.domain.timing.TimingNode;
 import io.github.brainboxemb.eventtiming.timingpoint.domain.timing.TimingNodeCommands;
 import io.github.brainboxemb.eventtiming.timingpoint.domain.timing.TimingNodeQueries;
+import io.github.brainboxemb.eventtiming.timingpoint.domain.timing.TimingNodeTypes.CloseResult;
+import io.github.brainboxemb.eventtiming.timingpoint.domain.timing.TimingNodeTypes.OpenResult;
+import io.github.brainboxemb.eventtiming.timingpoint.domain.timing.TimingNodeTypes.RegistrationResult;
+import io.github.brainboxemb.eventtiming.timingpoint.domain.timing.TimingNodeTypes.SetLocationResult;
+import io.github.brainboxemb.eventtiming.timingpoint.domain.timing.TimingNodeTypes.Status;
 import io.github.brainboxemb.eventtiming.timingpoint.infra.BuildIdentity;
 import io.github.brainboxemb.eventtiming.timingpoint.platform.events.Event;
 
@@ -116,29 +121,29 @@ public final class CommandHandler {
     }
 
     /** Sets the current operational LocationId through the TimingNode serial owner. */
-    public TimingNode.SetLocationResult setLocation(LocationId locationId) {
+    public SetLocationResult setLocation(LocationId locationId) {
         TimingNode node = requireOperationalTimingNode("setLocation");
         ApplicationStatus before = status();
-        TimingNode.SetLocationResult result =
+        SetLocationResult result =
                 node.invoke(TimingNodeCommands.setLocation(locationId));
         publishStatusChangedWhenDifferent(before);
         return result;
     }
 
     /** Opens registration through the TimingNode serial owner. */
-    public TimingNode.OpenResult open() {
+    public OpenResult open() {
         TimingNode node = requireOperationalTimingNode("open");
         ApplicationStatus before = status();
-        TimingNode.OpenResult result = node.invoke(TimingNodeCommands.open());
+        OpenResult result = node.invoke(TimingNodeCommands.open());
         publishStatusChangedWhenDifferent(before);
         return result;
     }
 
     /** Closes registration through the TimingNode serial owner. */
-    public TimingNode.CloseResult close() {
+    public CloseResult close() {
         TimingNode node = requireOperationalTimingNode("close");
         ApplicationStatus before = status();
-        TimingNode.CloseResult result = node.invoke(TimingNodeCommands.close());
+        CloseResult result = node.invoke(TimingNodeCommands.close());
         publishStatusChangedWhenDifferent(before);
         return result;
     }
@@ -149,7 +154,7 @@ public final class CommandHandler {
      * <p>The caller does not supply TimingNode identity, active LocationId,
      * sequence number, recordedAt or final TimingData.</p>
      */
-    public TimingNode.RegistrationResult commitAutomaticRegistration(
+    public RegistrationResult commitAutomaticRegistration(
             RegistrationId registrationId,
             TimingTimestamp observationTime) {
         return requireOperationalTimingNode("commitAutomaticRegistration")
@@ -230,7 +235,7 @@ public final class CommandHandler {
     private static Supplier<ApplicationStatus> statusSupplier(TimingNode timingNode) {
         TimingNode node = requireTimingNode(timingNode);
         return () -> {
-            TimingNode.Status status = node.query(TimingNodeQueries.status());
+            Status status = node.query(TimingNodeQueries.status());
             return new ApplicationStatus(
                     status.timingNodeId(),
                     status.lifecycle(),
