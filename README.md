@@ -60,7 +60,7 @@ io.github.brainboxemb.eventtiming.timingpoint.io.storage.AppendOnlyRecordStore
 io.github.brainboxemb.eventtiming.timingpoint.io.storage.FileAppendOnlyRecordStore
 io.github.brainboxemb.eventtiming.timingpoint.platform.execution.SerialWorker
 io.github.brainboxemb.eventtiming.timingpoint.infra.BuildIdentity
-io.github.brainboxemb.eventtiming.timingpoint.infra.config.YamlLoader
+io.github.brainboxemb.eventtiming.timingpoint.runtime.config.YamlLoader
 io.github.brainboxemb.eventtiming.timingpoint.runtime.Application
 io.github.brainboxemb.eventtiming.timingpoint.runtime.Composition
 io.github.brainboxemb.eventtiming.timingpoint.runtime.Lifecycle
@@ -104,6 +104,8 @@ TimingData-specific persistence semantics remain above the generic storage layer
 
 `runtime.Composition` owns knowledge of the concrete running application graph. Infrastructure provides supporting/cross-cutting mechanisms only; I/O and Platform remain separate responsibilities. The package namespace carries the context, so runtime classes use the short names `Application`, `Composition` and `Lifecycle`. There is no second bootstrap object and no application builder.
 
+A constructed `TimingNode` is always complete: TimingData persistence, factory and TimeSource are required constructor dependencies. There is no lifecycle-only or capability-partial production node.
+
 `TimingNode` remains the visible Domain component boundary used by higher layers. It serializes typed commands and consistency-sensitive queries through `SerialWorker`, while package-private `TimingNodeLogic` keeps the mutable node state, `LocationId`, LogBook interaction and registration commit behaviour readable. Result-bearing callers use `invoke(TimingNodeCommands....)` and may wait for the processed domain result. Producer/callback paths use `submit(TimingNodeCommands....)` and receive only immediate bounded-queue admission, so RFID/TagProcessor ingress does not wait for later node processing. Reads use `query(TimingNodeQueries....)`; bounded LogBook reads copy a stable shallow view on the serial lane and perform longer formatting/calculation afterwards. The automatic registration command is `commitAutomaticRegistration(...)`; the IF-03 engineering resource remains `/auto-reg`.
 
 The executable artifact remains thin:
@@ -113,7 +115,7 @@ io.github.brainboxemb.eventtiming.timingpoint.app/
   Main
 ```
 
-It supplies the configuration path, starts the reusable logging infrastructure and hands the parsed runtime configuration to `runtime.Composition`. The default IF-11 YAML parser/mapping remains framework infrastructure in `infra.config.YamlLoader`. The executable selects `slf4j-jdk14`; the core artifact itself still selects no SLF4J provider.
+It supplies the configuration path, starts the reusable logging infrastructure and hands the parsed runtime configuration to `runtime.Composition`. The default IF-11 YAML parser/mapping lives in `runtime.config.YamlLoader` because it maps directly to the concrete runtime configuration model. The executable selects `slf4j-jdk14`; the core artifact itself still selects no SLF4J provider.
 
 ### Artifact rule
 
