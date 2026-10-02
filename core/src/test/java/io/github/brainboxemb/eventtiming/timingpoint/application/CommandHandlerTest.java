@@ -31,19 +31,27 @@ public class CommandHandlerTest {
     @Test
     public void versionReturnsAuthoritativeBuildIdentity() {
         BuildIdentity identity = identity();
-        ApplicationStatus status = status();
-
-        CommandHandler handler = new CommandHandler(identity, () -> status);
+        TimingNode node = node(new RecordingStore());
+        CommandHandler handler = new CommandHandler(identity, node);
 
         assertSame(identity, handler.version());
     }
 
     @Test
-    public void statusOnlyConstructorStillSupportsSimplePresentationTests() {
-        ApplicationStatus status = status();
-        CommandHandler handler = new CommandHandler(identity(), () -> status);
+    public void statusComesFromTimingNode() {
+        TimingNode node = node(new RecordingStore());
+        CommandHandler handler = new CommandHandler(identity(), node);
 
-        assertSame(status, handler.status());
+        node.start();
+        try {
+            ApplicationStatus status = handler.status();
+            assertEquals(new TimingNodeId("timing-node-01"), status.timingNodeId());
+            assertEquals(
+                    TimingNodeTypes.Lifecycle.CLOSED,
+                    status.timingNodeLifecycle());
+        } finally {
+            node.stop();
+        }
     }
 
     @Test
@@ -105,25 +113,14 @@ public class CommandHandlerTest {
         }
     }
 
-    @Test(expected = IllegalStateException.class)
-    public void statusOnlyHandlerRejectsOperationalCommands() {
-        new CommandHandler(identity(), CommandHandlerTest::status).capabilities();
-    }
-
     @Test(expected = IllegalArgumentException.class)
     public void rejectsMissingBuildIdentity() {
-        new CommandHandler(null, CommandHandlerTest::status);
+        new CommandHandler(null, node(new RecordingStore()));
     }
 
     @Test(expected = IllegalArgumentException.class)
-    public void rejectsMissingStatusSupplier() {
-        new CommandHandler(identity(), (java.util.function.Supplier<ApplicationStatus>) null);
-    }
-
-    private static ApplicationStatus status() {
-        return new ApplicationStatus(
-                new TimingNodeId("timing-node-01"),
-                TimingNodeTypes.Lifecycle.CLOSED);
+    public void rejectsMissingTimingNode() {
+        new CommandHandler(identity(), null);
     }
 
     private static TimingNode node(RecordingStore store) {
