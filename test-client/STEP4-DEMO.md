@@ -143,7 +143,7 @@ Client Java           :
 
 Initial CLOSED/no-location     PASS / FAIL
 Location 24 + OPEN             PASS / FAIL
-Auto-reg N0001 -> seq 1         PASS / FAIL
+Auto-reg N0001 -> seq 1        PASS / FAIL
 Live committed event           PASS / FAIL
 LogBook count/row              PASS / FAIL
 Close + LocationId 25          PASS / FAIL
