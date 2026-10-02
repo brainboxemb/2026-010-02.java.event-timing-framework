@@ -226,6 +226,7 @@ public class FirstRegistrationBlackBoxTest {
                             + collector.snapshot(),
                     0,
                     process.exitValue());
+            evidence.verifyRuntimeLogging(collector.snapshot());
             passed = true;
         } catch (Throwable failure) {
             evidenceFailure = failure;
@@ -415,7 +416,13 @@ public class FirstRegistrationBlackBoxTest {
                 + "      port: " + httpPort + "\n"
                 + "    webSocket:\n"
                 + "      bindAddress: 127.0.0.1\n"
-                + "      port: " + webSocketPort + "\n";
+                + "      port: " + webSocketPort + "\n"
+                + "logging:\n"
+                + "  level: INFO\n"
+                + "  file:\n"
+                + "    path: logs\n"
+                + "    rotateBytes: 1048576\n"
+                + "    retainedFiles: 5\n";
     }
 
     private static int[] reservePorts(int count) throws IOException {
