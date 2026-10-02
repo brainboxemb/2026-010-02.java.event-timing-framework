@@ -7,7 +7,6 @@ import io.github.brainboxemb.eventtiming.timingpoint.application.CommandHandler;
 import io.github.brainboxemb.eventtiming.timingpoint.infra.BuildIdentity;
 
 import java.nio.charset.StandardCharsets;
-import java.util.List;
 
 /** Explicit JSON mapping for the IF-03 v1 contract. */
 public final class MessageWriter {
@@ -70,25 +69,33 @@ public final class MessageWriter {
     public static String logBookPage(
             int count,
             Long next,
-            List<TimingData> records,
-            TimingDataCodec codec)
-            throws TimingDataCodec.CodecException {
-        StringBuilder json = new StringBuilder();
-        json.append("{")
-                .append("\"count\":").append(count).append(",")
-                .append("\"next\":")
-                .append(next == null ? "null" : Long.toString(next.longValue()))
-                .append(",")
-                .append("\"records\":[");
+            CharSequence encodedRecords) {
+        return "{"
+                + "\"count\":" + count + ","
+                + "\"next\":"
+                + (next == null ? "null" : Long.toString(next.longValue()))
+                + ","
+                + "\"records\":[" + encodedRecords + "]"
+                + "}";
+    }
 
-        for (int i = 0; i < records.size(); i++) {
-            if (i > 0) {
-                json.append(',');
-            }
-            json.append(timingDataJson(records.get(i), codec));
+    /**
+     * Appends one canonical TimingData JSON value to an in-progress records array.
+     */
+    static void appendLogBookRecord(
+            StringBuilder records,
+            TimingData data,
+            TimingDataCodec codec) {
+        if (records.length() > 0) {
+            records.append(',');
         }
-        json.append("]}");
-        return json.toString();
+        try {
+            records.append(timingDataJson(data, codec));
+        } catch (TimingDataCodec.CodecException ex) {
+            throw new IllegalStateException(
+                    "Could not encode LogBook record",
+                    ex);
+        }
     }
 
     public static String statusEvent(

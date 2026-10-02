@@ -16,7 +16,7 @@ import io.github.brainboxemb.eventtiming.timingpoint.infra.BuildIdentity;
 import io.github.brainboxemb.eventtiming.timingpoint.platform.events.Event;
 import io.github.brainboxemb.eventtiming.timingpoint.platform.events.EventSource;
 
-import java.util.List;
+import java.util.function.Consumer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -127,15 +127,35 @@ public final class CommandHandler {
         return timingNode.query(TimingNodeQueries.timingDataCount());
     }
 
-    /** Returns a bounded committed LogBook range starting at an inclusive sequence. */
-    public List<TimingData> logBookFrom(long fromSequence, int limit) {
+    /**
+     * Visits a bounded committed LogBook range in source order.
+     *
+     * <p>The visitor executes synchronously on the TimingNode serial lane. It
+     * must remain short/non-blocking and must not call back into this TimingNode.
+     * The returned value is the total committed LogBook count from the same
+     * ordered read.</p>
+     */
+    public int visitLogBookFrom(
+            long fromSequence,
+            int limit,
+            Consumer<TimingData> visitor) {
         return timingNode.query(
-                TimingNodeQueries.timingDataRange(fromSequence, limit));
+                TimingNodeQueries.visitTimingDataRange(
+                        fromSequence,
+                        limit,
+                        visitor));
     }
 
-    /** Returns a bounded newest LogBook range in committed source order. */
-    public List<TimingData> latestLogBook(int limit) {
-        return timingNode.query(TimingNodeQueries.latestTimingData(limit));
+    /**
+     * Visits a bounded newest LogBook range in source order.
+     *
+     * @return total committed LogBook count from the same ordered read
+     */
+    public int visitLatestLogBook(
+            int limit,
+            Consumer<TimingData> visitor) {
+        return timingNode.query(
+                TimingNodeQueries.visitLatestTimingData(limit, visitor));
     }
 
     /** Returns the subscription-only authoritative status-change event. */

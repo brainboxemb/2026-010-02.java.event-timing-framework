@@ -4,14 +4,14 @@ import io.github.brainboxemb.eventtiming.timingdata.TimingData;
 import io.github.brainboxemb.eventtiming.timingdata.TimingNodeId;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
+import java.util.function.Consumer;
 
 /**
  * Passive committed TimingData history owned by one TimingNode serial lane.
  *
  * <p>The LogBook has no worker or independent synchronization. Its owner decides
- * when mutations and snapshots occur.</p>
+ * when mutations and reads occur.</p>
  */
 public final class LogBook {
     private final TimingNodeId timingNodeId;
@@ -64,43 +64,53 @@ public final class LogBook {
     }
 
     /**
-     * Returns at most {@code limit} committed records starting at the inclusive
+     * Visits at most {@code limit} committed records starting at the inclusive
      * source sequence.
+     *
+     * <p>The owner must call this only while it owns the LogBook. The visitor is
+     * invoked synchronously and must remain short/non-blocking.</p>
      */
-    public List<TimingData> range(long fromSequence, int limit) {
+    public void visitRange(
+            long fromSequence,
+            int limit,
+            Consumer<TimingData> visitor) {
         if (fromSequence < 1L) {
             throw new IllegalArgumentException("fromSequence must be >= 1");
         }
         if (limit < 1) {
             throw new IllegalArgumentException("limit must be >= 1");
         }
+        if (visitor == null) {
+            throw new IllegalArgumentException("visitor must not be null");
+        }
 
         long startLong = fromSequence - 1L;
         if (startLong >= records.size()) {
-            return Collections.emptyList();
+            return;
         }
+
         int start = (int) startLong;
         int end = (int) Math.min((long) records.size(), startLong + limit);
-        return Collections.unmodifiableList(
-                new ArrayList<>(records.subList(start, end)));
+        for (int index = start; index < end; index++) {
+            visitor.accept(records.get(index));
+        }
     }
 
     /**
-     * Returns at most {@code limit} newest committed records in source order.
+     * Visits at most {@code limit} newest committed records in source order.
      */
-    public List<TimingData> latest(int limit) {
+    public void visitLatest(int limit, Consumer<TimingData> visitor) {
         if (limit < 1) {
             throw new IllegalArgumentException("limit must be >= 1");
         }
+        if (visitor == null) {
+            throw new IllegalArgumentException("visitor must not be null");
+        }
+
         int start = Math.max(0, records.size() - limit);
-        return Collections.unmodifiableList(
-                new ArrayList<>(records.subList(start, records.size())));
+        for (int index = start; index < records.size(); index++) {
+            visitor.accept(records.get(index));
+        }
     }
 
-    /**
-     * Returns a stable shallow immutable view for calculation outside the owner lane.
-     */
-    public List<TimingData> snapshot() {
-        return Collections.unmodifiableList(new ArrayList<>(records));
-    }
 }
