@@ -123,7 +123,7 @@ IF-03 contract:
 - opens/closes the selected node through node-addressed IF-03 commands;
 - discovers `DIRECT_REGISTRATION_SIMULATION` before enabling dev `auto-reg`;
 - submits only short `id` + canonical `time` input for auto-reg (for example
-  `N001`); the prefix is an example convention, not RegistrationId syntax;
+  `N0001`); the prefix is an example convention, not RegistrationId syntax;
 - shows the returned source `seq` as the operation result;
 - queries LogBook metadata without downloading the full LogBook;
 - loads bounded LogBook pages and merges live committed TimingData by stable

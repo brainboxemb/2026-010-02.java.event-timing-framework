@@ -49,7 +49,7 @@ final class TimingPane extends VBox {
 
     private final Label lastOperation = new Label("-");
     private final Label autoRegCapability = new Label("Capability not loaded");
-    private final TextField registrationId = new TextField("N001");
+    private final TextField registrationId = new TextField("N0001");
     private final TextField registrationTime =
             new TextField(TimingViewModel.canonicalTime(Instant.now()));
     private final Button now = new Button("Now");
