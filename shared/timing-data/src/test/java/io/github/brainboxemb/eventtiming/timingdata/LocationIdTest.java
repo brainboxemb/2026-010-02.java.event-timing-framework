@@ -4,7 +4,7 @@ import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
 
-public class TimingDataTypes.LocationIdTest {
+public class LocationIdTest {
     @Test
     public void keepsPositiveValue() {
         TimingDataTypes.LocationId id = new TimingDataTypes.LocationId(24);

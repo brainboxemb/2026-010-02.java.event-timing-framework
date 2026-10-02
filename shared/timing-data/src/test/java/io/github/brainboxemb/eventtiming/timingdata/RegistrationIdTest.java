@@ -5,7 +5,7 @@ import org.junit.Test;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 
-public class TimingDataTypes.RegistrationIdTest {
+public class RegistrationIdTest {
 
     @Test
     public void preservesCanonicalValueWithoutNormalizingIt() {

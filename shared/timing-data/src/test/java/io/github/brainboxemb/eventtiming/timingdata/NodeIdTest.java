@@ -4,7 +4,7 @@ import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
 
-public class TimingDataTypes.NodeIdTest {
+public class NodeIdTest {
     @Test
     public void keepsStableIdentifierValue() {
         TimingDataTypes.NodeId id = new TimingDataTypes.NodeId("timing-node-01");
