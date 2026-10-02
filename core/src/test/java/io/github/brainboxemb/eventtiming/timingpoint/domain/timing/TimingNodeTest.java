@@ -197,6 +197,64 @@ public class TimingNodeTest {
     }
 
     @Test
+    public void submissionOnlyCommandReturnsAfterAdmissionWithoutWaitingForExecution()
+            throws Exception {
+        SerialWorker worker = new SerialWorker(2, "timing-node-submit-test");
+        TimingNode node = new TimingNode(
+                new TimingNodeId("timing-node-01"),
+                worker,
+                1000L);
+        CountDownLatch blockerStarted = new CountDownLatch(1);
+        CountDownLatch releaseBlocker = new CountDownLatch(1);
+        CountDownLatch producerReturned = new CountDownLatch(1);
+        final TimingNode.CommandAdmission[] admission =
+                new TimingNode.CommandAdmission[1];
+
+        node.start();
+        try {
+            worker.submit(() -> {
+                blockerStarted.countDown();
+                releaseBlocker.await();
+                return null;
+            });
+            assertTrue(blockerStarted.await(1, TimeUnit.SECONDS));
+
+            Thread producer = new Thread(() -> {
+                admission[0] =
+                        node.submit(
+                                TimingNodeCommands.setLocation(
+                                        new LocationId(24)));
+                producerReturned.countDown();
+            });
+            producer.start();
+
+            assertTrue(
+                    "submission-only producer must not wait for command execution",
+                    producerReturned.await(250, TimeUnit.MILLISECONDS));
+            assertEquals(
+                    TimingNode.CommandAdmission.ACCEPTED,
+                    admission[0]);
+
+            releaseBlocker.countDown();
+            producer.join(1000);
+            assertFalse(producer.isAlive());
+
+            CountDownLatch afterSubmittedCommand = new CountDownLatch(1);
+            assertEquals(
+                    SerialWorker.AdmissionResult.ACCEPTED,
+                    worker.offer(afterSubmittedCommand::countDown));
+            assertTrue(afterSubmittedCommand.await(1, TimeUnit.SECONDS));
+
+            assertEquals(
+                    new LocationId(24),
+                    node.query(TimingNodeQueries.status()).locationId());
+        } finally {
+            releaseBlocker.countDown();
+            node.stop();
+        }
+    }
+
+    @Test
     public void operationBeforeStartIsUnavailable() {
         TimingNode node = new TimingNode(new TimingNodeId("timing-node-01"));
 
