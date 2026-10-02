@@ -1,6 +1,6 @@
 package io.github.brainboxemb.eventtiming.timingpoint.application;
 
-import io.github.brainboxemb.eventtiming.timingpoint.domain.timing.TimingNode;
+import io.github.brainboxemb.eventtiming.timingpoint.domain.timing.TimingNodeTypes;
 import io.github.brainboxemb.eventtiming.timingdata.TimingNodeId;
 
 import org.junit.Test;
@@ -12,14 +12,14 @@ public class ApplicationStatusTest {
     public void exposesCurrentTimingNodeStatus() {
         ApplicationStatus status = new ApplicationStatus(
                 new TimingNodeId("timing-node-01"),
-                TimingNode.Lifecycle.CLOSED);
+                TimingNodeTypes.Lifecycle.CLOSED);
 
         assertEquals("timing-node-01", status.timingNodeId().value());
-        assertEquals(TimingNode.Lifecycle.CLOSED, status.timingNodeLifecycle());
+        assertEquals(TimingNodeTypes.Lifecycle.CLOSED, status.timingNodeLifecycle());
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void rejectsMissingTimingNodeId() {
-        new ApplicationStatus(null, TimingNode.Lifecycle.CLOSED);
+        new ApplicationStatus(null, TimingNodeTypes.Lifecycle.CLOSED);
     }
 }

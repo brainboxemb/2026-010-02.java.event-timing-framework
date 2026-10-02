@@ -206,7 +206,7 @@ public class TimingNodeTest {
     public void submissionOnlyCommandReturnsAfterAdmissionWithoutWaitingForExecution()
             throws Exception {
         SerialWorker worker = new SerialWorker(2, "timing-node-submit-test");
-        TimingNode node = new TimingNode(
+        TimingNode node = node(
                 new TimingNodeId("timing-node-01"),
                 worker,
                 1000L);
