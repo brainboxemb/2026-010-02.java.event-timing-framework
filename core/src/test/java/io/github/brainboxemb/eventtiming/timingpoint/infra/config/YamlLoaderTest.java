@@ -1,4 +1,6 @@
-package io.github.brainboxemb.eventtiming.timingpoint.infra.bootstrap.config;
+package io.github.brainboxemb.eventtiming.timingpoint.infra.config;
+
+import io.github.brainboxemb.eventtiming.timingpoint.runtime.config.Config;
 
 import java.io.File;
 import java.nio.charset.StandardCharsets;
@@ -12,13 +14,13 @@ import org.junit.rules.TemporaryFolder;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 
-public class YamlApplicationConfigLoaderTest {
+public class YamlLoaderTest {
     @Rule
     public TemporaryFolder temporaryFolder = new TemporaryFolder();
 
     @Test
     public void loadsSingleTimingNodeIdAndStorageWithoutPresentation() throws Exception {
-        ApplicationConfig config = load(
+        Config config = load(
                 "timingNodeId: timing-node-01\n"
                         + timingDataStorage());
 
@@ -34,7 +36,7 @@ public class YamlApplicationConfigLoaderTest {
 
     @Test
     public void loadsImplementedPresentationConfig() throws Exception {
-        ApplicationConfig config = load(
+        Config config = load(
                 "timingNodeId: timing-node-01\n"
                         + timingDataStorage()
                         + "presentation:\n"
@@ -61,7 +63,7 @@ public class YamlApplicationConfigLoaderTest {
 
     @Test
     public void loadsRuntimeLoggingConfig() throws Exception {
-        ApplicationConfig config = load(
+        Config config = load(
                 "timingNodeId: timing-node-01\n"
                         + timingDataStorage()
                         + "logging:\n"
@@ -174,9 +176,9 @@ public class YamlApplicationConfigLoaderTest {
                 + "      path: data/timing-data.jsonl\n";
     }
 
-    private ApplicationConfig load(String yaml) throws Exception {
+    private Config load(String yaml) throws Exception {
         File file = temporaryFolder.newFile("application.yml");
         Files.write(file.toPath(), yaml.getBytes(StandardCharsets.UTF_8));
-        return YamlApplicationConfigLoader.load(file.toPath());
+        return YamlLoader.load(file.toPath());
     }
 }

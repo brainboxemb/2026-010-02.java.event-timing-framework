@@ -1,21 +1,18 @@
-package io.github.brainboxemb.eventtiming.timingpoint.infra.bootstrap;
+package io.github.brainboxemb.eventtiming.timingpoint.runtime;
 
 import io.github.brainboxemb.eventtiming.timingdata.TimingTimestamp;
 import io.github.brainboxemb.eventtiming.timingdata.defaultprofile.DefaultTimingDataCodec;
 import io.github.brainboxemb.eventtiming.timingdata.defaultprofile.DefaultTimingDataFactory;
 import io.github.brainboxemb.eventtiming.timingpoint.domain.timing.TimingNode;
-import io.github.brainboxemb.eventtiming.timingpoint.io.storage.FileTimingDataStore;
 import io.github.brainboxemb.eventtiming.timingpoint.infra.BuildIdentity;
-import io.github.brainboxemb.eventtiming.timingpoint.infra.bootstrap.config.ApplicationConfig;
-import io.github.brainboxemb.eventtiming.timingpoint.infra.bootstrap.config.ApiConfig;
-import io.github.brainboxemb.eventtiming.timingpoint.infra.bootstrap.config.ApiHttpConfig;
-import io.github.brainboxemb.eventtiming.timingpoint.infra.bootstrap.config.ApiWebSocketConfig;
-import io.github.brainboxemb.eventtiming.timingpoint.infra.bootstrap.config.RemoteShellConfig;
-import io.github.brainboxemb.eventtiming.timingpoint.presentation.interfaces.console.LocalConsole;
+import io.github.brainboxemb.eventtiming.timingpoint.io.storage.FileTimingDataStore;
 import io.github.brainboxemb.eventtiming.timingpoint.presentation.interfaces.api.HttpEndpoint;
 import io.github.brainboxemb.eventtiming.timingpoint.presentation.interfaces.api.WebSocketEndpoint;
+import io.github.brainboxemb.eventtiming.timingpoint.presentation.interfaces.console.LocalConsole;
 import io.github.brainboxemb.eventtiming.timingpoint.presentation.interfaces.shell.RemoteShellServer;
-import io.github.brainboxemb.eventtiming.timingpoint.runtime.TimingApplication;
+import io.github.brainboxemb.eventtiming.timingpoint.runtime.config.Api;
+import io.github.brainboxemb.eventtiming.timingpoint.runtime.config.Config;
+import io.github.brainboxemb.eventtiming.timingpoint.runtime.config.Presentation;
 
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -23,19 +20,18 @@ import java.io.OutputStreamWriter;
 import java.time.Instant;
 
 /**
- * Cross-cutting application-core bootstrap: composition and startup wiring.
+ * Owns the concrete SI-01 runtime composition.
  *
- * <p>The bootstrap consumes an already parsed and validated ApplicationConfig. Input-format
- * parsing is a separate infrastructure concern; the default IF-11 YAML loader lives beside the
- * application-core configuration model and is not part of bootstrap composition itself.</p>
+ * <p>I/O, Platform and infrastructure types keep their own responsibilities.
+ * This class only decides which current implementations form the running
+ * application.</p>
  */
-public final class ApplicationBootstrap {
-    private ApplicationBootstrap() {
+public final class Composition {
+    private Composition() {
     }
 
-    public static void run(BuildIdentity buildIdentity, ApplicationConfig config)
-            throws IOException {
-        TimingApplication application = compose(buildIdentity, config);
+    public static void run(BuildIdentity buildIdentity, Config config) throws IOException {
+        Application application = create(buildIdentity, config);
 
         Runtime runtime = Runtime.getRuntime();
         Thread shutdownHook = new Thread(application::close, "event-timing-shutdown");
@@ -72,7 +68,7 @@ public final class ApplicationBootstrap {
         System.out.println(application.smokeOutput());
     }
 
-    static TimingApplication compose(BuildIdentity buildIdentity, ApplicationConfig config) {
+    static Application create(BuildIdentity buildIdentity, Config config) {
         if (config == null) {
             throw new IllegalArgumentException("config must not be null");
         }
@@ -93,16 +89,13 @@ public final class ApplicationBootstrap {
                 timingDataFactory,
                 () -> new TimingTimestamp(Instant.now()));
 
-        return TimingApplication.builder(buildIdentity)
-                .timingNode(timingNode)
-                .build();
+        return new Application(buildIdentity, timingNode);
     }
 
-    private static HttpEndpoint startHttp(
-            ApplicationConfig config,
-            TimingApplication application) throws IOException {
-        ApiConfig api = config.presentation().api();
-        ApiHttpConfig endpoint = api == null ? null : api.http();
+    private static HttpEndpoint startHttp(Config config, Application application)
+            throws IOException {
+        Api api = config.presentation().api();
+        Api.Http endpoint = api == null ? null : api.http();
         if (endpoint == null) {
             return null;
         }
@@ -115,12 +108,10 @@ public final class ApplicationBootstrap {
         return server;
     }
 
-    private static WebSocketEndpoint startWebSocket(
-            ApplicationConfig config,
-            TimingApplication application) throws IOException {
-        ApiConfig api = config.presentation().api();
-        ApiWebSocketConfig endpoint =
-                api == null ? null : api.webSocket();
+    private static WebSocketEndpoint startWebSocket(Config config, Application application)
+            throws IOException {
+        Api api = config.presentation().api();
+        Api.WebSocket endpoint = api == null ? null : api.webSocket();
         if (endpoint == null) {
             return null;
         }
@@ -133,10 +124,9 @@ public final class ApplicationBootstrap {
         return server;
     }
 
-    private static RemoteShellServer startRemoteShell(
-            ApplicationConfig config,
-            TimingApplication application) throws IOException {
-        RemoteShellConfig endpoint = config.presentation().remoteShell();
+    private static RemoteShellServer startRemoteShell(Config config, Application application)
+            throws IOException {
+        Presentation.RemoteShell endpoint = config.presentation().remoteShell();
         if (endpoint == null) {
             return null;
         }
@@ -150,7 +140,7 @@ public final class ApplicationBootstrap {
         return server;
     }
 
-    private static void startLocalConsole(TimingApplication application) {
+    private static void startLocalConsole(Application application) {
         LocalConsole console = new LocalConsole(
                 application.commandHandler(),
                 application::close,

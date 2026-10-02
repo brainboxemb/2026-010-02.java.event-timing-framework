@@ -1,25 +1,26 @@
 package io.github.brainboxemb.eventtiming.timingpoint.runtime;
 
-import io.github.brainboxemb.eventtiming.timingpoint.domain.timing.TimingNode;
 import io.github.brainboxemb.eventtiming.timingdata.TimingNodeId;
+import io.github.brainboxemb.eventtiming.timingpoint.domain.timing.TimingNode;
 import io.github.brainboxemb.eventtiming.timingpoint.infra.BuildIdentity;
+
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertSame;
+import static org.junit.Assert.fail;
 
-public class TimingApplicationTest {
+public class ApplicationTest {
     @Test
-    public void builderComposesConfiguredTimingNodeAndSharedBoundary() {
+    public void createsSharedBoundaryForConfiguredTimingNode() {
         BuildIdentity identity = identity();
         TimingNode timingNode = new TimingNode(new TimingNodeId("timing-node-01"));
-        TimingApplication application =
-                TimingApplication.builder(identity).timingNode(timingNode).build();
+        Application application = new Application(identity, timingNode);
 
         assertSame(identity, application.buildIdentity());
         assertSame(timingNode, application.timingNode());
         assertSame(identity, application.commandHandler().version());
-        assertEquals(TimingApplicationLifecycle.State.NEW, application.state());
+        assertEquals(Lifecycle.State.NEW, application.state());
 
         application.start();
         try {
@@ -35,7 +36,7 @@ public class TimingApplicationTest {
 
         try {
             timingNode.status();
-            org.junit.Assert.fail("expected TimingNode to be unavailable after application close");
+            fail("expected TimingNode to be unavailable after application close");
         } catch (TimingNode.OperationException expected) {
             assertEquals(
                     TimingNode.OperationException.Reason.UNAVAILABLE,
@@ -44,21 +45,20 @@ public class TimingApplicationTest {
     }
 
     @Test(expected = IllegalArgumentException.class)
-    public void builderRejectsMissingBuildIdentity() {
-        TimingApplication.builder(null);
+    public void rejectsMissingBuildIdentity() {
+        new Application(null, new TimingNode(new TimingNodeId("timing-node-01")));
     }
 
-    @Test(expected = IllegalStateException.class)
-    public void builderRejectsMissingTimingNode() {
-        TimingApplication.builder(identity()).build();
+    @Test(expected = IllegalArgumentException.class)
+    public void rejectsMissingTimingNode() {
+        new Application(identity(), null);
     }
 
     @Test
     public void formatsStableSmokeOutput() {
         assertEquals(
                 "event-timing-app lifecycle OK version=test-version state=STOPPED",
-                TimingApplication.smokeOutput(
-                        identity(), TimingApplicationLifecycle.State.STOPPED));
+                Application.smokeOutput(identity(), Lifecycle.State.STOPPED));
     }
 
     private static BuildIdentity identity() {

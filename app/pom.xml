@@ -55,7 +55,6 @@
           <dotGitDirectory>${maven.multiModuleProjectDirectory}/.git</dotGitDirectory>
           <failOnNoGitDirectory>true</failOnNoGitDirectory>
           <failOnUnableToExtractRepoInfo>true</failOnUnableToExtractRepoInfo>
-          <!-- Request git.commit.id.full rather than the plugin's default flat git.commit.id key. -->
           <commitIdGenerationMode>full</commitIdGenerationMode>
           <includeOnlyProperties>
             <includeOnlyProperty>^git.branch$</includeOnlyProperty>
@@ -68,7 +67,7 @@
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>exec-maven-plugin</artifactId>
         <configuration>
-          <mainClass>io.github.brainboxemb.eventtiming.timingpoint.app.TimingApplicationMain</mainClass>
+          <mainClass>io.github.brainboxemb.eventtiming.timingpoint.app.Main</mainClass>
           <arguments>
             <argument>${maven.multiModuleProjectDirectory}/config/application.yml</argument>
           </arguments>
@@ -86,7 +85,7 @@
               <createDependencyReducedPom>false</createDependencyReducedPom>
               <transformers>
                 <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
-                  <mainClass>io.github.brainboxemb.eventtiming.timingpoint.app.TimingApplicationMain</mainClass>
+                  <mainClass>io.github.brainboxemb.eventtiming.timingpoint.app.Main</mainClass>
                 </transformer>
               </transformers>
             </configuration>

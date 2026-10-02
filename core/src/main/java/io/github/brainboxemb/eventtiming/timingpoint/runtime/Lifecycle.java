@@ -7,21 +7,21 @@ import java.time.Instant;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/** Reusable application runtime lifecycle used by startup and graceful shutdown handling. */
-public final class TimingApplicationLifecycle implements AutoCloseable {
+/** Reusable application lifecycle used by startup and graceful shutdown handling. */
+public final class Lifecycle implements AutoCloseable {
     public enum State {
         NEW,
         RUNNING,
         STOPPED
     }
 
-    private static final Logger LOG = LoggerFactory.getLogger(TimingApplicationLifecycle.class);
+    private static final Logger LOG = LoggerFactory.getLogger(Lifecycle.class);
 
     private final BuildIdentity buildIdentity;
     private State state = State.NEW;
     private Instant startedAt;
 
-    public TimingApplicationLifecycle(BuildIdentity buildIdentity) {
+    public Lifecycle(BuildIdentity buildIdentity) {
         if (buildIdentity == null) {
             throw new IllegalArgumentException("buildIdentity must not be null");
         }

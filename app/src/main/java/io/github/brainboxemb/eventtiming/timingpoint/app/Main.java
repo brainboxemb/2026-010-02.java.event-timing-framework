@@ -1,21 +1,21 @@
 package io.github.brainboxemb.eventtiming.timingpoint.app;
 
+import io.github.brainboxemb.eventtiming.timingpoint.infra.BuildIdentity;
 import io.github.brainboxemb.eventtiming.timingpoint.infra.EmbeddedBuildIdentityLoader;
-import io.github.brainboxemb.eventtiming.timingpoint.infra.bootstrap.config.YamlApplicationConfigLoader;
+import io.github.brainboxemb.eventtiming.timingpoint.infra.config.YamlLoader;
 import io.github.brainboxemb.eventtiming.timingpoint.infra.logging.Logging;
 import io.github.brainboxemb.eventtiming.timingpoint.infra.loggingserver.LoggingServer;
-import io.github.brainboxemb.eventtiming.timingpoint.infra.BuildIdentity;
-import io.github.brainboxemb.eventtiming.timingpoint.infra.bootstrap.ApplicationBootstrap;
-import io.github.brainboxemb.eventtiming.timingpoint.infra.bootstrap.config.ApplicationConfig;
-import io.github.brainboxemb.eventtiming.timingpoint.runtime.TimingApplication;
-import io.github.brainboxemb.eventtiming.timingpoint.runtime.TimingApplicationLifecycle;
+import io.github.brainboxemb.eventtiming.timingpoint.runtime.Application;
+import io.github.brainboxemb.eventtiming.timingpoint.runtime.Composition;
+import io.github.brainboxemb.eventtiming.timingpoint.runtime.Lifecycle;
+import io.github.brainboxemb.eventtiming.timingpoint.runtime.config.Config;
 
 import java.io.IOException;
 import java.nio.file.Paths;
 
-/** Thin default executable launcher for the reusable SI-01 application-core runtime. */
-public final class TimingApplicationMain {
-    private TimingApplicationMain() {
+/** Thin executable launcher for the reusable SI-01 runtime. */
+public final class Main {
+    private Main() {
     }
 
     public static void main(String[] args) {
@@ -31,8 +31,7 @@ public final class TimingApplicationMain {
         }
 
         try {
-            ApplicationConfig config =
-                    YamlApplicationConfigLoader.load(Paths.get(args[0]));
+            Config config = YamlLoader.load(Paths.get(args[0]));
             Logging logging = null;
             LoggingServer loggingServer = null;
             try {
@@ -47,7 +46,7 @@ public final class TimingApplicationMain {
                     loggingServer = new LoggingServer(config.loggingServer(), logging);
                     loggingServer.start();
                 }
-                ApplicationBootstrap.run(buildIdentity, config);
+                Composition.run(buildIdentity, config);
             } finally {
                 if (loggingServer != null) {
                     loggingServer.close();
@@ -58,18 +57,18 @@ public final class TimingApplicationMain {
             }
         } catch (IOException ex) {
             throw new IllegalStateException(
-                    "Unable to bootstrap application from configuration: " + args[0],
+                    "Unable to start application from configuration: " + args[0],
                     ex);
         }
     }
 
     private static void runArtifactSmoke(BuildIdentity buildIdentity) {
-        TimingApplicationLifecycle lifecycle = new TimingApplicationLifecycle(buildIdentity);
+        Lifecycle lifecycle = new Lifecycle(buildIdentity);
         try {
             lifecycle.start();
         } finally {
             lifecycle.close();
         }
-        System.out.println(TimingApplication.smokeOutput(buildIdentity, lifecycle.state()));
+        System.out.println(Application.smokeOutput(buildIdentity, lifecycle.state()));
     }
 }

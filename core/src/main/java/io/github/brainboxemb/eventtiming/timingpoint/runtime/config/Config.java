@@ -1,4 +1,4 @@
-package io.github.brainboxemb.eventtiming.timingpoint.infra.bootstrap.config;
+package io.github.brainboxemb.eventtiming.timingpoint.runtime.config;
 
 import io.github.brainboxemb.eventtiming.timingdata.TimingNodeId;
 import io.github.brainboxemb.eventtiming.timingpoint.infra.logging.LoggingConfig;
@@ -6,44 +6,36 @@ import io.github.brainboxemb.eventtiming.timingpoint.infra.loggingserver.Logging
 
 import java.nio.file.Path;
 
-/** Effective deployment configuration consumed by the application-core bootstrap. */
-public final class ApplicationConfig {
+/** Effective configuration consumed by the runtime composition. */
+public final class Config {
     private final TimingNodeId timingNodeId;
-    private final PresentationConfig presentation;
+    private final Presentation presentation;
     private final LoggingConfig logging;
     private final LoggingServerConfig loggingServer;
     private final Path timingDataPath;
 
-    public ApplicationConfig(TimingNodeId timingNodeId, PresentationConfig presentation) {
+    public Config(TimingNodeId timingNodeId, Presentation presentation) {
         this(timingNodeId, presentation, null, null, null);
     }
 
-    public ApplicationConfig(
+    public Config(
             TimingNodeId timingNodeId,
-            PresentationConfig presentation,
+            Presentation presentation,
             LoggingConfig logging) {
         this(timingNodeId, presentation, logging, null, null);
     }
 
-    public ApplicationConfig(
+    public Config(
             TimingNodeId timingNodeId,
-            PresentationConfig presentation,
+            Presentation presentation,
             LoggingConfig logging,
             LoggingServerConfig loggingServer) {
         this(timingNodeId, presentation, logging, loggingServer, null);
     }
 
-    /**
-     * Creates the effective executable configuration.
-     *
-     * <p>The TimingData path is deployment/composition state. It selects the
-     * authoritative file used by the current single-TimingNode reference
-     * composition; record format and recovery semantics remain owned by the
-     * TimingData store.</p>
-     */
-    public ApplicationConfig(
+    public Config(
             TimingNodeId timingNodeId,
-            PresentationConfig presentation,
+            Presentation presentation,
             LoggingConfig logging,
             LoggingServerConfig loggingServer,
             Path timingDataPath) {
@@ -67,7 +59,7 @@ public final class ApplicationConfig {
         return timingNodeId;
     }
 
-    public PresentationConfig presentation() {
+    public Presentation presentation() {
         return presentation;
     }
 
