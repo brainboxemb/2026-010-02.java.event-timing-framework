@@ -1,7 +1,8 @@
-# Step-4 V04 Engineering Client demo
+# Step-4 V04 / VC-ST1-003 Engineering Client demo
 
-This checklist is the manual running-system Engineering Client evidence for SIP
-Step 4 after `VC-ST1-002` is green. It uses only public interfaces and the
+This checklist is the executable/manual procedure for `VC-ST1-003 — Engineering
+Client reconnect/rebuild integration`, the Step-4 V04 running-system evidence,
+after `VC-ST1-002` is green. It uses only public interfaces and the
 JavaFX Engineering Client.
 
 `VC-ST1-002` already proves the SI-01 server-side lifecycle, first registration,
@@ -129,7 +130,7 @@ The fact that the server can recover the persisted row across the process restar
 is already automated in `VC-ST1-002`; here it is the stimulus used to verify the
 Engineering Client rebuild behaviour.
 
-## Record evidence
+## Record VC-ST1-003 evidence
 
 Record these values with the pass/fail notes:
 
