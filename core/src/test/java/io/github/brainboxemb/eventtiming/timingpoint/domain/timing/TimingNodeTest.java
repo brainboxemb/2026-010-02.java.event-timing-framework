@@ -1,8 +1,14 @@
 package io.github.brainboxemb.eventtiming.timingpoint.domain.timing;
 
 import io.github.brainboxemb.eventtiming.timingdata.LocationId;
+import io.github.brainboxemb.eventtiming.timingdata.TimingData;
 import io.github.brainboxemb.eventtiming.timingdata.TimingNodeId;
+import io.github.brainboxemb.eventtiming.timingdata.TimingTimestamp;
+import io.github.brainboxemb.eventtiming.timingdata.defaultprofile.DefaultTimingDataFactory;
+import io.github.brainboxemb.eventtiming.timingpoint.domain.timingdata.TimingDataPersistence;
 import io.github.brainboxemb.eventtiming.timingpoint.platform.execution.SerialWorker;
+
+import java.util.Collections;
 
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
@@ -19,7 +25,7 @@ public class TimingNodeTest {
     @Test
     public void startsClosedWithoutLocation() {
         TimingNodeId id = new TimingNodeId("timing-node-01");
-        TimingNode node = new TimingNode(id);
+        TimingNode node = node(id);
 
         node.start();
         try {
@@ -35,7 +41,7 @@ public class TimingNodeTest {
 
     @Test
     public void configuresLocationWhileClosedThenOpensAndCloses() {
-        TimingNode node = new TimingNode(new TimingNodeId("timing-node-01"));
+        TimingNode node = node(new TimingNodeId("timing-node-01"));
         LocationId location = new LocationId(24);
 
         node.start();
@@ -64,7 +70,7 @@ public class TimingNodeTest {
 
     @Test
     public void openWithoutLocationIsProcessedDomainRejection() {
-        TimingNode node = new TimingNode(new TimingNodeId("timing-node-01"));
+        TimingNode node = node(new TimingNodeId("timing-node-01"));
 
         node.start();
         try {
@@ -77,7 +83,7 @@ public class TimingNodeTest {
 
     @Test
     public void repeatedLifecycleCommandsReturnProcessedResults() {
-        TimingNode node = new TimingNode(new TimingNodeId("timing-node-01"));
+        TimingNode node = node(new TimingNodeId("timing-node-01"));
 
         node.start();
         try {
@@ -94,7 +100,7 @@ public class TimingNodeTest {
     @Test
     public void timeoutDoesNotCancelAcceptedOperation() throws Exception {
         SerialWorker worker = new SerialWorker(2, "timing-node-test");
-        TimingNode node = new TimingNode(
+        TimingNode node = node(
                 new TimingNodeId("timing-node-01"),
                 worker,
                 25L);
@@ -113,7 +119,7 @@ public class TimingNodeTest {
             try {
                 node.invoke(TimingNodeCommands.setLocation(new LocationId(24)));
                 fail("expected timeout");
-            } catch (TimingNode.OperationTimeoutException expected) {
+            } catch (TimingNodeTypes.OperationException expected) {
                 assertEquals(
                         TimingNodeTypes.OperationException.Reason.TIMEOUT,
                         expected.reason());
@@ -136,7 +142,7 @@ public class TimingNodeTest {
     @Test
     public void stateDependentOperationsAreDecidedInQueueOrder() throws Exception {
         SerialWorker worker = new SerialWorker(4, "timing-node-test");
-        TimingNode node = new TimingNode(
+        TimingNode node = node(
                 new TimingNodeId("timing-node-01"),
                 worker,
                 1000L);
@@ -256,7 +262,7 @@ public class TimingNodeTest {
 
     @Test
     public void operationBeforeStartIsUnavailable() {
-        TimingNode node = new TimingNode(new TimingNodeId("timing-node-01"));
+        TimingNode node = node(new TimingNodeId("timing-node-01"));
 
         try {
             node.query(TimingNodeQueries.status());
@@ -270,6 +276,52 @@ public class TimingNodeTest {
 
     @Test(expected = IllegalArgumentException.class)
     public void rejectsMissingIdentity() {
-        new TimingNode(null);
+        new TimingNode(
+                null,
+                new NoOpPersistence(),
+                new DefaultTimingDataFactory(),
+                TimingNodeTest::now);
+    }
+
+    private static TimingNode node(TimingNodeId id) {
+        return new TimingNode(
+                id,
+                new NoOpPersistence(),
+                new DefaultTimingDataFactory(),
+                TimingNodeTest::now);
+    }
+
+    /**
+     * Creates a complete node while exposing worker/timeout control only to
+     * these boundary tests. Production code never uses this construction path.
+     */
+    private static TimingNode node(
+            TimingNodeId id,
+            SerialWorker worker,
+            long timeoutMillis) {
+        TimingNodeLogic logic = new TimingNodeLogic(
+                id,
+                new NoOpPersistence(),
+                new DefaultTimingDataFactory(),
+                TimingNodeTest::now);
+        return new TimingNode(logic, worker, timeoutMillis);
+    }
+
+    private static TimingTimestamp now() {
+        return TimingTimestamp.parse("2026-10-02T08:00:00.000000000Z");
+    }
+
+    private static final class NoOpPersistence implements TimingDataPersistence {
+        @Override
+        public LoadResult load() {
+            return new LoadResult(
+                    Collections.<TimingData>emptyList(),
+                    false);
+        }
+
+        @Override
+        public void append(TimingData data) {
+            // TimingNodeTest exercises execution/state behaviour, not persistence.
+        }
     }
 }

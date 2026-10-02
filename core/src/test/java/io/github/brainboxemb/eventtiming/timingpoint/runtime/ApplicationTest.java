@@ -1,7 +1,13 @@
 package io.github.brainboxemb.eventtiming.timingpoint.runtime;
 
+import io.github.brainboxemb.eventtiming.timingdata.TimingData;
 import io.github.brainboxemb.eventtiming.timingdata.TimingNodeId;
+import io.github.brainboxemb.eventtiming.timingdata.TimingTimestamp;
+import io.github.brainboxemb.eventtiming.timingdata.defaultprofile.DefaultTimingDataFactory;
 import io.github.brainboxemb.eventtiming.timingpoint.domain.timing.TimingNode;
+import io.github.brainboxemb.eventtiming.timingpoint.domain.timingdata.TimingDataPersistence;
+
+import java.util.Collections;
 import io.github.brainboxemb.eventtiming.timingpoint.domain.timing.TimingNodeTypes;
 import io.github.brainboxemb.eventtiming.timingpoint.domain.timing.TimingNodeQueries;
 import io.github.brainboxemb.eventtiming.timingpoint.infra.BuildIdentity;
@@ -16,7 +22,7 @@ public class ApplicationTest {
     @Test
     public void createsSharedBoundaryForConfiguredTimingNode() {
         BuildIdentity identity = identity();
-        TimingNode timingNode = new TimingNode(new TimingNodeId("timing-node-01"));
+        TimingNode timingNode = timingNode();
         Application application = new Application(identity, timingNode);
 
         assertSame(identity, application.buildIdentity());
@@ -48,7 +54,7 @@ public class ApplicationTest {
 
     @Test(expected = IllegalArgumentException.class)
     public void rejectsMissingBuildIdentity() {
-        new Application(null, new TimingNode(new TimingNodeId("timing-node-01")));
+        new Application(null, timingNode());
     }
 
     @Test(expected = IllegalArgumentException.class)
@@ -61,6 +67,29 @@ public class ApplicationTest {
         assertEquals(
                 "event-timing-app lifecycle OK version=test-version state=STOPPED",
                 Application.smokeOutput(identity(), Lifecycle.State.STOPPED));
+    }
+
+    private static TimingNode timingNode() {
+        return new TimingNode(
+                new TimingNodeId("timing-node-01"),
+                new NoOpPersistence(),
+                new DefaultTimingDataFactory(),
+                () -> TimingTimestamp.parse(
+                        "2026-10-02T08:00:00.000000000Z"));
+    }
+
+    private static final class NoOpPersistence implements TimingDataPersistence {
+        @Override
+        public LoadResult load() {
+            return new LoadResult(
+                    Collections.<TimingData>emptyList(),
+                    false);
+        }
+
+        @Override
+        public void append(TimingData data) {
+            // ApplicationTest exercises runtime composition, not persistence.
+        }
     }
 
     private static BuildIdentity identity() {

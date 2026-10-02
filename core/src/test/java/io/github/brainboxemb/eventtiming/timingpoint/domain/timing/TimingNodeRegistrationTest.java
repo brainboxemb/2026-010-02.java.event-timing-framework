@@ -12,7 +12,6 @@ import io.github.brainboxemb.eventtiming.timingdata.TimingNodeId;
 import io.github.brainboxemb.eventtiming.timingdata.defaultprofile.DefaultTimingDataFactory;
 import io.github.brainboxemb.eventtiming.timingpoint.domain.system.TimeSource;
 import io.github.brainboxemb.eventtiming.timingpoint.domain.timingdata.TimingDataPersistence;
-import io.github.brainboxemb.eventtiming.timingpoint.platform.execution.SerialWorker;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -443,25 +442,6 @@ public class TimingNodeRegistrationTest {
         }
     }
 
-    @Test
-    public void lifecycleOnlyNodeReportsTimingDataUnavailable() {
-        TimingNode node = new TimingNode(new TimingNodeId("timing-node-01"));
-
-        node.start();
-        try {
-            try {
-                node.query(TimingNodeQueries.timingDataSnapshot());
-                fail("expected unavailable TimingData support");
-            } catch (TimingNodeTypes.OperationException expected) {
-                assertEquals(
-                        TimingNodeTypes.OperationException.Reason.UNAVAILABLE,
-                        expected.reason());
-            }
-        } finally {
-            node.stop();
-        }
-    }
-
     private static TimingData recoveredData(long sequence, int locationId) {
         return new DefaultTimingDataFactory().createManualRegistration(
                 new Context(
@@ -478,8 +458,6 @@ public class TimingNodeRegistrationTest {
         TimeSource timeSource = () -> RECORDED_AT;
         return new TimingNode(
                 new TimingNodeId("timing-node-01"),
-                new SerialWorker(8, "timing-node-registration-test"),
-                1000L,
                 store,
                 new DefaultTimingDataFactory(),
                 timeSource);
