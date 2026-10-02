@@ -60,7 +60,7 @@ public class TimingNodeRegistrationTest {
 
             assertEquals(1, store.appended.size());
             assertSame(data, store.appended.get(0));
-            assertEquals(1, node.query(TimingNodeQueries.timingDataSnapshot()).size());
+            assertEquals(1, node.query(TimingNodeQueries.timingDataCount()));
             assertSame(data, delivered.get(0));
         } finally {
             node.stop();
@@ -85,7 +85,7 @@ public class TimingNodeRegistrationTest {
                     TimingNodeTypes.RegistrationResult.Outcome.NODE_NOT_OPEN,
                     rejected.outcome());
             assertEquals(0, store.attempts);
-            assertTrue(node.query(TimingNodeQueries.timingDataSnapshot()).isEmpty());
+            assertEquals(0, node.query(TimingNodeQueries.timingDataCount()).intValue());
 
             node.invoke(TimingNodeCommands.open());
             TimingNodeTypes.RegistrationResult committed =
@@ -120,9 +120,14 @@ public class TimingNodeRegistrationTest {
             assertEquals(1, store.appended.size());
             assertSame(result.timingData(), store.appended.get(0));
 
-            List<TimingData> snapshot = node.query(TimingNodeQueries.timingDataSnapshot());
-            assertEquals(1, snapshot.size());
-            assertSame(result.timingData(), snapshot.get(0));
+            TimingData[] visited = new TimingData[1];
+            int totalCount = node.query(
+                    TimingNodeQueries.visitTimingDataRange(
+                            1L,
+                            1,
+                            data -> visited[0] = data));
+            assertEquals(1, totalCount);
+            assertSame(result.timingData(), visited[0]);
 
             ManualRegistration data =
                     (ManualRegistration) result.timingData();
@@ -160,7 +165,7 @@ public class TimingNodeRegistrationTest {
 
             assertEquals(1L, first.timingData().sequenceNumber());
             assertEquals(2L, second.timingData().sequenceNumber());
-            assertEquals(2, node.query(TimingNodeQueries.timingDataSnapshot()).size());
+            assertEquals(2, node.query(TimingNodeQueries.timingDataCount()));
         } finally {
             node.stop();
         }
@@ -184,7 +189,7 @@ public class TimingNodeRegistrationTest {
                     TimingNodeTypes.RegistrationResult.Outcome.NODE_NOT_OPEN,
                     rejected.outcome());
             assertEquals(0, store.appended.size());
-            assertEquals(0, node.query(TimingNodeQueries.timingDataSnapshot()).size());
+            assertEquals(0, node.query(TimingNodeQueries.timingDataCount()));
 
             node.invoke(TimingNodeCommands.open());
             TimingNodeTypes.RegistrationResult committed = node.invoke(TimingNodeCommands.commitManualRegistration(
@@ -220,7 +225,7 @@ public class TimingNodeRegistrationTest {
                         expected.reason());
             }
 
-            assertEquals(0, node.query(TimingNodeQueries.timingDataSnapshot()).size());
+            assertEquals(0, node.query(TimingNodeQueries.timingDataCount()));
             assertEquals(1, store.attempts);
 
             try {
@@ -236,7 +241,7 @@ public class TimingNodeRegistrationTest {
             }
 
             assertEquals(1, store.attempts);
-            assertEquals(0, node.query(TimingNodeQueries.timingDataSnapshot()).size());
+            assertEquals(0, node.query(TimingNodeQueries.timingDataCount()));
         } finally {
             node.stop();
         }
@@ -271,7 +276,7 @@ public class TimingNodeRegistrationTest {
                     ManualTimeSource.OPERATOR_ENTERED));
 
             assertEquals(1, store.appended.size());
-            assertEquals(1, node.query(TimingNodeQueries.timingDataSnapshot()).size());
+            assertEquals(1, node.query(TimingNodeQueries.timingDataCount()));
             assertEquals(1, delivered.size());
             assertSame(committed.timingData(), delivered.get(0));
 
@@ -312,7 +317,7 @@ public class TimingNodeRegistrationTest {
             }
 
             assertTrue(delivered.isEmpty());
-            assertEquals(0, node.query(TimingNodeQueries.timingDataSnapshot()).size());
+            assertEquals(0, node.query(TimingNodeQueries.timingDataCount()));
         } finally {
             node.stop();
         }
@@ -341,7 +346,7 @@ public class TimingNodeRegistrationTest {
 
             assertTrue(committed.committed());
             assertEquals(1, store.appended.size());
-            assertEquals(1, node.query(TimingNodeQueries.timingDataSnapshot()).size());
+            assertEquals(1, node.query(TimingNodeQueries.timingDataCount()));
             assertEquals(1, delivered.size());
             assertSame(committed.timingData(), delivered.get(0));
         } finally {
@@ -359,7 +364,7 @@ public class TimingNodeRegistrationTest {
 
         node.start();
         try {
-            assertEquals(1, node.query(TimingNodeQueries.timingDataSnapshot()).size());
+            assertEquals(1, node.query(TimingNodeQueries.timingDataCount()));
             assertTrue(delivered.isEmpty());
         } finally {
             node.stop();
@@ -379,7 +384,7 @@ public class TimingNodeRegistrationTest {
             assertEquals(TimingNodeTypes.Lifecycle.CLOSED, status.lifecycle());
             assertFalse(status.hasLocation());
             assertFalse(status.timingDataTailRecovered());
-            assertEquals(2, node.query(TimingNodeQueries.timingDataSnapshot()).size());
+            assertEquals(2, node.query(TimingNodeQueries.timingDataCount()));
 
             assertEquals(TimingNodeTypes.OpenResult.NO_LOCATION, node.invoke(TimingNodeCommands.open()));
 
@@ -406,7 +411,7 @@ public class TimingNodeRegistrationTest {
         node.start();
         try {
             assertTrue(node.query(TimingNodeQueries.status()).timingDataTailRecovered());
-            assertEquals(1, node.query(TimingNodeQueries.timingDataSnapshot()).size());
+            assertEquals(1, node.query(TimingNodeQueries.timingDataCount()));
         } finally {
             node.stop();
         }
