@@ -33,13 +33,13 @@ public class TimingDataCodecTest {
     @Test
     public void unsupportedV1RecordTypeCarriesReadableCommonEnvelope() {
         TimingData.RecordKey key =
-                new TimingData.RecordKey(new TimingNodeId("timing-node-01"), 7);
+                new TimingData.RecordKey(new TimingDataTypes.NodeId("timing-node-01"), 7);
 
         TimingDataCodec.CodecException failure =
                 TimingDataCodec.CodecException.unsupportedRecordType(
                         1,
                         key,
-                        new LocationId(12),
+                        new TimingDataTypes.LocationId(12),
                         "FUTURE_RECORD",
                         EFFECTIVE,
                         RECORDED,
@@ -50,7 +50,7 @@ public class TimingDataCodecTest {
                 failure.reason());
         assertEquals(Integer.valueOf(1), failure.version());
         assertEquals(key, failure.key());
-        assertEquals(new LocationId(12), failure.locationId());
+        assertEquals(new TimingDataTypes.LocationId(12), failure.locationId());
         assertEquals("FUTURE_RECORD", failure.recordType());
         assertEquals(EFFECTIVE, failure.effectiveTime());
         assertEquals(RECORDED, failure.recordedAt());
@@ -61,7 +61,7 @@ public class TimingDataCodecTest {
         TimingDataCodec.CodecException.unsupportedRecordType(
                 1,
                 null,
-                new LocationId(12),
+                new TimingDataTypes.LocationId(12),
                 "FUTURE_RECORD",
                 EFFECTIVE,
                 RECORDED,
