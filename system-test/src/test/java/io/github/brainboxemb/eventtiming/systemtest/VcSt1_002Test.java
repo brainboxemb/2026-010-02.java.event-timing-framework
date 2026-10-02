@@ -36,7 +36,7 @@ import static org.junit.Assert.fail;
  * application/core classes. HTTP, WebSocket and Remote Shell are the only test
  * boundaries.</p>
  */
-public class FirstRegistrationBlackBoxTest {
+public class VcSt1_002Test {
     private static final String LOOPBACK = "127.0.0.1";
     private static final String NODE_ID = "Test";
     private static final long START_TIMEOUT_MILLIS = 15000L;

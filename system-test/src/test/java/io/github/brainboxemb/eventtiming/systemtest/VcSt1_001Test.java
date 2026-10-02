@@ -34,7 +34,7 @@ import static org.junit.Assert.fail;
  * <p>This test deliberately imports no application/core classes. It starts the packaged
  * application in a separate JVM and uses only externally observable interfaces.</p>
  */
-public class FirstExecutableBlackBoxTest {
+public class VcSt1_001Test {
     private static final String LOOPBACK = "127.0.0.1";
     private static final long START_TIMEOUT_MILLIS = 15000L;
     private static final long EXIT_TIMEOUT_MILLIS = 10000L;
