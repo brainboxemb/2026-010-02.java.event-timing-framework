@@ -22,9 +22,7 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import org.java_websocket.client.WebSocketClient;
 import org.java_websocket.handshake.ServerHandshake;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -41,9 +39,6 @@ public class FirstExecutableBlackBoxTest {
     private static final long START_TIMEOUT_MILLIS = 15000L;
     private static final long EXIT_TIMEOUT_MILLIS = 10000L;
 
-    @Rule
-    public TemporaryFolder temporaryFolder = new TemporaryFolder();
-
     @Test
     public void verifiesVersionStatusReconnectAndControlledShutdown() throws Exception {
         File appJar = new File(requireProperty("eventTiming.appJar")).getAbsoluteFile();
@@ -55,8 +50,11 @@ public class FirstExecutableBlackBoxTest {
         int httpPort = ports[1];
         int webSocketPort = ports[2];
 
-        File workDirectory = temporaryFolder.newFolder("vc-st1-001");
-        File configFile = new File(workDirectory, "application.yml");
+        BlackBoxEvidence evidence = BlackBoxEvidence.create(
+                requireProperty("eventTiming.evidenceDir"),
+                "VC-ST1-001");
+        File workDirectory = evidence.directory();
+        File configFile = evidence.file("application.yml");
         Files.write(
                 configFile.toPath(),
                 configuration(shellPort, httpPort, webSocketPort).getBytes(StandardCharsets.UTF_8));
@@ -75,6 +73,8 @@ public class FirstExecutableBlackBoxTest {
         collectorThread.setDaemon(true);
         collectorThread.start();
 
+        boolean passed = false;
+        Throwable evidenceFailure = null;
         try {
             awaitHttpReady(process, httpPort, collector);
 
@@ -111,7 +111,9 @@ public class FirstExecutableBlackBoxTest {
                     "Application exited unsuccessfully. Output:\n" + collector.snapshot(),
                     0,
                     process.exitValue());
+            passed = true;
         } catch (Throwable failure) {
+            evidenceFailure = failure;
             throw new AssertionError(
                     "VC-ST1-001 black-box verification failed. Process output:\n"
                             + collector.snapshot(),
@@ -125,6 +127,8 @@ public class FirstExecutableBlackBoxTest {
                 }
             }
             collectorThread.join(1000L);
+            evidence.writeProcessOutput(collector.snapshot());
+            evidence.writeResult(passed, evidenceFailure);
         }
     }
 
