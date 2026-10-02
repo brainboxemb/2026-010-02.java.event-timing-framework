@@ -138,11 +138,10 @@ class TimingViewModelTest {
                 nodeId,
                 sequence,
                 24,
-                "REGISTRATION",
-                "2026-10-01T12:00:00.000000000Z",
-                "2026-10-01T12:00:00.125000000Z",
+                "AUTO_REG",
+                "2026-10-01T12:00:00Z",
                 registrationId,
-                "AUTOMATIC",
-                "OBSERVED");
+                List.of("ADD"),
+                "2026-10-01T12:00:00.125Z");
     }
 }
