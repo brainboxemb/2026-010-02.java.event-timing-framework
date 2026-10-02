@@ -34,7 +34,7 @@ public interface TimingDataCodec {
         private final Reason reason;
         private final Integer version;
         private final TimingData.RecordKey key;
-        private final LocationId locationId;
+        private final TimingDataTypes.LocationId locationId;
         private final String recordType;
         private final TimingTimestamp effectiveTime;
         private final TimingTimestamp recordedAt;
@@ -53,7 +53,7 @@ public interface TimingDataCodec {
                 Throwable cause,
                 Integer version,
                 TimingData.RecordKey key,
-                LocationId locationId,
+                TimingDataTypes.LocationId locationId,
                 String recordType,
                 TimingTimestamp effectiveTime,
                 TimingTimestamp recordedAt) {
@@ -92,7 +92,7 @@ public interface TimingDataCodec {
         public static CodecException unsupportedRecordType(
                 int version,
                 TimingData.RecordKey key,
-                LocationId locationId,
+                TimingDataTypes.LocationId locationId,
                 String recordType,
                 TimingTimestamp effectiveTime,
                 TimingTimestamp recordedAt,
@@ -136,7 +136,7 @@ public interface TimingDataCodec {
             return key;
         }
 
-        public LocationId locationId() {
+        public TimingDataTypes.LocationId locationId() {
             return locationId;
         }
 

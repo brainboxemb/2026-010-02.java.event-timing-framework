@@ -18,7 +18,7 @@ import java.util.Objects;
  * if (data instanceof TimingData.ManualRegistration) {
  *     TimingData.ManualRegistration manual =
  *             (TimingData.ManualRegistration) data;
- *     RegistrationId registrationId = manual.registrationId();
+ *     TimingDataTypes.RegistrationId registrationId = manual.registrationId();
  *     TimingData.ManualTimeSource source = manual.timeSource();
  * }
  * }</pre>
@@ -27,11 +27,11 @@ public interface TimingData {
     /** Largest JSON-safe IF-05 sequence value: 2^53 - 1. */
     long MAX_SEQUENCE_NUMBER = 9007199254740991L;
 
-    TimingNodeId timingNodeId();
+    TimingDataTypes.NodeId timingNodeId();
 
     long sequenceNumber();
 
-    LocationId locationId();
+    TimingDataTypes.LocationId locationId();
 
     TimingTimestamp effectiveTime();
 
@@ -44,12 +44,12 @@ public interface TimingData {
      * separate origin or time-source property is required on this interface.</p>
      */
     interface AutomaticRegistration extends TimingData {
-        RegistrationId registrationId();
+        TimingDataTypes.RegistrationId registrationId();
     }
 
     /** Type-safe semantic contract for one manual registration. */
     interface ManualRegistration extends TimingData {
-        RegistrationId registrationId();
+        TimingDataTypes.RegistrationId registrationId();
 
         ManualTimeSource timeSource();
     }
@@ -64,14 +64,14 @@ public interface TimingData {
      * Stable IF-05 record identity: serialized TimingNode identity plus source
      * sequence number.
      *
-     * <p>The record key uses the same shared TimingNodeId value type as the
+     * <p>The record key uses the same shared TimingDataTypes.NodeId value type as the
      * TimingData envelope. JSON serialization remains the public string value.</p>
      */
     final class RecordKey {
-        private final TimingNodeId timingNodeId;
+        private final TimingDataTypes.NodeId timingNodeId;
         private final long sequenceNumber;
 
-        public RecordKey(TimingNodeId timingNodeId, long sequenceNumber) {
+        public RecordKey(TimingDataTypes.NodeId timingNodeId, long sequenceNumber) {
             if (timingNodeId == null) {
                 throw new IllegalArgumentException("timingNodeId must not be null");
             }
@@ -83,7 +83,7 @@ public interface TimingData {
             this.sequenceNumber = sequenceNumber;
         }
 
-        public TimingNodeId timingNodeId() {
+        public TimingDataTypes.NodeId timingNodeId() {
             return timingNodeId;
         }
 

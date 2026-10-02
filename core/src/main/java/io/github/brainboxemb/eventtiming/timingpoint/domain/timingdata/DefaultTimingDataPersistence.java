@@ -2,7 +2,7 @@ package io.github.brainboxemb.eventtiming.timingpoint.domain.timingdata;
 
 import io.github.brainboxemb.eventtiming.timingdata.TimingData;
 import io.github.brainboxemb.eventtiming.timingdata.TimingDataCodec;
-import io.github.brainboxemb.eventtiming.timingdata.TimingNodeId;
+import io.github.brainboxemb.eventtiming.timingdata.TimingDataTypes.NodeId;
 import io.github.brainboxemb.eventtiming.timingpoint.io.storage.AppendOnlyRecordStore;
 
 import java.util.ArrayList;
@@ -17,12 +17,12 @@ import java.util.List;
  */
 public final class DefaultTimingDataPersistence implements TimingDataPersistence {
     private final AppendOnlyRecordStore recordStore;
-    private final TimingNodeId timingNodeId;
+    private final NodeId timingNodeId;
     private final TimingDataCodec codec;
 
     public DefaultTimingDataPersistence(
             AppendOnlyRecordStore recordStore,
-            TimingNodeId timingNodeId,
+            NodeId timingNodeId,
             TimingDataCodec codec) {
         if (recordStore == null) {
             throw new IllegalArgumentException("recordStore must not be null");

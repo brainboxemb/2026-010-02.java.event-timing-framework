@@ -128,8 +128,8 @@ Auto-reg N001 -> seq 1         PASS / FAIL
 Live committed event           PASS / FAIL
 LogBook count/row              PASS / FAIL
 Close + LocationId 25          PASS / FAIL
-Restart persistence            PASS / FAIL
-No historical live replay      PASS / FAIL
+Restart LogBook recovery       PASS / FAIL
+Recovered row not re-emitted   PASS / FAIL
 Clean shutdown                 PASS / FAIL
 ```
 

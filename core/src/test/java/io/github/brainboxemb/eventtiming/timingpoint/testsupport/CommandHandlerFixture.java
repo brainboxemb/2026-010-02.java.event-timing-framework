@@ -1,7 +1,7 @@
 package io.github.brainboxemb.eventtiming.timingpoint.testsupport;
 
 import io.github.brainboxemb.eventtiming.timingdata.TimingData;
-import io.github.brainboxemb.eventtiming.timingdata.TimingNodeId;
+import io.github.brainboxemb.eventtiming.timingdata.TimingDataTypes.NodeId;
 import io.github.brainboxemb.eventtiming.timingdata.TimingTimestamp;
 import io.github.brainboxemb.eventtiming.timingdata.defaultprofile.DefaultTimingDataFactory;
 import io.github.brainboxemb.eventtiming.timingpoint.application.CommandHandler;
@@ -25,7 +25,7 @@ public final class CommandHandlerFixture implements AutoCloseable {
 
     public CommandHandlerFixture(BuildIdentity identity) {
         node = new TimingNode(
-                new TimingNodeId("timing-node-01"),
+                new NodeId("timing-node-01"),
                 new MemoryPersistence(),
                 new DefaultTimingDataFactory(),
                 () -> RECORDED_AT);

@@ -1,7 +1,7 @@
 package io.github.brainboxemb.eventtiming.timingpoint.application;
 
-import io.github.brainboxemb.eventtiming.timingdata.LocationId;
-import io.github.brainboxemb.eventtiming.timingdata.RegistrationId;
+import io.github.brainboxemb.eventtiming.timingdata.TimingDataTypes.LocationId;
+import io.github.brainboxemb.eventtiming.timingdata.TimingDataTypes.RegistrationId;
 import io.github.brainboxemb.eventtiming.timingdata.TimingData;
 import io.github.brainboxemb.eventtiming.timingdata.TimingTimestamp;
 import io.github.brainboxemb.eventtiming.timingpoint.domain.timing.TimingNode;

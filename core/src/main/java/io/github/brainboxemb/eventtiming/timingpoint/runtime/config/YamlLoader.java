@@ -1,6 +1,6 @@
 package io.github.brainboxemb.eventtiming.timingpoint.runtime.config;
 
-import io.github.brainboxemb.eventtiming.timingdata.TimingNodeId;
+import io.github.brainboxemb.eventtiming.timingdata.TimingDataTypes.NodeId;
 import io.github.brainboxemb.eventtiming.timingpoint.infra.logging.LoggingConfig;
 import io.github.brainboxemb.eventtiming.timingpoint.infra.logging.LoggingFileConfig;
 import io.github.brainboxemb.eventtiming.timingpoint.infra.logging.LoggingLevel;
@@ -74,7 +74,7 @@ public final class YamlLoader {
                     "Missing required configuration field: " + TIMING_NODE_ID);
         }
 
-        TimingNodeId timingNodeId = new TimingNodeId(
+        NodeId timingNodeId = new NodeId(
                 requireString(root.get(TIMING_NODE_ID), TIMING_NODE_ID));
         return new Config(
                 timingNodeId,

@@ -11,11 +11,11 @@ public interface TimingDataFactory {
 
     TimingData.AutomaticRegistration createAutomaticRegistration(
             Context context,
-            RegistrationId registrationId);
+            TimingDataTypes.RegistrationId registrationId);
 
     TimingData.ManualRegistration createManualRegistration(
             Context context,
-            RegistrationId registrationId,
+            TimingDataTypes.RegistrationId registrationId,
             TimingData.ManualTimeSource timeSource);
 
     /**
@@ -25,16 +25,16 @@ public interface TimingDataFactory {
      * remains with the owning application/domain component.</p>
      */
     final class Context {
-        private final TimingNodeId timingNodeId;
+        private final TimingDataTypes.NodeId timingNodeId;
         private final long sequenceNumber;
-        private final LocationId locationId;
+        private final TimingDataTypes.LocationId locationId;
         private final TimingTimestamp effectiveTime;
         private final TimingTimestamp recordedAt;
 
         public Context(
-                TimingNodeId timingNodeId,
+                TimingDataTypes.NodeId timingNodeId,
                 long sequenceNumber,
-                LocationId locationId,
+                TimingDataTypes.LocationId locationId,
                 TimingTimestamp effectiveTime,
                 TimingTimestamp recordedAt) {
             if (timingNodeId == null) {
@@ -61,7 +61,7 @@ public interface TimingDataFactory {
             this.recordedAt = recordedAt;
         }
 
-        public TimingNodeId timingNodeId() {
+        public TimingDataTypes.NodeId timingNodeId() {
             return timingNodeId;
         }
 
@@ -69,7 +69,7 @@ public interface TimingDataFactory {
             return sequenceNumber;
         }
 
-        public LocationId locationId() {
+        public TimingDataTypes.LocationId locationId() {
             return locationId;
         }
 

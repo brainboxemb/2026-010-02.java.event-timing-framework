@@ -229,7 +229,7 @@ jobs:
           \`$GITHUB_SHA\`.
 
           - **VC-ST1-001:** PASS — executable/API/reconnect/control-shutdown baseline.
-          - **VC-ST1-002:** PASS — first committed registration, LogBook recovery and no historical live replay.
+          - **VC-ST1-002:** PASS — first committed registration, WebSocket reconnect and persisted LogBook recovery across a full SI-01 restart; recovered history is not emitted as a new live commit.
           - \`VC-ST1-002/timing-data.jsonl\` is the actual persistence file written by SI-01 during the test.
           - \`surefire-reports/\` contains the JUnit reports for both separate-process tests.
 

@@ -2,7 +2,7 @@ package io.github.brainboxemb.eventtiming.timingpoint.domain.timing;
 
 import io.github.brainboxemb.eventtiming.timingdata.TimingData;
 import io.github.brainboxemb.eventtiming.timingdata.TimingDataFactory;
-import io.github.brainboxemb.eventtiming.timingdata.TimingNodeId;
+import io.github.brainboxemb.eventtiming.timingdata.TimingDataTypes.NodeId;
 import io.github.brainboxemb.eventtiming.timingpoint.domain.system.TimeSource;
 import io.github.brainboxemb.eventtiming.timingpoint.domain.timingdata.TimingDataPersistence;
 import io.github.brainboxemb.eventtiming.timingpoint.platform.events.Event;
@@ -52,7 +52,7 @@ public final class TimingNode {
     private Throwable startupFailure;
 
     public TimingNode(
-            TimingNodeId timingNodeId,
+            NodeId timingNodeId,
             TimingDataPersistence timingDataPersistence,
             TimingDataFactory timingDataFactory,
             TimeSource timeSource) {
@@ -92,7 +92,7 @@ public final class TimingNode {
         this.operationTimeoutMillis = operationTimeoutMillis;
     }
 
-    public TimingNodeId timingNodeId() {
+    public NodeId timingNodeId() {
         return logic.timingNodeId();
     }
 
@@ -320,14 +320,14 @@ public final class TimingNode {
         }
     }
 
-    private static SerialWorker workerFor(TimingNodeId timingNodeId) {
-        TimingNodeId id = requireId(timingNodeId);
+    private static SerialWorker workerFor(NodeId timingNodeId) {
+        NodeId id = requireId(timingNodeId);
         return new SerialWorker(
                 DEFAULT_QUEUE_CAPACITY,
                 "timing-node-" + id.value());
     }
 
-    private static TimingNodeId requireId(TimingNodeId timingNodeId) {
+    private static NodeId requireId(NodeId timingNodeId) {
         if (timingNodeId == null) {
             throw new IllegalArgumentException("timingNodeId must not be null");
         }

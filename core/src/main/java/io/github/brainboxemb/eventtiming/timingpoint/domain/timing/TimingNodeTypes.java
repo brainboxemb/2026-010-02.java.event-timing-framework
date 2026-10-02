@@ -1,8 +1,8 @@
 package io.github.brainboxemb.eventtiming.timingpoint.domain.timing;
 
-import io.github.brainboxemb.eventtiming.timingdata.LocationId;
+import io.github.brainboxemb.eventtiming.timingdata.TimingDataTypes.LocationId;
 import io.github.brainboxemb.eventtiming.timingdata.TimingData;
-import io.github.brainboxemb.eventtiming.timingdata.TimingNodeId;
+import io.github.brainboxemb.eventtiming.timingdata.TimingDataTypes.NodeId;
 
 /**
  * Public value/result types used by the TimingNode component boundary.
@@ -86,13 +86,13 @@ public final class TimingNodeTypes {
     }
 
     public static final class Status {
-        private final TimingNodeId timingNodeId;
+        private final NodeId timingNodeId;
         private final Lifecycle lifecycle;
         private final LocationId locationId;
         private final boolean timingDataTailRecovered;
 
         Status(
-                TimingNodeId timingNodeId,
+                NodeId timingNodeId,
                 Lifecycle lifecycle,
                 LocationId locationId,
                 boolean timingDataTailRecovered) {
@@ -102,7 +102,7 @@ public final class TimingNodeTypes {
             this.timingDataTailRecovered = timingDataTailRecovered;
         }
 
-        public TimingNodeId timingNodeId() {
+        public NodeId timingNodeId() {
             return timingNodeId;
         }
 

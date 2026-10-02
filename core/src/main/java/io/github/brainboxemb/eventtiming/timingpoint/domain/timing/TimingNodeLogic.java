@@ -1,12 +1,12 @@
 package io.github.brainboxemb.eventtiming.timingpoint.domain.timing;
 
-import io.github.brainboxemb.eventtiming.timingdata.LocationId;
-import io.github.brainboxemb.eventtiming.timingdata.RegistrationId;
+import io.github.brainboxemb.eventtiming.timingdata.TimingDataTypes.LocationId;
+import io.github.brainboxemb.eventtiming.timingdata.TimingDataTypes.RegistrationId;
 import io.github.brainboxemb.eventtiming.timingdata.TimingData;
 import io.github.brainboxemb.eventtiming.timingdata.TimingData.ManualTimeSource;
 import io.github.brainboxemb.eventtiming.timingdata.TimingDataFactory;
 import io.github.brainboxemb.eventtiming.timingdata.TimingDataFactory.Context;
-import io.github.brainboxemb.eventtiming.timingdata.TimingNodeId;
+import io.github.brainboxemb.eventtiming.timingdata.TimingDataTypes.NodeId;
 import io.github.brainboxemb.eventtiming.timingdata.TimingTimestamp;
 import io.github.brainboxemb.eventtiming.timingpoint.domain.logbook.LogBook;
 import io.github.brainboxemb.eventtiming.timingpoint.domain.system.TimeSource;
@@ -28,7 +28,7 @@ import java.util.function.Consumer;
  * {@link TimingNode} component boundary.</p>
  */
 final class TimingNodeLogic {
-    private final TimingNodeId timingNodeId;
+    private final NodeId timingNodeId;
     private final LogBook logBook;
     private final TimingDataPersistence timingDataPersistence;
     private final TimingDataFactory timingDataFactory;
@@ -40,7 +40,7 @@ final class TimingNodeLogic {
     private Throwable timingDataCommitFailure;
 
     TimingNodeLogic(
-            TimingNodeId timingNodeId,
+            NodeId timingNodeId,
             TimingDataPersistence timingDataPersistence,
             TimingDataFactory timingDataFactory,
             TimeSource timeSource) {
@@ -65,7 +65,7 @@ final class TimingNodeLogic {
         this.logBook = new LogBook(timingNodeId);
     }
 
-    TimingNodeId timingNodeId() {
+    NodeId timingNodeId() {
         return timingNodeId;
     }
 

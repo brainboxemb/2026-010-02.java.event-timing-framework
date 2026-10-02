@@ -6,8 +6,8 @@ import com.fasterxml.jackson.core.JsonToken;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpServer;
 
-import io.github.brainboxemb.eventtiming.timingdata.LocationId;
-import io.github.brainboxemb.eventtiming.timingdata.RegistrationId;
+import io.github.brainboxemb.eventtiming.timingdata.TimingDataTypes.LocationId;
+import io.github.brainboxemb.eventtiming.timingdata.TimingDataTypes.RegistrationId;
 import io.github.brainboxemb.eventtiming.timingdata.TimingDataCodec;
 import io.github.brainboxemb.eventtiming.timingdata.TimingTimestamp;
 import io.github.brainboxemb.eventtiming.timingdata.defaultprofile.DefaultTimingDataCodec;

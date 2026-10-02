@@ -1,9 +1,9 @@
 package io.github.brainboxemb.eventtiming.timingpoint.application;
 
-import io.github.brainboxemb.eventtiming.timingdata.LocationId;
-import io.github.brainboxemb.eventtiming.timingdata.RegistrationId;
+import io.github.brainboxemb.eventtiming.timingdata.TimingDataTypes.LocationId;
+import io.github.brainboxemb.eventtiming.timingdata.TimingDataTypes.RegistrationId;
 import io.github.brainboxemb.eventtiming.timingdata.TimingData;
-import io.github.brainboxemb.eventtiming.timingdata.TimingNodeId;
+import io.github.brainboxemb.eventtiming.timingdata.TimingDataTypes.NodeId;
 import io.github.brainboxemb.eventtiming.timingdata.TimingTimestamp;
 import io.github.brainboxemb.eventtiming.timingdata.defaultprofile.DefaultTimingDataFactory;
 import io.github.brainboxemb.eventtiming.timingpoint.domain.timing.TimingNode;
@@ -45,7 +45,7 @@ public class CommandHandlerTest {
         node.start();
         try {
             ApplicationStatus status = handler.status();
-            assertEquals(new TimingNodeId("timing-node-01"), status.timingNodeId());
+            assertEquals(new NodeId("timing-node-01"), status.timingNodeId());
             assertEquals(
                     TimingNodeTypes.Lifecycle.CLOSED,
                     status.timingNodeLifecycle());
@@ -141,7 +141,7 @@ public class CommandHandlerTest {
 
     private static TimingNode node(RecordingStore store) {
         return new TimingNode(
-                new TimingNodeId("timing-node-01"),
+                new NodeId("timing-node-01"),
                 store,
                 new DefaultTimingDataFactory(),
                 () -> RECORDED_AT);

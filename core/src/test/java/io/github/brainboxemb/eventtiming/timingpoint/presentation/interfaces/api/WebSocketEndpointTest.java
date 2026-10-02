@@ -1,9 +1,9 @@
 package io.github.brainboxemb.eventtiming.timingpoint.presentation.interfaces.api;
 
-import io.github.brainboxemb.eventtiming.timingdata.LocationId;
-import io.github.brainboxemb.eventtiming.timingdata.RegistrationId;
+import io.github.brainboxemb.eventtiming.timingdata.TimingDataTypes.LocationId;
+import io.github.brainboxemb.eventtiming.timingdata.TimingDataTypes.RegistrationId;
 import io.github.brainboxemb.eventtiming.timingdata.TimingData;
-import io.github.brainboxemb.eventtiming.timingdata.TimingNodeId;
+import io.github.brainboxemb.eventtiming.timingdata.TimingDataTypes.NodeId;
 import io.github.brainboxemb.eventtiming.timingdata.TimingTimestamp;
 import io.github.brainboxemb.eventtiming.timingdata.defaultprofile.DefaultTimingDataFactory;
 import io.github.brainboxemb.eventtiming.timingpoint.application.CommandHandler;
@@ -168,7 +168,7 @@ public class WebSocketEndpointTest {
 
         private Fixture() {
             node = new TimingNode(
-                    new TimingNodeId("timing-node-01"),
+                    new NodeId("timing-node-01"),
                     new MemoryStore(),
                     new DefaultTimingDataFactory(),
                     () -> RECORDED_AT);
