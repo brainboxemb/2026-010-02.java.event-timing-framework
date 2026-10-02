@@ -149,6 +149,8 @@ public class ApiClientTest {
         assertNull(page.next());
         assertEquals(2, page.records().size());
         assertEquals("N001", page.records().get(0).registrationId());
+        assertEquals("AUTO_REG", page.records().get(0).recordType());
+        assertEquals(List.of("ADD"), page.records().get(0).codes());
         assertEquals(
                 new ApiClient.TimingDataKey("timing-node-01", 2L),
                 page.records().get(1).key());
@@ -214,16 +216,15 @@ public class ApiClientTest {
 
     private static String timingData(long sequence, String registrationId) {
         return "{"
-                + "\"version\":1,"
-                + "\"timingNodeId\":\"timing-node-01\","
-                + "\"sequenceNumber\":" + sequence + ","
-                + "\"locationId\":24,"
-                + "\"recordType\":\"REGISTRATION\","
-                + "\"effectiveTime\":\"2026-10-01T12:00:00.000000000Z\","
-                + "\"recordedAt\":\"2026-10-01T12:00:00.125000000Z\","
-                + "\"registrationId\":\"" + registrationId + "\","
-                + "\"origin\":\"AUTOMATIC\","
-                + "\"timeSource\":\"OBSERVED\""
+                + "\"v\":1,"
+                + "\"nodeId\":\"timing-node-01\","
+                + "\"seqNr\":" + sequence + ","
+                + "\"locId\":24,"
+                + "\"recType\":\"AUTO_REG\","
+                + "\"time\":\"2026-10-01T12:00:00Z\","
+                + "\"regId\":\"" + registrationId + "\","
+                + "\"code\":[\"ADD\"],"
+                + "\"recTime\":\"2026-10-01T12:00:00.125Z\""
                 + "}";
     }
 
