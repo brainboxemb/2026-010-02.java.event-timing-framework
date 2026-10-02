@@ -29,6 +29,11 @@ import org.slf4j.LoggerFactory;
  * <p>The node serializes external operations and delegates its mutable domain
  * behaviour to {@link TimingNodeLogic}. Higher layers use this component rather
  * than the internal logic object directly.</p>
+ *
+ * <p>State-changing domain commands remain explicit methods because their names
+ * describe intent. Read-only operations enter through {@link #query(TimingNodeQuery)}
+ * and the standard {@link TimingNodeQueries}; this avoids duplicating every
+ * TimingNodeLogic getter on the visible component boundary.</p>
  */
 public final class TimingNode {
     private static final Logger LOG = LoggerFactory.getLogger(TimingNode.class);

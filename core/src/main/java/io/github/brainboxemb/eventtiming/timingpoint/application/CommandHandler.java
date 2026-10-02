@@ -19,7 +19,8 @@ import java.util.function.Supplier;
  * <p>This class is intentionally small. It is not a command bus, mediator framework or generic
  * message registry. Presentation adapters use these methods instead of calling TimingNode
  * directly, so HTTP, WebSocket, terminal and Engineering Client paths share one application
- * operation boundary.</p>
+ * boundary. State-changing application commands map to explicit TimingNode command methods;
+ * application reads map to typed TimingNode queries.</p>
  */
 public final class CommandHandler {
     /** First Step-4 engineering capability set. */
