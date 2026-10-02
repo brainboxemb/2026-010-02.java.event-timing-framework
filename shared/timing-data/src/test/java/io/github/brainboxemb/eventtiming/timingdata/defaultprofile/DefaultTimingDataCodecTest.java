@@ -5,8 +5,8 @@ import io.github.brainboxemb.eventtiming.timingdata.RegistrationId;
 import io.github.brainboxemb.eventtiming.timingdata.TimingData;
 import io.github.brainboxemb.eventtiming.timingdata.TimingDataCodec;
 import io.github.brainboxemb.eventtiming.timingdata.TimingDataFactory;
-import io.github.brainboxemb.eventtiming.timingdata.TimingTimestamp;
 import io.github.brainboxemb.eventtiming.timingdata.TimingNodeId;
+import io.github.brainboxemb.eventtiming.timingdata.TimingTimestamp;
 
 import java.nio.charset.StandardCharsets;
 
@@ -20,9 +20,9 @@ import static org.junit.Assert.fail;
 
 public class DefaultTimingDataCodecTest {
     private static final TimingTimestamp EFFECTIVE =
-            TimingTimestamp.parse("2026-09-30T20:01:39.123000000Z");
+            TimingTimestamp.parse("2026-09-30T20:01:39.123Z");
     private static final TimingTimestamp RECORDED =
-            TimingTimestamp.parse("2026-09-30T20:01:45.456000000Z");
+            TimingTimestamp.parse("2026-09-30T20:01:45.456Z");
 
     private final DefaultTimingDataFactory factory = new DefaultTimingDataFactory();
     private final DefaultTimingDataCodec codec = new DefaultTimingDataCodec();
@@ -36,16 +36,15 @@ public class DefaultTimingDataCodecTest {
         String json = new String(codec.encode(data), StandardCharsets.UTF_8);
 
         assertEquals(
-                "{\"version\":1,"
-                        + "\"timingNodeId\":\"timing-node-01\","
-                        + "\"sequenceNumber\":1,"
-                        + "\"locationId\":7,"
-                        + "\"recordType\":\"REGISTRATION\","
-                        + "\"effectiveTime\":\"2026-09-30T20:01:39.123000000Z\","
-                        + "\"recordedAt\":\"2026-09-30T20:01:45.456000000Z\","
-                        + "\"registrationId\":\"registration-0042\","
-                        + "\"origin\":\"AUTOMATIC\","
-                        + "\"timeSource\":\"OBSERVED\"}",
+                "{"v":1,"
+                        + ""nodeId":"timing-node-01","
+                        + ""seqNr":1,"
+                        + ""locId":7,"
+                        + ""recType":"AUTO_REG","
+                        + ""time":"2026-09-30T20:01:39.123Z","
+                        + ""regId":"registration-0042","
+                        + ""code":["ADD"],"
+                        + ""recTime":"2026-09-30T20:01:45.456Z"}",
                 json);
         assertFalse(json.endsWith("\n"));
     }
@@ -57,6 +56,10 @@ public class DefaultTimingDataCodecTest {
                         context(2L),
                         new RegistrationId("registration-\"0042"),
                         TimingData.ManualTimeSource.OPERATOR_ENTERED);
+
+        String json = new String(codec.encode(original), StandardCharsets.UTF_8);
+        assertTrue(json.contains(""recType":"MAN_REG""));
+        assertTrue(json.contains(""code":["ADD","MAN"]"));
 
         TimingData decoded = codec.decode(codec.encode(original));
 
@@ -73,19 +76,32 @@ public class DefaultTimingDataCodecTest {
     }
 
     @Test
+    public void systemAssignedManualTimeUsesAutoCode() throws Exception {
+        TimingData.ManualRegistration original =
+                factory.createManualRegistration(
+                        context(2L),
+                        new RegistrationId("registration-0042"),
+                        TimingData.ManualTimeSource.SYSTEM_ASSIGNED);
+
+        String json = new String(codec.encode(original), StandardCharsets.UTF_8);
+
+        assertTrue(json.contains(""recType":"MAN_REG""));
+        assertTrue(json.contains(""code":["ADD","AUTO"]"));
+    }
+
+    @Test
     public void decodesAutomaticRegistration() throws Exception {
         TimingData decoded = codec.decode(json(
                 "{"
-                        + "\"version\":1,"
-                        + "\"timingNodeId\":\"timing-node-01\","
-                        + "\"sequenceNumber\":1,"
-                        + "\"locationId\":7,"
-                        + "\"recordType\":\"REGISTRATION\","
-                        + "\"effectiveTime\":\"2026-09-30T20:01:39.123000000Z\","
-                        + "\"recordedAt\":\"2026-09-30T20:01:45.456000000Z\","
-                        + "\"registrationId\":\"registration-0042\","
-                        + "\"origin\":\"AUTOMATIC\","
-                        + "\"timeSource\":\"OBSERVED\""
+                        + ""v":1,"
+                        + ""nodeId":"timing-node-01","
+                        + ""seqNr":1,"
+                        + ""locId":7,"
+                        + ""recType":"AUTO_REG","
+                        + ""time":"2026-09-30T20:01:39.123Z","
+                        + ""regId":"registration-0042","
+                        + ""code":["ADD"],"
+                        + ""recTime":"2026-09-30T20:01:45.456Z""
                         + "}"));
 
         assertTrue(decoded instanceof TimingData.AutomaticRegistration);
@@ -98,20 +114,19 @@ public class DefaultTimingDataCodecTest {
     }
 
     @Test
-    public void readerIgnoresAdditionalMembersAndMemberOrder() throws Exception {
+    public void readerIgnoresAdditionalMembersAndCodeOrder() throws Exception {
         TimingData decoded = codec.decode(json(
                 "{"
-                        + "\"extra\":{\"future\":[1,2,3]},"
-                        + "\"registrationId\":\"registration-0042\","
-                        + "\"recordedAt\":\"2026-09-30T20:01:45.456000000Z\","
-                        + "\"version\":1,"
-                        + "\"origin\":\"MANUAL\","
-                        + "\"locationId\":7,"
-                        + "\"sequenceNumber\":2,"
-                        + "\"timeSource\":\"SYSTEM_ASSIGNED\","
-                        + "\"recordType\":\"REGISTRATION\","
-                        + "\"effectiveTime\":\"2026-09-30T20:01:39.123000000Z\","
-                        + "\"timingNodeId\":\"timing-node-01\""
+                        + ""extra":{"future":[1,2,3]},"
+                        + ""regId":"registration-0042","
+                        + ""recTime":"2026-09-30T20:01:45.456Z","
+                        + ""v":1,"
+                        + ""locId":7,"
+                        + ""seqNr":2,"
+                        + ""code":["AUTO","ADD"],"
+                        + ""recType":"MAN_REG","
+                        + ""time":"2026-09-30T20:01:39.123Z","
+                        + ""nodeId":"timing-node-01""
                         + "}"));
 
         assertTrue(decoded instanceof TimingData.ManualRegistration);
@@ -123,7 +138,7 @@ public class DefaultTimingDataCodecTest {
     @Test
     public void unsupportedVersionIsReportedSeparately() throws Exception {
         try {
-            codec.decode(json("{\"version\":2}"));
+            codec.decode(json("{"v":2}"));
             fail("expected unsupported version");
         } catch (TimingDataCodec.CodecException expected) {
             assertSame(
@@ -138,13 +153,13 @@ public class DefaultTimingDataCodecTest {
         try {
             codec.decode(json(
                     "{"
-                            + "\"version\":1,"
-                            + "\"timingNodeId\":\"timing-node-01\","
-                            + "\"sequenceNumber\":9,"
-                            + "\"locationId\":7,"
-                            + "\"recordType\":\"FUTURE_RECORD\","
-                            + "\"effectiveTime\":\"2026-09-30T20:01:39.123000000Z\","
-                            + "\"recordedAt\":\"2026-09-30T20:01:45.456000000Z\""
+                            + ""v":1,"
+                            + ""nodeId":"timing-node-01","
+                            + ""seqNr":9,"
+                            + ""locId":7,"
+                            + ""recType":"FUTURE_RECORD","
+                            + ""time":"2026-09-30T20:01:39.123Z","
+                            + ""recTime":"2026-09-30T20:01:45.456Z""
                             + "}"));
             fail("expected unsupported record type");
         } catch (TimingDataCodec.CodecException expected) {
@@ -163,31 +178,58 @@ public class DefaultTimingDataCodecTest {
 
     @Test
     public void malformedOrSemanticallyInvalidRecordsAreInvalidData() throws Exception {
-        assertInvalid(json("{\"version\":1"));
+        assertInvalid(json("{"v":1"));
         assertInvalid(json(
                 "{"
-                        + "\"version\":1,"
-                        + "\"timingNodeId\":\"timing-node-01\","
-                        + "\"sequenceNumber\":1,"
-                        + "\"locationId\":7,"
-                        + "\"recordType\":\"REGISTRATION\","
-                        + "\"effectiveTime\":\"2026-09-30T20:01:39.123000000Z\","
-                        + "\"recordedAt\":\"2026-09-30T20:01:45.456000000Z\","
-                        + "\"registrationId\":\"registration-0042\","
-                        + "\"origin\":\"AUTOMATIC\","
-                        + "\"timeSource\":\"OPERATOR_ENTERED\""
+                        + ""v":1,"
+                        + ""nodeId":"timing-node-01","
+                        + ""seqNr":1,"
+                        + ""locId":7,"
+                        + ""recType":"AUTO_REG","
+                        + ""time":"2026-09-30T20:01:39.123Z","
+                        + ""regId":"registration-0042","
+                        + ""code":["REV"],"
+                        + ""recTime":"2026-09-30T20:01:45.456Z""
                         + "}"));
         assertInvalid(json(
                 "{"
-                        + "\"version\":1,"
-                        + "\"version\":1,"
-                        + "\"timingNodeId\":\"timing-node-01\""
+                        + ""v":1,"
+                        + ""v":1,"
+                        + ""nodeId":"timing-node-01""
+                        + "}"));
+        assertInvalid(json(
+                "{"
+                        + ""v":1,"
+                        + ""nodeId":"timing-node-01","
+                        + ""seqNr":1,"
+                        + ""locId":7,"
+                        + ""recType":"MAN_REG","
+                        + ""time":"2026-09-30T20:01:39.123Z","
+                        + ""regId":"registration-0042","
+                        + ""code":["ADD","AUTO","MAN"],"
+                        + ""recTime":"2026-09-30T20:01:45.456Z""
+                        + "}"));
+    }
+
+    @Test
+    public void rejectsDuplicateCode() throws Exception {
+        assertInvalid(json(
+                "{"
+                        + ""v":1,"
+                        + ""nodeId":"timing-node-01","
+                        + ""seqNr":1,"
+                        + ""locId":7,"
+                        + ""recType":"MAN_REG","
+                        + ""time":"2026-09-30T20:01:39.123Z","
+                        + ""regId":"registration-0042","
+                        + ""code":["ADD","ADD"],"
+                        + ""recTime":"2026-09-30T20:01:45.456Z""
                         + "}"));
     }
 
     @Test
     public void rejectsUtf8Bom() throws Exception {
-        byte[] body = json("{\"version\":1}");
+        byte[] body = json("{"v":1}");
         byte[] encoded = new byte[body.length + 3];
         encoded[0] = (byte) 0xef;
         encoded[1] = (byte) 0xbb;
