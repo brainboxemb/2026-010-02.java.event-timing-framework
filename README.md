@@ -1,4 +1,4 @@
-# 2026-010-02.java.event-timing-framework
+# 2026-010-02.java.timing-point-application
 
 Public Java application core and executable for reusable event timing and time-registration applications.
 
@@ -284,8 +284,8 @@ A normal clone does not require `--recurse-submodules`.
 Windows:
 
 ```powershell
-git clone https://github.com/brainboxemb/2026-010-02.java.event-timing-framework.git
-cd 2026-010-02.java.event-timing-framework
+git clone https://github.com/brainboxemb/2026-010-02.java.timing-point-application.git
+cd 2026-010-02.java.timing-point-application
 .\bootstrap.ps1
 .\mvnw.cmd verify
 ```
@@ -293,8 +293,8 @@ cd 2026-010-02.java.event-timing-framework
 Linux/POSIX shell:
 
 ```bash
-git clone https://github.com/brainboxemb/2026-010-02.java.event-timing-framework.git
-cd 2026-010-02.java.event-timing-framework
+git clone https://github.com/brainboxemb/2026-010-02.java.timing-point-application.git
+cd 2026-010-02.java.timing-point-application
 ./bootstrap.sh
 ./mvnw verify
 ```
@@ -335,7 +335,7 @@ build actions are intentionally fast and do not compile or run tests.
 
 **Run Project** on the root Maven project first installs the current product reactor sources with
 tests skipped, then starts the executable `app/` module with `config/application.yml`. This
-ensures the app uses the sibling framework from the same checkout rather than an older local
+ensures the app uses the sibling application core from the same checkout rather than an older local
 SNAPSHOT. The root POM remains build/aggregation metadata and is not made into an executable
 application.
 
