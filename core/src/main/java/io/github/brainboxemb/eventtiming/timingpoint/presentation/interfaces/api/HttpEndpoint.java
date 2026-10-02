@@ -8,7 +8,6 @@ import com.sun.net.httpserver.HttpServer;
 
 import io.github.brainboxemb.eventtiming.timingdata.LocationId;
 import io.github.brainboxemb.eventtiming.timingdata.RegistrationId;
-import io.github.brainboxemb.eventtiming.timingdata.TimingData;
 import io.github.brainboxemb.eventtiming.timingdata.TimingDataCodec;
 import io.github.brainboxemb.eventtiming.timingdata.TimingTimestamp;
 import io.github.brainboxemb.eventtiming.timingdata.defaultprofile.DefaultTimingDataCodec;
@@ -26,7 +25,6 @@ import java.io.OutputStream;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.nio.charset.StandardCharsets;
-import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -336,37 +334,45 @@ public final class HttpEndpoint implements AutoCloseable {
         }
 
         LogBookQuery request = readLogBookQuery(query);
-        final List<TimingData> records;
+        StringBuilder records = new StringBuilder();
+        int count;
         if (request.last != null) {
-            records = commandHandler.latestLogBook(request.last.intValue());
+            count = commandHandler.visitLatestLogBook(
+                    request.last.intValue(),
+                    data -> MessageWriter.appendLogBookRecord(
+                            records,
+                            data,
+                            timingDataCodec));
         } else {
-            records = commandHandler.logBookFrom(
+            count = commandHandler.visitLogBookFrom(
                     request.from.longValue(),
-                    request.limit.intValue());
+                    request.limit.intValue(),
+                    data -> MessageWriter.appendLogBookRecord(
+                            records,
+                            data,
+                            timingDataCodec));
         }
 
-        int count = commandHandler.logBookCount();
         Long next = null;
-        if (request.from != null && !records.isEmpty()) {
-            long candidate =
-                    records.get(records.size() - 1).sequenceNumber() + 1L;
+        if (request.from != null && request.from.longValue() <= count) {
+            long lastReturned = Math.min(
+                    (long) count,
+                    request.from.longValue()
+                            + request.limit.intValue()
+                            - 1L);
+            long candidate = lastReturned + 1L;
             if (candidate <= count) {
                 next = Long.valueOf(candidate);
             }
         }
 
-        try {
-            sendJson(
-                    exchange,
-                    200,
-                    MessageWriter.logBookPage(
-                            count,
-                            next,
-                            records,
-                            timingDataCodec));
-        } catch (TimingDataCodec.CodecException ex) {
-            throw new IllegalStateException("Could not encode LogBook records", ex);
-        }
+        sendJson(
+                exchange,
+                200,
+                MessageWriter.logBookPage(
+                        count,
+                        next,
+                        records));
     }
 
     private LogBookQuery readLogBookQuery(String query) {

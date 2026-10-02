@@ -9,6 +9,7 @@ import io.github.brainboxemb.eventtiming.timingdata.TimingTimestamp;
 import io.github.brainboxemb.eventtiming.timingdata.TimingNodeId;
 import io.github.brainboxemb.eventtiming.timingdata.defaultprofile.DefaultTimingDataFactory;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.junit.Test;
@@ -58,25 +59,27 @@ public class LogBookTest {
     }
 
     @Test
-    public void snapshotIsStableAndImmutable() {
+    public void visitsBoundedRangesWithoutCreatingAReadList() {
         LogBook logBook = new LogBook(new TimingNodeId("timing-node-01"));
         TimingData first = data("timing-node-01", 1L, "1001");
         TimingData second = data("timing-node-01", 2L, "1002");
-
+        TimingData third = data("timing-node-01", 3L, "1003");
         logBook.add(first);
-        List<TimingData> snapshot = logBook.snapshot();
         logBook.add(second);
+        logBook.add(third);
 
-        assertEquals(1, snapshot.size());
-        assertEquals(first, snapshot.get(0));
-        assertEquals(2, logBook.snapshot().size());
+        List<TimingData> visited = new ArrayList<>();
+        logBook.visitRange(2L, 1, visited::add);
 
-        try {
-            snapshot.add(second);
-            fail("expected immutable snapshot");
-        } catch (UnsupportedOperationException expected) {
-            // Expected.
-        }
+        assertEquals(1, visited.size());
+        assertEquals(second, visited.get(0));
+
+        visited.clear();
+        logBook.visitLatest(2, visited::add);
+
+        assertEquals(2, visited.size());
+        assertEquals(second, visited.get(0));
+        assertEquals(third, visited.get(1));
     }
 
     private TimingData data(String nodeId, long sequence, String registrationId) {

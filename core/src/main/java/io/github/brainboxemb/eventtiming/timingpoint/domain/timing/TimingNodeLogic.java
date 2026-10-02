@@ -18,7 +18,7 @@ import io.github.brainboxemb.eventtiming.timingpoint.domain.timing.TimingNodeTyp
 import io.github.brainboxemb.eventtiming.timingpoint.domain.timing.TimingNodeTypes.SetLocationResult;
 import io.github.brainboxemb.eventtiming.timingpoint.domain.timing.TimingNodeTypes.Status;
 
-import java.util.List;
+import java.util.function.Consumer;
 
 /**
  * Internal mutable logic of one TimingNode.
@@ -128,20 +128,23 @@ final class TimingNodeLogic {
         return commitRegistration(data);
     }
 
-    List<TimingData> timingDataSnapshot() {
-        return logBook.snapshot();
-    }
-
     int timingDataCount() {
         return logBook.size();
     }
 
-    List<TimingData> timingDataRange(long fromSequence, int limit) {
-        return logBook.range(fromSequence, limit);
+    int visitTimingDataRange(
+            long fromSequence,
+            int limit,
+            Consumer<TimingData> visitor) {
+        logBook.visitRange(fromSequence, limit, visitor);
+        return logBook.size();
     }
 
-    List<TimingData> latestTimingData(int limit) {
-        return logBook.latest(limit);
+    int visitLatestTimingData(
+            int limit,
+            Consumer<TimingData> visitor) {
+        logBook.visitLatest(limit, visitor);
+        return logBook.size();
     }
 
     Status status() {

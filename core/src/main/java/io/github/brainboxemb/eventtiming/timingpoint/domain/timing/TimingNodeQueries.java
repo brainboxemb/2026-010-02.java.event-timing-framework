@@ -3,7 +3,7 @@ package io.github.brainboxemb.eventtiming.timingpoint.domain.timing;
 import io.github.brainboxemb.eventtiming.timingdata.TimingData;
 import io.github.brainboxemb.eventtiming.timingpoint.domain.timing.TimingNodeTypes.Status;
 
-import java.util.List;
+import java.util.function.Consumer;
 
 /**
  * Standard read operations supported by TimingNode.
@@ -15,10 +15,6 @@ import java.util.List;
 public final class TimingNodeQueries {
     private static final TimingNodeQuery<Status> STATUS =
             new TimingNodeQuery<>("status", TimingNodeLogic::status);
-    private static final TimingNodeQuery<List<TimingData>> TIMING_DATA_SNAPSHOT =
-            new TimingNodeQuery<>(
-                    "timingDataSnapshot",
-                    TimingNodeLogic::timingDataSnapshot);
     private static final TimingNodeQuery<Integer> TIMING_DATA_COUNT =
             new TimingNodeQuery<>(
                     "timingDataCount",
@@ -31,25 +27,37 @@ public final class TimingNodeQueries {
         return STATUS;
     }
 
-    public static TimingNodeQuery<List<TimingData>> timingDataSnapshot() {
-        return TIMING_DATA_SNAPSHOT;
-    }
-
     public static TimingNodeQuery<Integer> timingDataCount() {
         return TIMING_DATA_COUNT;
     }
 
-    public static TimingNodeQuery<List<TimingData>> timingDataRange(
+    /**
+     * Visits a bounded LogBook range on the TimingNode serial lane.
+     *
+     * <p>The visitor must be short/non-blocking and must not re-enter the same
+     * TimingNode. The returned value is the total committed LogBook count from
+     * the same ordered read.</p>
+     */
+    public static TimingNodeQuery<Integer> visitTimingDataRange(
             long fromSequence,
-            int limit) {
+            int limit,
+            Consumer<TimingData> visitor) {
         return new TimingNodeQuery<>(
-                "timingDataRange",
-                logic -> logic.timingDataRange(fromSequence, limit));
+                "visitTimingDataRange",
+                logic -> logic.visitTimingDataRange(
+                        fromSequence,
+                        limit,
+                        visitor));
     }
 
-    public static TimingNodeQuery<List<TimingData>> latestTimingData(int limit) {
+    /**
+     * Visits a bounded newest LogBook range on the TimingNode serial lane.
+     */
+    public static TimingNodeQuery<Integer> visitLatestTimingData(
+            int limit,
+            Consumer<TimingData> visitor) {
         return new TimingNodeQuery<>(
-                "latestTimingData",
-                logic -> logic.latestTimingData(limit));
+                "visitLatestTimingData",
+                logic -> logic.visitLatestTimingData(limit, visitor));
     }
 }

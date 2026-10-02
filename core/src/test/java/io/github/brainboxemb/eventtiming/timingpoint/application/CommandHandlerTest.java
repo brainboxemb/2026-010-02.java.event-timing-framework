@@ -99,9 +99,25 @@ public class CommandHandlerTest {
             assertEquals(1, committed.size());
             assertSame(registration.timingData(), committed.get(0));
             assertEquals(1, handler.logBookCount());
-            assertEquals(1, handler.logBookFrom(1L, 10).size());
-            assertSame(registration.timingData(), handler.logBookFrom(1L, 10).get(0));
-            assertSame(registration.timingData(), handler.latestLogBook(10).get(0));
+
+            List<TimingData> visited = new ArrayList<>();
+            assertEquals(
+                    1,
+                    handler.visitLogBookFrom(
+                            1L,
+                            10,
+                            visited::add));
+            assertEquals(1, visited.size());
+            assertSame(registration.timingData(), visited.get(0));
+
+            visited.clear();
+            assertEquals(
+                    1,
+                    handler.visitLatestLogBook(
+                            10,
+                            visited::add));
+            assertEquals(1, visited.size());
+            assertSame(registration.timingData(), visited.get(0));
 
             assertEquals(TimingNodeTypes.CloseResult.CLOSED, handler.close());
             assertEquals(3, statusChanges.size());
