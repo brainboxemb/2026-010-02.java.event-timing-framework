@@ -129,7 +129,10 @@ IF-03 contract:
 - loads bounded LogBook pages and merges live committed TimingData by stable
   `TimingNodeId + sequenceNumber` key;
 - marks cached data stale during disconnect/reconnect and disables mutating controls
-  until status/LogBook recovery is complete.
+  until status/LogBook recovery is complete;
+- buffers live status/TimingData events that arrive during a rebuild, applies them
+  after the HTTP status/LogBook baseline in delivery order, and only then marks
+  the Timing view LIVE.
 
 The current SI-01 runtime may compose one TimingNode, but the client model does not
 hard-code that limitation. With one node selection is implicit; with multiple reported

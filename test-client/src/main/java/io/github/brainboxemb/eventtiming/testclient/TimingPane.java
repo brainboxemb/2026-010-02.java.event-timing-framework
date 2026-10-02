@@ -48,6 +48,7 @@ final class TimingPane extends VBox {
     private final Button close = new Button("Close");
 
     private final Label lastOperation = new Label("-");
+    private final Label autoRegCapability = new Label("Capability not loaded");
     private final TextField registrationId = new TextField("N001");
     private final TextField registrationTime =
             new TextField(TimingViewModel.canonicalTime(Instant.now()));
@@ -58,6 +59,7 @@ final class TimingPane extends VBox {
     private final TableView<ApiClient.TimingDataInfo> logBook = new TableView<>();
 
     private boolean updatingNodeSelection;
+    private final List<ApiEventClient.ApiEvent> bufferedEvents = new ArrayList<>();
 
     TimingPane(
             Supplier<ApiClient> clientSupplier,
@@ -103,6 +105,12 @@ final class TimingPane extends VBox {
                 open,
                 close);
         nodeGrid.add(locationRow, 0, 3, 2, 1);
+        nodeGrid.add(
+                new HBox(8, new Label("Last operation"), lastOperation),
+                0,
+                4,
+                2,
+                1);
 
         TitledPane nodePane = new TitledPane("TimingNode", nodeGrid);
         nodePane.setCollapsible(false);
@@ -121,8 +129,8 @@ final class TimingPane extends VBox {
 
         VBox registrationBox = new VBox(
                 8,
-                registrationRow,
-                new HBox(8, new Label("Last operation"), lastOperation));
+                autoRegCapability,
+                registrationRow);
         registrationBox.setPadding(new Insets(10));
         TitledPane registrationPane = new TitledPane("Auto-reg", registrationBox);
         registrationPane.setCollapsible(false);
@@ -172,12 +180,16 @@ final class TimingPane extends VBox {
     }
 
     void connected() {
+        bufferedEvents.clear();
+        model.viewState(TimingViewModel.ViewState.RECONNECTING);
         connection.setText("CONNECTED / syncing");
         connect.setDisable(true);
         disconnect.setDisable(false);
+        refresh();
     }
 
     void disconnected(boolean stale) {
+        bufferedEvents.clear();
         model.viewState(stale
                 ? TimingViewModel.ViewState.STALE
                 : TimingViewModel.ViewState.DISCONNECTED);
@@ -194,18 +206,38 @@ final class TimingPane extends VBox {
     }
 
     void applyStatusEvent(ApiEventClient.StatusEvent event) {
-        applyStatus(event.status());
         if ("STATUS_SNAPSHOT".equals(event.eventType())) {
+            applyStatus(event.status());
             rebuild();
+            return;
         }
+
+        if (model.viewState() == TimingViewModel.ViewState.RECONNECTING) {
+            bufferedEvents.add(event);
+            return;
+        }
+        if (model.viewState() != TimingViewModel.ViewState.LIVE) {
+            return;
+        }
+
+        applyStatus(event.status());
     }
 
     void applyTimingDataEvent(ApiEventClient.TimingDataEvent event) {
+        if (model.viewState() == TimingViewModel.ViewState.RECONNECTING) {
+            bufferedEvents.add(event);
+            return;
+        }
+        if (model.viewState() != TimingViewModel.ViewState.LIVE) {
+            return;
+        }
+
         model.mergeCommitted(event.timingData());
         refreshLogBook();
     }
 
     void rebuild() {
+        bufferedEvents.clear();
         model.viewState(TimingViewModel.ViewState.RECONNECTING);
         connection.setText("RECONNECTING");
         refresh();
@@ -294,10 +326,30 @@ final class TimingPane extends VBox {
                     for (ApiClient.LogBookPage page : result.pages()) {
                         model.mergeLogBookPage(page);
                     }
+                    applyBufferedEvents();
                     model.viewState(TimingViewModel.ViewState.LIVE);
                     connection.setText("LIVE");
                     refresh();
                 }));
+    }
+
+    /**
+     * Applies live events received after the rebuild baseline in delivery order.
+     *
+     * <p>This method runs on the JavaFX application thread. Events are buffered
+     * only while the Timing view is RECONNECTING; raw Events-tab diagnostics are
+     * still shown immediately by the outer application.</p>
+     */
+    private void applyBufferedEvents() {
+        for (ApiEventClient.ApiEvent event : bufferedEvents) {
+            if (event instanceof ApiEventClient.StatusEvent statusEvent) {
+                model.applyStatus(statusEvent.status());
+                syncNodeChoice();
+            } else if (event instanceof ApiEventClient.TimingDataEvent timingDataEvent) {
+                model.mergeCommitted(timingDataEvent.timingData());
+            }
+        }
+        bufferedEvents.clear();
     }
 
     private void loadSelectedLogBook() {
@@ -307,6 +359,7 @@ final class TimingPane extends VBox {
             return;
         }
 
+        bufferedEvents.clear();
         model.viewState(TimingViewModel.ViewState.RECONNECTING);
         connection.setText("RECONNECTING");
         refresh();
@@ -337,6 +390,7 @@ final class TimingPane extends VBox {
                         if (result.page() != null) {
                             model.mergeLogBookPage(result.page());
                         }
+                        applyBufferedEvents();
                         model.viewState(TimingViewModel.ViewState.LIVE);
                         connection.setText("LIVE");
                     }
@@ -423,6 +477,7 @@ final class TimingPane extends VBox {
             if ("OUTCOME_UNKNOWN".equals(apiError.code())) {
                 model.viewState(TimingViewModel.ViewState.STALE);
                 connection.setText("STALE");
+                rebuild();
             }
         } else {
             lastOperation.setText("Error: " + rootMessage(error));
@@ -454,6 +509,14 @@ final class TimingPane extends VBox {
 
     private void refreshControls() {
         TimingViewModel.Controls controls = model.controls();
+        if (model.viewState() != TimingViewModel.ViewState.LIVE) {
+            autoRegCapability.setText("Capability not authoritative while "
+                    + model.viewState().name());
+        } else if (model.autoRegEnabled()) {
+            autoRegCapability.setText("DIRECT_REGISTRATION_SIMULATION enabled");
+        } else {
+            autoRegCapability.setText("DIRECT_REGISTRATION_SIMULATION unavailable");
+        }
         node.setDisable(model.viewState() != TimingViewModel.ViewState.LIVE
                 || model.nodes().size() <= 1);
         locationInput.setDisable(!controls.setLocation());

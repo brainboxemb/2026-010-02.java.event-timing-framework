@@ -55,7 +55,9 @@ Open the **Timing** tab and choose **Connect live**.
 
 ## V04 flow
 
-1. Verify the Timing view becomes **LIVE** and shows:
+1. Verify the Timing view first shows **CONNECTED / syncing** or
+   **RECONNECTING**, keeps state-changing controls disabled during rebuild, and
+   only then becomes **LIVE**. Verify it shows:
    - TimingNode `timing-node-01`;
    - state `CLOSED`;
    - no current LocationId;
