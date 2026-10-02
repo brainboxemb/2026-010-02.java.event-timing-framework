@@ -555,7 +555,7 @@ final class TimingPane extends VBox {
                 value -> Long.toString(value.sequenceNumber()));
         TableColumn<ApiClient.TimingDataInfo, String> type = column(
                 "Type",
-                ApiClient.TimingDataInfo::origin);
+                value -> value.recordType() + " " + String.join("/", value.codes()));
         TableColumn<ApiClient.TimingDataInfo, String> loc = column(
                 "Location",
                 value -> Integer.toString(value.locationId()));

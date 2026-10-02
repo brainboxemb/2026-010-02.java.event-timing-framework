@@ -75,11 +75,12 @@ Open the **Timing** tab and choose **Connect live**.
    - **Close** and **Auto-reg** are enabled.
 4. Enter registration ID `N001`.
 5. Use the explicit time below for deterministic evidence:
-   `2026-10-01T12:00:00.000000000Z`.
+   `2026-10-01T12:00:00Z`.
 6. Choose **Auto-reg**.
    - Last operation shows `seq 1`;
    - LogBook count becomes `1`;
    - the table contains sequence 1 / LocationId 24 / RegistrationId `N001`;
+   - the record is shown as `AUTO_REG` with code `ADD`;
    - the **Events** tab contains one `TIMING_DATA_COMMITTED` event for that
      same record.
 7. Choose **Close**.

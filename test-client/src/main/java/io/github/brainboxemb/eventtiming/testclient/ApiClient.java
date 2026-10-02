@@ -21,6 +21,7 @@ import java.util.List;
  * <p>This project deliberately has no dependency on SI-01 implementation classes.</p>
  */
 public final class ApiClient {
+    private static final int TIMING_DATA_VERSION = 1;
     private static final ObjectMapper JSON = new ObjectMapper();
 
     private final URI endpoint;
@@ -157,16 +158,20 @@ public final class ApiClient {
     }
 
     static TimingDataInfo parseTimingData(JsonNode root) {
+        int version = requiredInt(root, "v");
+        if (version != TIMING_DATA_VERSION) {
+            throw new IllegalArgumentException(
+                    "Unsupported IF-05 TimingData version: " + version);
+        }
         return new TimingDataInfo(
-                requiredText(root, "timingNodeId"),
-                requiredLong(root, "sequenceNumber"),
-                requiredInt(root, "locationId"),
-                requiredText(root, "recordType"),
-                requiredText(root, "effectiveTime"),
-                requiredText(root, "recordedAt"),
-                requiredText(root, "registrationId"),
-                requiredText(root, "origin"),
-                requiredText(root, "timeSource"));
+                requiredText(root, "nodeId"),
+                requiredLong(root, "seqNr"),
+                requiredInt(root, "locId"),
+                requiredText(root, "recType"),
+                requiredText(root, "time"),
+                requiredText(root, "regId"),
+                requiredTextArray(root, "code"),
+                requiredText(root, "recTime"));
     }
 
     private static CapabilitiesResult parseCapabilities(String rawJson) throws IOException {
@@ -291,6 +296,25 @@ public final class ApiClient {
         return value.asText();
     }
 
+    private static List<String> requiredTextArray(JsonNode root, String field) {
+        JsonNode value = required(root, field);
+        if (!value.isArray()) {
+            throw new IllegalArgumentException("IF-03 field is not an array: " + field);
+        }
+        List<String> result = new ArrayList<>();
+        for (JsonNode item : value) {
+            if (!item.isTextual()) {
+                throw new IllegalArgumentException(
+                        "IF-03 array contains non-text value: " + field);
+            }
+            result.add(item.asText());
+        }
+        if (result.isEmpty()) {
+            throw new IllegalArgumentException("IF-03 array is empty: " + field);
+        }
+        return List.copyOf(result);
+    }
+
     private static boolean requiredBoolean(JsonNode root, String field) {
         JsonNode value = required(root, field);
         if (!value.isBoolean()) {
@@ -396,10 +420,9 @@ public final class ApiClient {
             int locationId,
             String recordType,
             String effectiveTime,
-            String recordedAt,
             String registrationId,
-            String origin,
-            String timeSource) {
+            List<String> codes,
+            String recordedAt) {
         public TimingDataKey key() {
             return new TimingDataKey(timingNodeId, sequenceNumber);
         }

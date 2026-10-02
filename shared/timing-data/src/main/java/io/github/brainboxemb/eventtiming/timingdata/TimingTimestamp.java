@@ -11,15 +11,17 @@ import java.time.temporal.ChronoField;
 import java.util.Locale;
 
 /**
- * Absolute IF-05 timestamp with canonical UTC text containing exactly nine
- * fractional-second digits.
+ * Absolute IF-05 timestamp with compact canonical UTC text.
+ *
+ * <p>The canonical text uses a literal {@code Z} and carries only the
+ * fractional-second digits needed to represent the instant, from zero through
+ * nine digits.</p>
  */
 public final class TimingTimestamp implements Comparable<TimingTimestamp> {
     private static final DateTimeFormatter FORMATTER = new DateTimeFormatterBuilder()
             .parseCaseSensitive()
             .appendPattern("uuuu-MM-dd'T'HH:mm:ss")
-            .appendLiteral('.')
-            .appendFraction(ChronoField.NANO_OF_SECOND, 9, 9, false)
+            .appendFraction(ChronoField.NANO_OF_SECOND, 0, 9, true)
             .appendLiteral('Z')
             .toFormatter(Locale.ROOT)
             .withResolverStyle(ResolverStyle.STRICT);
@@ -42,7 +44,8 @@ public final class TimingTimestamp implements Comparable<TimingTimestamp> {
             return new TimingTimestamp(local.toInstant(ZoneOffset.UTC));
         } catch (DateTimeParseException ex) {
             throw new IllegalArgumentException(
-                    "timestamp must use canonical UTC form yyyy-MM-ddTHH:mm:ss.nnnnnnnnnZ",
+                    "timestamp must use canonical UTC form yyyy-MM-ddTHH:mm:ss[.fraction]Z "
+                            + "with 0..9 fractional digits",
                     ex);
         }
     }

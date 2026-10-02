@@ -134,12 +134,13 @@ public class HttpEndpointTest {
             assertEquals(200, history.status);
             assertTrue(history.body.contains("\"count\":1"));
             assertTrue(history.body.contains("\"next\":null"));
-            assertTrue(history.body.contains("\"sequenceNumber\":1"));
-            assertTrue(history.body.contains("\"locationId\":24"));
-            assertTrue(history.body.contains("\"registrationId\":\"N001\""));
-            assertTrue(history.body.contains("\"origin\":\"AUTOMATIC\""));
+            assertTrue(history.body.contains("\"seqNr\":1"));
+            assertTrue(history.body.contains("\"locId\":24"));
+            assertTrue(history.body.contains("\"recType\":\"AUTO_REG\""));
+            assertTrue(history.body.contains("\"regId\":\"N001\""));
+            assertTrue(history.body.contains("\"code\":[\"ADD\"]"));
             assertTrue(history.body.contains(
-                    "\"effectiveTime\":\"2026-10-01T12:00:00.000000000Z\""));
+                    "\"time\":\"2026-10-01T12:00:00Z\""));
 
             Response latest = request(
                     server.boundPort(),
@@ -147,7 +148,7 @@ public class HttpEndpointTest {
                     "/api/v1/node/timing-node-01/logbook?last=1",
                     null);
             assertEquals(200, latest.status);
-            assertTrue(latest.body.contains("\"sequenceNumber\":1"));
+            assertTrue(latest.body.contains("\"seqNr\":1"));
 
             Response wrongNode = request(
                     server.boundPort(),

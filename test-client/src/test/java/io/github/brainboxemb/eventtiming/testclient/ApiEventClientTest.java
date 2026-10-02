@@ -1,6 +1,7 @@
 package io.github.brainboxemb.eventtiming.testclient;
 
 import java.time.Instant;
+import java.util.List;
 
 import org.junit.jupiter.api.Test;
 
@@ -41,16 +42,15 @@ class ApiEventClientTest {
                 + "\"eventType\":\"TIMING_DATA_COMMITTED\","
                 + "\"occurredAt\":\"2026-10-01T12:00:02Z\","
                 + "\"payload\":{"
-                + "\"version\":1,"
-                + "\"timingNodeId\":\"timing-node-01\","
-                + "\"sequenceNumber\":3,"
-                + "\"locationId\":24,"
-                + "\"recordType\":\"REGISTRATION\","
-                + "\"effectiveTime\":\"2026-10-01T12:00:00.000000000Z\","
-                + "\"recordedAt\":\"2026-10-01T12:00:00.125000000Z\","
-                + "\"registrationId\":\"N003\","
-                + "\"origin\":\"AUTOMATIC\","
-                + "\"timeSource\":\"OBSERVED\""
+                + "\"v\":1,"
+                + "\"nodeId\":\"timing-node-01\","
+                + "\"seqNr\":3,"
+                + "\"locId\":24,"
+                + "\"recType\":\"AUTO_REG\","
+                + "\"time\":\"2026-10-01T12:00:00Z\","
+                + "\"regId\":\"N003\","
+                + "\"code\":[\"ADD\"],"
+                + "\"recTime\":\"2026-10-01T12:00:00.125Z\""
                 + "}"
                 + "}";
 
@@ -61,6 +61,8 @@ class ApiEventClientTest {
         assertEquals("timing-node-01", event.timingData().timingNodeId());
         assertEquals(3L, event.timingData().sequenceNumber());
         assertEquals("N003", event.timingData().registrationId());
+        assertEquals("AUTO_REG", event.timingData().recordType());
+        assertEquals(List.of("ADD"), event.timingData().codes());
         assertEquals(
                 new ApiClient.TimingDataKey("timing-node-01", 3L),
                 event.timingData().key());
