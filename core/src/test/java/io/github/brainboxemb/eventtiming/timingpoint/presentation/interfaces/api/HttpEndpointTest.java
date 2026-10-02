@@ -148,7 +148,7 @@ public class HttpEndpointTest {
                     "/api/v1/node/timing-node-01/logbook?last=1",
                     null);
             assertEquals(200, latest.status);
-            assertTrue(latest.body.contains("\"sequenceNumber\":1"));
+            assertTrue(latest.body.contains("\"seqNr\":1"));
 
             Response wrongNode = request(
                     server.boundPort(),
