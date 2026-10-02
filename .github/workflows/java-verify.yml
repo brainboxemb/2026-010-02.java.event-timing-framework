@@ -146,7 +146,9 @@ jobs:
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: event-timing-system-test-main-evidence
-          path: system-test/target/surefire-reports/**
+          path: |
+            system-test/target/surefire-reports/**
+            system-test/target/evidence/**
           if-no-files-found: warn
           retention-days: 14
 
@@ -163,6 +165,130 @@ jobs:
       publication-artifact-name: event-timing-core-canonical-publication
       preflight-artifact-name: event-timing-core-canonical-preflight
       source-revision: ${{ github.event.pull_request.head.sha || github.sha }}
+
+  publish-main-system-test-evidence:
+    name: Publish main black-box evidence
+    if: >-
+      github.event_name == 'push' &&
+      github.ref == 'refs/heads/main' &&
+      needs.java-production.outputs.affected == 'true'
+    needs:
+      - java-production
+      - main-system-test
+      - publish-build
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    permissions:
+      contents: write
+      actions: read
+    steps:
+      - name: Checkout current generated production build
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          ref: prod/bld
+          path: publication
+          fetch-depth: 1
+
+      - name: Download main system-test evidence
+        uses: actions/download-artifact@634f93cb2916e3fdff6788551b99b062d0335ce0 # v5
+        with:
+          name: event-timing-system-test-main-evidence
+          path: system-test-evidence
+
+      - name: Stage black-box evidence in the central build tree
+        id: stage
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          published_revision="$(tr -d '\r\n' < publication/source-sha.txt)"
+          if [[ "$published_revision" != "$GITHUB_SHA" ]]; then
+            echo "prod/bld already points to $published_revision; current run is $GITHUB_SHA."
+            echo "A newer generated build has superseded this run; no evidence will be written."
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          test -d system-test-evidence/evidence
+          test -d system-test-evidence/surefire-reports
+
+          target="publication/evidence/tests/system-test"
+          rm -rf "$target"
+          mkdir -p "$target"
+          cp -a system-test-evidence/evidence/. "$target/"
+          cp -a system-test-evidence/surefire-reports "$target/surefire-reports"
+
+          grep -Fxq 'PASS' "$target/VC-ST1-001/result.txt"
+          grep -Fxq 'PASS' "$target/VC-ST1-002/result.txt"
+          test -s "$target/VC-ST1-002/timing-data.jsonl"
+
+          cat > "$target/README.md" <<EOF
+          # Separate-process system verification
+
+          Retained evidence from the VC-ST1 black-box verification of source revision
+          \`$GITHUB_SHA\`.
+
+          - **VC-ST1-001:** PASS — executable/API/reconnect/control-shutdown baseline.
+          - **VC-ST1-002:** PASS — first committed registration, LogBook recovery and no historical live replay.
+          - \`VC-ST1-002/timing-data.jsonl\` is the actual persistence file written by SI-01 during the test.
+          - \`surefire-reports/\` contains the JUnit reports for both separate-process tests.
+
+          Each VC directory also retains the generated application configuration,
+          captured SI-01 process output and the explicit PASS/FAIL result.
+          EOF
+
+          python3 - <<'PY'
+          from pathlib import Path
+
+          tests_readme = Path("publication/evidence/tests/README.md")
+          text = tests_readme.read_text(encoding="utf-8").rstrip()
+          marker = "## Separate-process system verification"
+          if marker in text:
+              text = text.split(marker, 1)[0].rstrip()
+          text += (
+              "\n\n## Separate-process system verification\n\n"
+              "The canonical Maven summary above covers the ordinary module tests. "
+              "The separately executed process-level VC-ST1 verification is retained "
+              "under [system-test/](system-test/README.md), including the real "
+              "TimingData persistence file produced by VC-ST1-002.\n"
+          )
+          tests_readme.write_text(text, encoding="utf-8")
+
+          root_readme = Path("publication/README.md")
+          root = root_readme.read_text(encoding="utf-8")
+          link = (
+              "- [Separate-process system verification]"
+              "(evidence/tests/system-test/README.md) — VC-ST1 black-box results, "
+              "runtime output and persisted TimingData evidence.\n"
+          )
+          if link not in root:
+              needle = (
+                  "- [Readable Surefire summary](evidence/tests/README.md) — "
+                  "aggregate test result with retained raw Surefire reports below "
+                  "`evidence/tests/`.\n"
+              )
+              if needle not in root:
+                  raise SystemExit("generated README does not contain the expected test summary link")
+              root = root.replace(needle, needle + link)
+          root_readme.write_text(root, encoding="utf-8")
+          PY
+
+      - name: Publish supplemented production evidence
+        if: ${{ steps.stage.outputs.skip != 'true' }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          git -C publication config user.name "github-actions[bot]"
+          git -C publication config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git -C publication add README.md evidence/tests
+
+          if git -C publication diff --cached --quiet; then
+            echo "Central build evidence already contains this system-test result."
+            exit 0
+          fi
+
+          git -C publication commit -m "Publish system-test evidence for ${GITHUB_SHA:0:12}"
+          git -C publication push origin HEAD:prod/bld
 
   # Product release semantics remain repository-owned. A reviewed non-SNAPSHOT
   # main commit is tagged only after the normal Linux/publication path succeeds.
@@ -324,7 +450,9 @@ jobs:
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: event-timing-system-test-release-linux-evidence
-          path: system-test/target/surefire-reports/**
+          path: |
+            system-test/target/surefire-reports/**
+            system-test/target/evidence/**
           if-no-files-found: warn
           retention-days: 14
 
@@ -365,7 +493,9 @@ jobs:
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: event-timing-system-test-release-windows-evidence
-          path: system-test/target/surefire-reports/**
+          path: |
+            system-test/target/surefire-reports/**
+            system-test/target/evidence/**
           if-no-files-found: warn
           retention-days: 14
 
