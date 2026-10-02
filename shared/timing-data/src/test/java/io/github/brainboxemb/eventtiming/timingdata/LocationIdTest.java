@@ -4,23 +4,23 @@ import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
 
-public class LocationIdTest {
+public class TimingDataTypes.LocationIdTest {
     @Test
     public void keepsPositiveValue() {
-        LocationId id = new LocationId(24);
+        TimingDataTypes.LocationId id = new TimingDataTypes.LocationId(24);
 
         assertEquals(24, id.value());
-        assertEquals(new LocationId(24), id);
+        assertEquals(new TimingDataTypes.LocationId(24), id);
         assertEquals("24", id.toString());
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void rejectsZero() {
-        new LocationId(0);
+        new TimingDataTypes.LocationId(0);
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void rejectsNegativeValue() {
-        new LocationId(-1);
+        new TimingDataTypes.LocationId(-1);
     }
 }

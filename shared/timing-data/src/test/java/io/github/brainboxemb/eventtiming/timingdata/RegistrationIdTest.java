@@ -5,25 +5,25 @@ import org.junit.Test;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 
-public class RegistrationIdTest {
+public class TimingDataTypes.RegistrationIdTest {
 
     @Test
     public void preservesCanonicalValueWithoutNormalizingIt() {
-        RegistrationId registrationId = new RegistrationId(" registration-0042 ");
+        TimingDataTypes.RegistrationId registrationId = new TimingDataTypes.RegistrationId(" registration-0042 ");
 
         assertEquals(" registration-0042 ", registrationId.value());
-        assertEquals(registrationId, new RegistrationId(" registration-0042 "));
-        assertNotEquals(registrationId, new RegistrationId("registration-0042"));
+        assertEquals(registrationId, new TimingDataTypes.RegistrationId(" registration-0042 "));
+        assertNotEquals(registrationId, new TimingDataTypes.RegistrationId("registration-0042"));
         assertEquals(" registration-0042 ", registrationId.toString());
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void rejectsBlankValue() {
-        new RegistrationId("   ");
+        new TimingDataTypes.RegistrationId("   ");
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void rejectsMissingValue() {
-        new RegistrationId(null);
+        new TimingDataTypes.RegistrationId(null);
     }
 }

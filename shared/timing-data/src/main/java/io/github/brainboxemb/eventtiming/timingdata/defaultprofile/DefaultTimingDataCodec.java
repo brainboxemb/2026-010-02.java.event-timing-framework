@@ -4,12 +4,12 @@ import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonToken;
-import io.github.brainboxemb.eventtiming.timingdata.LocationId;
-import io.github.brainboxemb.eventtiming.timingdata.RegistrationId;
+import io.github.brainboxemb.eventtiming.timingdata.TimingDataTypes.LocationId;
+import io.github.brainboxemb.eventtiming.timingdata.TimingDataTypes.RegistrationId;
 import io.github.brainboxemb.eventtiming.timingdata.TimingData;
 import io.github.brainboxemb.eventtiming.timingdata.TimingDataCodec;
 import io.github.brainboxemb.eventtiming.timingdata.TimingDataFactory;
-import io.github.brainboxemb.eventtiming.timingdata.TimingNodeId;
+import io.github.brainboxemb.eventtiming.timingdata.TimingDataTypes.NodeId;
 import io.github.brainboxemb.eventtiming.timingdata.TimingTimestamp;
 
 import java.io.ByteArrayOutputStream;
@@ -364,7 +364,7 @@ public final class DefaultTimingDataCodec implements TimingDataCodec {
 
         try {
             return new TimingDataFactory.Context(
-                    new TimingNodeId(fields.nodeId),
+                    new NodeId(fields.nodeId),
                     fields.sequenceNumber,
                     new LocationId(fields.locationId),
                     TimingTimestamp.parse(fields.effectiveTimeText),
