@@ -54,20 +54,8 @@ public final class DefaultTimingDataCodec implements TimingDataCodec {
 
     /** Creates the canonical codec backed by the built-in default TimingData factory. */
     public DefaultTimingDataCodec() {
-        this(new JsonFactory(), new DefaultTimingDataFactory());
-    }
-
-    DefaultTimingDataCodec(
-            JsonFactory jsonFactory,
-            TimingDataFactory timingDataFactory) {
-        if (jsonFactory == null) {
-            throw new IllegalArgumentException("jsonFactory must not be null");
-        }
-        if (timingDataFactory == null) {
-            throw new IllegalArgumentException("timingDataFactory must not be null");
-        }
-        this.jsonFactory = jsonFactory;
-        this.timingDataFactory = timingDataFactory;
+        this.jsonFactory = new JsonFactory();
+        this.timingDataFactory = new DefaultTimingDataFactory();
     }
 
     /**

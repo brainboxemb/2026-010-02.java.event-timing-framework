@@ -61,33 +61,19 @@ public final class WebSocketEndpoint implements AutoCloseable {
             String bindAddress,
             int port,
             CommandHandler commandHandler) {
-        this(
-                bindAddress,
-                port,
-                commandHandler,
-                Clock.systemUTC(),
-                new DefaultTimingDataCodec());
+        this(bindAddress, port, commandHandler, Clock.systemUTC());
     }
 
+    /**
+     * Package-private deterministic-clock seam for event timestamp tests.
+     *
+     * <p>Production composition always uses the public constructor.</p>
+     */
     WebSocketEndpoint(
             String bindAddress,
             int port,
             CommandHandler commandHandler,
             Clock clock) {
-        this(
-                bindAddress,
-                port,
-                commandHandler,
-                clock,
-                new DefaultTimingDataCodec());
-    }
-
-    WebSocketEndpoint(
-            String bindAddress,
-            int port,
-            CommandHandler commandHandler,
-            Clock clock,
-            TimingDataCodec timingDataCodec) {
         if (bindAddress == null || bindAddress.trim().isEmpty()) {
             throw new IllegalArgumentException("bindAddress must not be blank");
         }
@@ -100,14 +86,11 @@ public final class WebSocketEndpoint implements AutoCloseable {
         if (clock == null) {
             throw new IllegalArgumentException("clock must not be null");
         }
-        if (timingDataCodec == null) {
-            throw new IllegalArgumentException("timingDataCodec must not be null");
-        }
         this.bindAddress = bindAddress.trim();
         this.port = port;
         this.commandHandler = commandHandler;
         this.clock = clock;
-        this.timingDataCodec = timingDataCodec;
+        this.timingDataCodec = new DefaultTimingDataCodec();
     }
 
     /**

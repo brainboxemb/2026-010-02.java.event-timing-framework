@@ -44,6 +44,11 @@ final class TimestampedFileLogHandler extends Handler {
         this(directory, rotateBytes, retainedFiles, Clock.systemDefaultZone());
     }
 
+    /**
+     * Package-private deterministic-clock seam for filename/retention tests.
+     *
+     * <p>Runtime logging uses the constructor above with the system clock.</p>
+     */
     TimestampedFileLogHandler(
             Path directory,
             int rotateBytes,
