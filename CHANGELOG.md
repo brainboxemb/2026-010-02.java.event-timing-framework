@@ -2,7 +2,7 @@
 
 ## Unreleased
 
-- Add Step-4 VC-ST1-002 separate-process verification for the compact IF-03 registration flow, update VC-ST1-001 to the compact status contract, and add an explicit PR/manual black-box workflow that runs only when system-test verification itself changes.
+- Strengthen Step-4 VC-ST1-002 with a real second SI-01 process run against the same TimingData file, proving persisted LogBook recovery separately from WebSocket reconnect and confirming recovered history is not emitted as a new live commit.
 
 
 - Add the Step-4 Engineering Client Timing view for the compact node-addressed IF-03 contract, including node selection, location/open/close control, capability-gated dev `auto-reg`, bounded LogBook loading, live committed TimingData merge/deduplication and stale/reconnect handling.
@@ -12,11 +12,7 @@
 
 - Compose the reference TimingData persistence stack in the real executable from `io.storage.timingData.path`, including startup recovery, default factory/codec and UTC recorded-time source.
 
-- Move `TimingNodeId` into the shared TimingData library and use the same value type across TimingNode, TimingData, record keys, persistence, application status and configuration while keeping the IF-05 wire value a string.
-
 - Add `TimingNode.registerAccepted(...)` as the shared post-filter registration boundary used by Step-4 engineering simulation and later RFID processing; it creates automatic TimingData through the same ordered durable commit path.
-
-- Move `LocationId` into the shared TimingData library and use the same value type across TimingNode, TimingData construction and codec diagnostics; event/profile-specific allowed values remain outside the shared type.
 
 - Add a small typed local `Event<T>` primitive and publish newly committed TimingData after durable store append and LogBook visibility; listener RuntimeExceptions are isolated and reported without rolling back the commit.
 
@@ -26,7 +22,7 @@
 
 - Add the default/reference IF-05 v1 TimingData JSON codec using Jackson streaming only, with canonical writer ordering, compatible extra-member reads and explicit invalid/version/record-type failures.
 
-- Compact the shared TimingData API by grouping registration variants, manual time source and record key under `TimingData`, construction context under `TimingDataFactory`, and codec failures under `TimingDataCodec`; keep `RegistrationId` and `TimingTimestamp` as standalone value types.
+- Compact the shared TimingData API by grouping registration variants, manual time source and record key under `TimingData`, construction context under `TimingDataFactory`, codec failures under `TimingDataCodec`, and small shared identity values under source-only `TimingDataTypes` as `NodeId`, `LocationId` and `RegistrationId`; keep `TimingTimestamp` standalone.
 
 - Clarify SerialWorker usage in Javadoc and distinguish queue `AdmissionResult` from the later `futureResult()` returned for accepted result-bearing work.
 

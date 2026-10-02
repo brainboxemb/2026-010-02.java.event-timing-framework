@@ -38,9 +38,10 @@ The shared TimingData library models committed registrations with a small common
 `TimingData.ManualRegistration` variants. One immutable `TimingDataFactory.Context`
 carries the common source/sequence/location/time values. A configured
 `TimingDataFactory` returns the typed variant and a matching `TimingDataCodec`
-handles representation. `RegistrationId` is the canonical ID carried by
-committed registration TimingData; source-domain `TagId` / `TeamId` resolution
-happens before this API boundary.
+handles representation. Small shared identity values are grouped under the
+source-only `TimingDataTypes` holder as `NodeId`, `LocationId` and
+`RegistrationId`; `TimingTimestamp` remains a standalone value type. Source-domain
+`TagId` / `TeamId` resolution happens before this API boundary.
 
 The `io.github.brainboxemb.eventtiming` namespace denotes the software-system/product family; reusable SI-01 code is rooted under `io.github.brainboxemb.eventtiming.timingpoint` because SI-01 is the software running locally at a timing observation point. `TimingNode` remains a logical domain aggregate inside that application and is not the package root.
 
@@ -314,8 +315,11 @@ That profile adds `system-test` after the application JAR has been packaged. VC-
 launches the JAR as a child JVM with temporary loopback ports and verifies version, compact
 status, WebSocket snapshot/reconnect and controlled shutdown. VC-ST1-002 drives the Step-4
 public registration flow through IF-03: capabilities, LocationId/open/close, invalid
-OPEN-state location change, dev `auto-reg`, live committed TimingData, bounded LogBook
-recovery and reconnect without historical live replay. The verifier imports no
+OPEN-state location change, dev `auto-reg`, live committed TimingData and bounded
+LogBook history. It then verifies a WebSocket reconnect and a full SI-01 process restart
+against the same TimingData file: the committed record remains queryable while the node
+starts CLOSED with no operational location, and recovered history is not emitted as a
+new `TIMING_DATA_COMMITTED` event. The verifier imports no
 core/application classes, so this remains process-level black-box verification rather than
 another in-process component test.
 
