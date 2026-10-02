@@ -338,7 +338,7 @@ public final class TimingNode {
      * lane. This is therefore the same domain boundary used by the later RFID
      * path and by Step-4 direct-registration engineering simulation.</p>
      */
-    public RegistrationResult registerAccepted(
+    public RegistrationResult commitAutomaticRegistration(
             RegistrationId registrationId,
             TimingTimestamp observationTime) {
         if (registrationId == null) {
@@ -347,13 +347,13 @@ public final class TimingNode {
         if (observationTime == null) {
             throw new IllegalArgumentException("observationTime must not be null");
         }
-        requireTimingDataSupport("registerAccepted");
+        requireTimingDataSupport("commitAutomaticRegistration");
         return execute(
-                () -> doRegisterAccepted(registrationId, observationTime),
-                "registerAccepted");
+                () -> doCommitAutomaticRegistration(registrationId, observationTime),
+                "commitAutomaticRegistration");
     }
 
-    public RegistrationResult registerManual(
+    public RegistrationResult commitManualRegistration(
             RegistrationId registrationId,
             TimingTimestamp effectiveTime,
             ManualTimeSource registrationTimeSource) {
@@ -366,13 +366,13 @@ public final class TimingNode {
         if (registrationTimeSource == null) {
             throw new IllegalArgumentException("registrationTimeSource must not be null");
         }
-        requireTimingDataSupport("registerManual");
+        requireTimingDataSupport("commitManualRegistration");
         return execute(
-                () -> doRegisterManual(
+                () -> doCommitManualRegistration(
                         registrationId,
                         effectiveTime,
                         registrationTimeSource),
-                "registerManual");
+                "commitManualRegistration");
     }
 
     /**
@@ -458,7 +458,7 @@ public final class TimingNode {
         return SetLocationResult.UPDATED;
     }
 
-    private RegistrationResult doRegisterAccepted(
+    private RegistrationResult doCommitAutomaticRegistration(
             RegistrationId registrationId,
             TimingTimestamp observationTime)
             throws TimingDataStore.StoreException {
@@ -473,7 +473,7 @@ public final class TimingNode {
         return commitRegistration(data);
     }
 
-    private RegistrationResult doRegisterManual(
+    private RegistrationResult doCommitManualRegistration(
             RegistrationId registrationId,
             TimingTimestamp effectiveTime,
             ManualTimeSource registrationTimeSource)

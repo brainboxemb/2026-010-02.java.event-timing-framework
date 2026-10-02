@@ -315,7 +315,7 @@ public final class HttpEndpoint implements AutoCloseable {
         }
 
         TimingNode.RegistrationResult result =
-                commandHandler.registerAccepted(registrationId, observationTime);
+                commandHandler.commitAutomaticRegistration(registrationId, observationTime);
         if (result.outcome() == TimingNode.RegistrationResult.Outcome.NODE_NOT_OPEN) {
             sendJson(
                     exchange,

@@ -145,11 +145,11 @@ public final class CommandHandler {
      * <p>The caller does not supply TimingNode identity, active LocationId,
      * sequence number, recordedAt or final TimingData.</p>
      */
-    public TimingNode.RegistrationResult registerAccepted(
+    public TimingNode.RegistrationResult commitAutomaticRegistration(
             RegistrationId registrationId,
             TimingTimestamp observationTime) {
-        return requireOperationalTimingNode("registerAccepted")
-                .registerAccepted(registrationId, observationTime);
+        return requireOperationalTimingNode("commitAutomaticRegistration")
+                .commitAutomaticRegistration(registrationId, observationTime);
     }
 
     /** Returns the number of committed records in the current node LogBook. */
