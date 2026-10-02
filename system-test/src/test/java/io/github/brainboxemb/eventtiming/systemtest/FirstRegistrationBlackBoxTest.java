@@ -43,54 +43,48 @@ public class FirstRegistrationBlackBoxTest {
     private static final long EXIT_TIMEOUT_MILLIS = 10000L;
 
     @Test
-    public void controlsCommitsRecoversAndDoesNotReplayHistoryAsLive() throws Exception {
+    public void controlsCommitsReconnectsRestartsAndRecoversLogBook() throws Exception {
         File appJar = new File(requireProperty("eventTiming.appJar")).getAbsoluteFile();
         assertTrue("Packaged application JAR does not exist: " + appJar, appJar.isFile());
-
-        int[] ports = reservePorts(3);
-        int shellPort = ports[0];
-        int httpPort = ports[1];
-        int webSocketPort = ports[2];
 
         BlackBoxEvidence evidence = BlackBoxEvidence.create(
                 requireProperty("eventTiming.evidenceDir"),
                 "VC-ST1-002");
         File workDirectory = evidence.directory();
-        File configFile = evidence.file("application.yml");
+
+        int[] firstPorts = reservePorts(3);
+        int firstShellPort = firstPorts[0];
+        int firstHttpPort = firstPorts[1];
+        int firstWebSocketPort = firstPorts[2];
+        File firstConfig = evidence.file("application-run-1.yml");
         Files.write(
-                configFile.toPath(),
-                configuration(shellPort, httpPort, webSocketPort)
+                firstConfig.toPath(),
+                configuration(firstShellPort, firstHttpPort, firstWebSocketPort)
                         .getBytes(StandardCharsets.UTF_8));
 
-        Process process = new ProcessBuilder(
-                javaExecutable(),
-                "-jar",
-                appJar.getAbsolutePath(),
-                configFile.getAbsolutePath())
-                .directory(workDirectory)
-                .redirectErrorStream(true)
-                .start();
-
-        OutputCollector collector = new OutputCollector(process.getInputStream());
-        Thread collectorThread = new Thread(collector, "vc-st1-002-process-output");
-        collectorThread.setDaemon(true);
-        collectorThread.start();
-
+        ProcessRun firstRun = null;
+        ProcessRun secondRun = null;
         EventStream events = null;
         EventStream reconnect = null;
+        EventStream recoveredEvents = null;
         boolean passed = false;
         Throwable evidenceFailure = null;
         try {
-            awaitHttpReady(process, httpPort, collector);
+            firstRun = startApplication(
+                    appJar,
+                    firstConfig,
+                    workDirectory,
+                    "vc-st1-002-run-1-output");
+            awaitHttpReady(firstRun.process, firstHttpPort, firstRun.collector);
 
-            events = EventStream.connect(webSocketPort);
+            events = EventStream.connect(firstWebSocketPort);
             String initialSnapshot = events.awaitEvent("STATUS_SNAPSHOT");
             assertContains(initialSnapshot, "\"id\":\"" + NODE_ID + "\"");
             assertContains(initialSnapshot, "\"locationId\":null");
             assertContains(initialSnapshot, "\"state\":\"CLOSED\"");
 
             Response capabilities = request(
-                    httpPort,
+                    firstHttpPort,
                     "GET",
                     "/api/v1/capabilities",
                     null);
@@ -102,7 +96,7 @@ public class FirstRegistrationBlackBoxTest {
             assertContains(capabilities.body, "\"enabled\":true");
 
             Response initialStatus = request(
-                    httpPort,
+                    firstHttpPort,
                     "GET",
                     "/api/v1/status",
                     null);
@@ -110,7 +104,7 @@ public class FirstRegistrationBlackBoxTest {
             assertNodeState(initialStatus.body, null, "CLOSED");
 
             Response location = request(
-                    httpPort,
+                    firstHttpPort,
                     "PUT",
                     nodePath("/location"),
                     "{\"locationId\":24}");
@@ -121,7 +115,7 @@ public class FirstRegistrationBlackBoxTest {
             assertContains(locatedEvent, "\"state\":\"CLOSED\"");
 
             Response open = request(
-                    httpPort,
+                    firstHttpPort,
                     "POST",
                     nodePath("/open"),
                     "");
@@ -132,7 +126,7 @@ public class FirstRegistrationBlackBoxTest {
             assertContains(openedEvent, "\"state\":\"OPEN\"");
 
             Response rejectedLocation = request(
-                    httpPort,
+                    firstHttpPort,
                     "PUT",
                     nodePath("/location"),
                     "{\"locationId\":25}");
@@ -145,7 +139,7 @@ public class FirstRegistrationBlackBoxTest {
                     "\"code\":\"NODE_NOT_CLOSED\"");
 
             Response registration = request(
-                    httpPort,
+                    firstHttpPort,
                     "POST",
                     "/api/v1/dev/node/" + NODE_ID + "/auto-reg",
                     "{"
@@ -159,7 +153,7 @@ public class FirstRegistrationBlackBoxTest {
             assertCommittedRegistration(committedEvent);
 
             Response info = request(
-                    httpPort,
+                    firstHttpPort,
                     "GET",
                     nodePath("/logbook"),
                     null);
@@ -169,7 +163,7 @@ public class FirstRegistrationBlackBoxTest {
             assertContains(info.body, "\"last\":1");
 
             Response page = request(
-                    httpPort,
+                    firstHttpPort,
                     "GET",
                     nodePath("/logbook?from=1&limit=100"),
                     null);
@@ -179,7 +173,7 @@ public class FirstRegistrationBlackBoxTest {
             assertCommittedRegistration(page.body);
 
             Response close = request(
-                    httpPort,
+                    firstHttpPort,
                     "POST",
                     nodePath("/close"),
                     "");
@@ -192,47 +186,113 @@ public class FirstRegistrationBlackBoxTest {
             events.closeBlocking();
             events = null;
 
-            reconnect = EventStream.connect(webSocketPort);
+            reconnect = EventStream.connect(firstWebSocketPort);
             String reconnectSnapshot = reconnect.awaitEvent("STATUS_SNAPSHOT");
             assertContains(reconnectSnapshot, "\"id\":\"" + NODE_ID + "\"");
             assertContains(reconnectSnapshot, "\"state\":\"CLOSED\"");
             assertContains(reconnectSnapshot, "\"locationId\":24");
             reconnect.assertNoEvent("TIMING_DATA_COMMITTED", 750L);
 
-            Response rebuiltInfo = request(
-                    httpPort,
+            Response reconnectedInfo = request(
+                    firstHttpPort,
                     "GET",
                     nodePath("/logbook"),
                     null);
-            assertEquals("Unexpected rebuilt LogBook metadata status", 200, rebuiltInfo.status);
-            assertContains(rebuiltInfo.body, "\"count\":1");
+            assertEquals(
+                    "Unexpected LogBook metadata after WebSocket reconnect",
+                    200,
+                    reconnectedInfo.status);
+            assertContains(reconnectedInfo.body, "\"count\":1");
 
-            Response rebuiltPage = request(
-                    httpPort,
+            Response reconnectedPage = request(
+                    firstHttpPort,
                     "GET",
                     nodePath("/logbook?from=1&limit=100"),
                     null);
-            assertEquals("Unexpected rebuilt LogBook range status", 200, rebuiltPage.status);
-            assertCommittedRegistration(rebuiltPage.body);
-
-            requestControlledShutdown(shellPort);
-            assertTrue(
-                    "Application did not exit after remote-shell quit. Output:\n"
-                            + collector.snapshot(),
-                    process.waitFor(EXIT_TIMEOUT_MILLIS, TimeUnit.MILLISECONDS));
-            collectorThread.join(1000L);
             assertEquals(
-                    "Application exited unsuccessfully. Output:\n"
-                            + collector.snapshot(),
-                    0,
-                    process.exitValue());
-            evidence.verifyRuntimeLogging(collector.snapshot());
+                    "Unexpected LogBook range after WebSocket reconnect",
+                    200,
+                    reconnectedPage.status);
+            assertCommittedRegistration(reconnectedPage.body);
+
+            reconnect.closeBlocking();
+            reconnect = null;
+            assertControlledShutdown(firstRun, firstShellPort);
+
+            File persistedTimingData = evidence.file("timing-data.jsonl");
+            assertTrue(
+                    "First run did not retain timing-data.jsonl",
+                    persistedTimingData.isFile() && persistedTimingData.length() > 0L);
+
+            int[] secondPorts = reservePorts(3);
+            int secondShellPort = secondPorts[0];
+            int secondHttpPort = secondPorts[1];
+            int secondWebSocketPort = secondPorts[2];
+            File secondConfig = evidence.file("application-run-2.yml");
+            Files.write(
+                    secondConfig.toPath(),
+                    configuration(secondShellPort, secondHttpPort, secondWebSocketPort)
+                            .getBytes(StandardCharsets.UTF_8));
+
+            secondRun = startApplication(
+                    appJar,
+                    secondConfig,
+                    workDirectory,
+                    "vc-st1-002-run-2-output");
+            awaitHttpReady(secondRun.process, secondHttpPort, secondRun.collector);
+
+            recoveredEvents = EventStream.connect(secondWebSocketPort);
+            String recoveredSnapshot = recoveredEvents.awaitEvent("STATUS_SNAPSHOT");
+            assertContains(recoveredSnapshot, "\"id\":\"" + NODE_ID + "\"");
+            assertContains(recoveredSnapshot, "\"state\":\"CLOSED\"");
+            assertContains(recoveredSnapshot, "\"locationId\":null");
+            recoveredEvents.assertNoEvent("TIMING_DATA_COMMITTED", 750L);
+
+            Response recoveredStatus = request(
+                    secondHttpPort,
+                    "GET",
+                    "/api/v1/status",
+                    null);
+            assertEquals("Unexpected status after restart", 200, recoveredStatus.status);
+            assertNodeState(recoveredStatus.body, null, "CLOSED");
+
+            Response recoveredInfo = request(
+                    secondHttpPort,
+                    "GET",
+                    nodePath("/logbook"),
+                    null);
+            assertEquals(
+                    "Unexpected recovered LogBook metadata status",
+                    200,
+                    recoveredInfo.status);
+            assertContains(recoveredInfo.body, "\"count\":1");
+            assertContains(recoveredInfo.body, "\"first\":1");
+            assertContains(recoveredInfo.body, "\"last\":1");
+
+            Response recoveredPage = request(
+                    secondHttpPort,
+                    "GET",
+                    nodePath("/logbook?from=1&limit=100"),
+                    null);
+            assertEquals(
+                    "Unexpected recovered LogBook range status",
+                    200,
+                    recoveredPage.status);
+            assertContains(recoveredPage.body, "\"count\":1");
+            assertContains(recoveredPage.body, "\"next\":null");
+            assertCommittedRegistration(recoveredPage.body);
+
+            recoveredEvents.closeBlocking();
+            recoveredEvents = null;
+            assertControlledShutdown(secondRun, secondShellPort);
+
+            evidence.verifyRuntimeLogging(combinedOutput(firstRun, secondRun));
             passed = true;
         } catch (Throwable failure) {
             evidenceFailure = failure;
             throw new AssertionError(
                     "VC-ST1-002 black-box verification failed. Process output:\n"
-                            + collector.snapshot(),
+                            + combinedOutput(firstRun, secondRun),
                     failure);
         } finally {
             if (events != null) {
@@ -241,17 +301,80 @@ public class FirstRegistrationBlackBoxTest {
             if (reconnect != null) {
                 reconnect.closeQuietly();
             }
-            if (process.isAlive()) {
-                process.destroy();
-                if (!process.waitFor(2000L, TimeUnit.MILLISECONDS)) {
-                    process.destroyForcibly();
-                    process.waitFor(2000L, TimeUnit.MILLISECONDS);
-                }
+            if (recoveredEvents != null) {
+                recoveredEvents.closeQuietly();
             }
-            collectorThread.join(1000L);
-            evidence.writeProcessOutput(collector.snapshot());
+            cleanupProcess(firstRun);
+            cleanupProcess(secondRun);
+            evidence.writeProcessOutput(combinedOutput(firstRun, secondRun));
             evidence.writeResult(passed, evidenceFailure);
         }
+    }
+
+    private static ProcessRun startApplication(
+            File appJar,
+            File configFile,
+            File workDirectory,
+            String collectorName)
+            throws IOException {
+        Process process = new ProcessBuilder(
+                javaExecutable(),
+                "-jar",
+                appJar.getAbsolutePath(),
+                configFile.getAbsolutePath())
+                .directory(workDirectory)
+                .redirectErrorStream(true)
+                .start();
+
+        OutputCollector collector = new OutputCollector(process.getInputStream());
+        Thread collectorThread = new Thread(collector, collectorName);
+        collectorThread.setDaemon(true);
+        collectorThread.start();
+        return new ProcessRun(process, collector, collectorThread);
+    }
+
+    private static void assertControlledShutdown(ProcessRun run, int shellPort)
+            throws Exception {
+        requestControlledShutdown(shellPort);
+        assertTrue(
+                "Application did not exit after remote-shell quit. Output:\n"
+                        + run.collector.snapshot(),
+                run.process.waitFor(EXIT_TIMEOUT_MILLIS, TimeUnit.MILLISECONDS));
+        run.collectorThread.join(1000L);
+        assertEquals(
+                "Application exited unsuccessfully. Output:\n"
+                        + run.collector.snapshot(),
+                0,
+                run.process.exitValue());
+    }
+
+    private static void cleanupProcess(ProcessRun run) throws InterruptedException {
+        if (run == null) {
+            return;
+        }
+        if (run.process.isAlive()) {
+            run.process.destroy();
+            if (!run.process.waitFor(2000L, TimeUnit.MILLISECONDS)) {
+                run.process.destroyForcibly();
+                run.process.waitFor(2000L, TimeUnit.MILLISECONDS);
+            }
+        }
+        run.collectorThread.join(1000L);
+    }
+
+    private static String combinedOutput(ProcessRun firstRun, ProcessRun secondRun) {
+        StringBuilder output = new StringBuilder();
+        if (firstRun != null) {
+            output.append("=== run 1: commit and WebSocket reconnect ===")
+                    .append(System.lineSeparator())
+                    .append(firstRun.collector.snapshot());
+        }
+        if (secondRun != null) {
+            output.append("=== run 2: process restart and LogBook recovery ===")
+                    .append(System.lineSeparator())
+                    .append(secondRun.collector.snapshot());
+        }
+        return output.toString();
     }
 
     private static String nodePath(String suffix) {
@@ -493,6 +616,21 @@ public class FirstRegistrationBlackBoxTest {
         private Response(int status, String body) {
             this.status = status;
             this.body = body;
+        }
+    }
+
+    private static final class ProcessRun {
+        private final Process process;
+        private final OutputCollector collector;
+        private final Thread collectorThread;
+
+        private ProcessRun(
+                Process process,
+                OutputCollector collector,
+                Thread collectorThread) {
+            this.process = process;
+            this.collector = collector;
+            this.collectorThread = collectorThread;
         }
     }
 
