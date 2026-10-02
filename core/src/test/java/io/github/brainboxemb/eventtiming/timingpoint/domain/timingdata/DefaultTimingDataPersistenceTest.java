@@ -77,6 +77,36 @@ public class DefaultTimingDataPersistenceTest {
     }
 
     @Test
+    public void duplicateSequenceStopsRecovery() throws Exception {
+        Path file = file();
+        Files.write(
+                file,
+                concat(
+                        codec.encode(data(NODE_ID, 1L)),
+                        new byte[] {'\n'},
+                        codec.encode(data(NODE_ID, 1L)),
+                        new byte[] {'\n'}));
+
+        assertLoadFails(file, "sequence must be 2");
+    }
+
+    @Test
+    public void regressedSequenceStopsRecovery() throws Exception {
+        Path file = file();
+        Files.write(
+                file,
+                concat(
+                        codec.encode(data(NODE_ID, 1L)),
+                        new byte[] {'\n'},
+                        codec.encode(data(NODE_ID, 2L)),
+                        new byte[] {'\n'},
+                        codec.encode(data(NODE_ID, 1L)),
+                        new byte[] {'\n'}));
+
+        assertLoadFails(file, "sequence must be 3");
+    }
+
+    @Test
     public void differentTimingNodeStopsRecovery() throws Exception {
         Path file = file();
         Files.write(
