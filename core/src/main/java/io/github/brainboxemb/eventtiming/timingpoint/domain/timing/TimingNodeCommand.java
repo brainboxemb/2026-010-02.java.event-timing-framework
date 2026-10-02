@@ -18,13 +18,11 @@ public final class TimingNodeCommand<R> {
     }
 
     private final String name;
-    private final boolean timingDataRequired;
     private final Action<R> action;
     private final Completion<R> completion;
 
     TimingNodeCommand(
             String name,
-            boolean timingDataRequired,
             Action<R> action,
             Completion<R> completion) {
         if (name == null || name.trim().isEmpty()) {
@@ -37,17 +35,12 @@ public final class TimingNodeCommand<R> {
             throw new IllegalArgumentException("completion must not be null");
         }
         this.name = name;
-        this.timingDataRequired = timingDataRequired;
         this.action = action;
         this.completion = completion;
     }
 
     String name() {
         return name;
-    }
-
-    boolean requiresTimingData() {
-        return timingDataRequired;
     }
 
     R apply(TimingNodeLogic logic) throws Exception {

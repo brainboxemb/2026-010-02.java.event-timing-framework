@@ -18,9 +18,9 @@ import io.github.brainboxemb.eventtiming.timingpoint.domain.timing.TimingNodeTyp
  */
 public final class TimingNodeCommands {
     private static final TimingNodeCommand<OpenResult> OPEN =
-            simple("open", false, TimingNodeLogic::open);
+            simple("open", TimingNodeLogic::open);
     private static final TimingNodeCommand<CloseResult> CLOSE =
-            simple("close", false, TimingNodeLogic::close);
+            simple("close", TimingNodeLogic::close);
 
     private TimingNodeCommands() {
     }
@@ -40,7 +40,6 @@ public final class TimingNodeCommands {
         }
         return simple(
                 "setLocation",
-                false,
                 logic -> logic.setLocation(locationId));
     }
 
@@ -88,11 +87,9 @@ public final class TimingNodeCommands {
 
     private static <R> TimingNodeCommand<R> simple(
             String name,
-            boolean timingDataRequired,
             TimingNodeCommand.Action<R> action) {
         return new TimingNodeCommand<>(
                 name,
-                timingDataRequired,
                 action,
                 (node, result) -> result);
     }
@@ -103,7 +100,6 @@ public final class TimingNodeCommands {
                     TimingNodeCommand.Action<RegistrationResult> action) {
         return new TimingNodeCommand<>(
                 name,
-                true,
                 action,
                 TimingNode::publishCommitted);
     }

@@ -14,16 +14,14 @@ import java.util.List;
  */
 public final class TimingNodeQueries {
     private static final TimingNodeQuery<Status> STATUS =
-            new TimingNodeQuery<>("status", false, TimingNodeLogic::status);
+            new TimingNodeQuery<>("status", TimingNodeLogic::status);
     private static final TimingNodeQuery<List<TimingData>> TIMING_DATA_SNAPSHOT =
             new TimingNodeQuery<>(
                     "timingDataSnapshot",
-                    true,
                     TimingNodeLogic::timingDataSnapshot);
     private static final TimingNodeQuery<Integer> TIMING_DATA_COUNT =
             new TimingNodeQuery<>(
                     "timingDataCount",
-                    true,
                     TimingNodeLogic::timingDataCount);
 
     private TimingNodeQueries() {
@@ -46,14 +44,12 @@ public final class TimingNodeQueries {
             int limit) {
         return new TimingNodeQuery<>(
                 "timingDataRange",
-                true,
                 logic -> logic.timingDataRange(fromSequence, limit));
     }
 
     public static TimingNodeQuery<List<TimingData>> latestTimingData(int limit) {
         return new TimingNodeQuery<>(
                 "latestTimingData",
-                true,
                 logic -> logic.latestTimingData(limit));
     }
 }

@@ -12,12 +12,10 @@ import java.util.function.Function;
  */
 public final class TimingNodeQuery<R> {
     private final String name;
-    private final boolean timingDataRequired;
     private final Function<TimingNodeLogic, R> reader;
 
     TimingNodeQuery(
             String name,
-            boolean timingDataRequired,
             Function<TimingNodeLogic, R> reader) {
         if (name == null || name.trim().isEmpty()) {
             throw new IllegalArgumentException("name must not be blank");
@@ -26,16 +24,11 @@ public final class TimingNodeQuery<R> {
             throw new IllegalArgumentException("reader must not be null");
         }
         this.name = name;
-        this.timingDataRequired = timingDataRequired;
         this.reader = reader;
     }
 
     String name() {
         return name;
-    }
-
-    boolean requiresTimingData() {
-        return timingDataRequired;
     }
 
     R read(TimingNodeLogic logic) {

@@ -39,10 +39,6 @@ final class TimingNodeLogic {
     private boolean timingDataTailRecovered;
     private Throwable timingDataCommitFailure;
 
-    TimingNodeLogic(TimingNodeId timingNodeId) {
-        this(timingNodeId, null, null, null);
-    }
-
     TimingNodeLogic(
             TimingNodeId timingNodeId,
             TimingDataPersistence timingDataPersistence,
@@ -52,28 +48,25 @@ final class TimingNodeLogic {
             throw new IllegalArgumentException("timingNodeId must not be null");
         }
 
-        boolean hasTimingDataSupport =
-                timingDataPersistence != null || timingDataFactory != null || timeSource != null;
-        boolean hasCompleteTimingDataSupport =
-                timingDataPersistence != null && timingDataFactory != null && timeSource != null;
-        if (hasTimingDataSupport && !hasCompleteTimingDataSupport) {
-            throw new IllegalArgumentException(
-                    "timingDataPersistence, timingDataFactory and timeSource must be configured together");
+        if (timingDataPersistence == null) {
+            throw new IllegalArgumentException("timingDataPersistence must not be null");
+        }
+        if (timingDataFactory == null) {
+            throw new IllegalArgumentException("timingDataFactory must not be null");
+        }
+        if (timeSource == null) {
+            throw new IllegalArgumentException("timeSource must not be null");
         }
 
         this.timingNodeId = timingNodeId;
         this.timingDataPersistence = timingDataPersistence;
         this.timingDataFactory = timingDataFactory;
         this.timeSource = timeSource;
-        this.logBook = hasCompleteTimingDataSupport ? new LogBook(timingNodeId) : null;
+        this.logBook = new LogBook(timingNodeId);
     }
 
     TimingNodeId timingNodeId() {
         return timingNodeId;
-    }
-
-    boolean hasTimingDataSupport() {
-        return logBook != null;
     }
 
     OpenResult open() {
@@ -160,10 +153,6 @@ final class TimingNodeLogic {
     }
 
     void recoverTimingData() throws TimingDataPersistence.PersistenceException {
-        if (logBook == null) {
-            return;
-        }
-
         TimingDataPersistence.LoadResult loadResult = timingDataPersistence.load();
         for (TimingData data : loadResult.records()) {
             logBook.add(data);

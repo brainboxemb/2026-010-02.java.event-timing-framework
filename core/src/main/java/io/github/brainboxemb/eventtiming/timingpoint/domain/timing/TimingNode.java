@@ -49,13 +49,6 @@ public final class TimingNode {
 
     private Throwable startupFailure;
 
-    public TimingNode(TimingNodeId timingNodeId) {
-        this(
-                new TimingNodeLogic(timingNodeId),
-                workerFor(timingNodeId),
-                DEFAULT_OPERATION_TIMEOUT_MILLIS);
-    }
-
     public TimingNode(
             TimingNodeId timingNodeId,
             TimingDataPersistence timingDataPersistence,
@@ -71,34 +64,15 @@ public final class TimingNode {
                 DEFAULT_OPERATION_TIMEOUT_MILLIS);
     }
 
+    /**
+     * Package-private execution seam used only by TimingNode boundary tests.
+     *
+     * <p>Production composition always uses the public constructor and therefore
+     * the default bounded queue and timeout. Tests use this seam only when they
+     * must control worker scheduling or timeout behaviour; it is not an
+     * alternative application composition.</p>
+     */
     TimingNode(
-            TimingNodeId timingNodeId,
-            SerialWorker serialWorker,
-            long operationTimeoutMillis) {
-        this(
-                new TimingNodeLogic(timingNodeId),
-                serialWorker,
-                operationTimeoutMillis);
-    }
-
-    TimingNode(
-            TimingNodeId timingNodeId,
-            SerialWorker serialWorker,
-            long operationTimeoutMillis,
-            TimingDataPersistence timingDataPersistence,
-            TimingDataFactory timingDataFactory,
-            TimeSource timeSource) {
-        this(
-                new TimingNodeLogic(
-                        timingNodeId,
-                        timingDataPersistence,
-                        timingDataFactory,
-                        timeSource),
-                serialWorker,
-                operationTimeoutMillis);
-    }
-
-    private TimingNode(
             TimingNodeLogic logic,
             SerialWorker serialWorker,
             long operationTimeoutMillis) {
@@ -162,9 +136,6 @@ public final class TimingNode {
         if (command == null) {
             throw new IllegalArgumentException("command must not be null");
         }
-        if (command.requiresTimingData()) {
-            requireTimingDataSupport(command.name());
-        }
         return runSerialized(
                 () -> command.complete(this, command.apply(logic)),
                 command.name());
@@ -181,9 +152,6 @@ public final class TimingNode {
     public CommandAdmission submit(TimingNodeCommand<?> command) {
         if (command == null) {
             throw new IllegalArgumentException("command must not be null");
-        }
-        if (command.requiresTimingData()) {
-            requireTimingDataSupport(command.name());
         }
 
         SerialWorker.AdmissionResult admission =
@@ -214,12 +182,10 @@ public final class TimingNode {
     }
 
     public boolean subscribeNewTimingData(Consumer<TimingData> listener) {
-        requireTimingDataSupport("subscribeNewTimingData");
         return newTimingDataEvent.subscribe(listener);
     }
 
     public boolean unsubscribeNewTimingData(Consumer<TimingData> listener) {
-        requireTimingDataSupport("unsubscribeNewTimingData");
         return newTimingDataEvent.unsubscribe(listener);
     }
 
@@ -233,9 +199,6 @@ public final class TimingNode {
     public <R> R query(TimingNodeQuery<R> query) {
         if (query == null) {
             throw new IllegalArgumentException("query must not be null");
-        }
-        if (query.requiresTimingData()) {
-            requireTimingDataSupport(query.name());
         }
         return runSerialized(() -> query.read(logic), query.name());
     }
@@ -258,14 +221,6 @@ public final class TimingNode {
                     delivery.failures().get(0));
         }
         return result;
-    }
-
-    private void requireTimingDataSupport(String operation) {
-        if (!logic.hasTimingDataSupport()) {
-            throw new OperationException(
-                    OperationException.Reason.UNAVAILABLE,
-                    operation + " is unavailable because TimingData recording is not configured");
-        }
     }
 
     private <R> R runSerialized(Callable<R> work, String operation) {
