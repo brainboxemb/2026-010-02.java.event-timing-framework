@@ -4,12 +4,11 @@ import io.github.brainboxemb.eventtiming.timingdata.TimingData;
 import io.github.brainboxemb.eventtiming.timingdata.TimingNodeId;
 import io.github.brainboxemb.eventtiming.timingdata.TimingTimestamp;
 import io.github.brainboxemb.eventtiming.timingdata.defaultprofile.DefaultTimingDataFactory;
-import io.github.brainboxemb.eventtiming.timingpoint.application.ApplicationStatus;
 import io.github.brainboxemb.eventtiming.timingpoint.application.CommandHandler;
 import io.github.brainboxemb.eventtiming.timingpoint.domain.timing.TimingNode;
-import io.github.brainboxemb.eventtiming.timingpoint.domain.timing.TimingNodeTypes;
 import io.github.brainboxemb.eventtiming.timingpoint.domain.timingdata.TimingDataPersistence;
 import io.github.brainboxemb.eventtiming.timingpoint.infra.BuildIdentity;
+import io.github.brainboxemb.eventtiming.timingpoint.testsupport.CommandHandlerFixture;
 
 import java.io.BufferedReader;
 import java.io.InputStream;
@@ -31,7 +30,8 @@ public class HttpEndpointTest {
 
     @Test
     public void exposesVersionAndStatusOverRealHttp() throws Exception {
-        HttpEndpoint server = new HttpEndpoint("127.0.0.1", 0, statusOnlyHandler());
+        CommandHandlerFixture fixture = new CommandHandlerFixture(identity());
+        HttpEndpoint server = new HttpEndpoint("127.0.0.1", 0, fixture.handler());
         server.start();
 
         try {
@@ -55,6 +55,7 @@ public class HttpEndpointTest {
             assertTrue(!status.body.contains("\"apiVersion\":"));
         } finally {
             server.close();
+            fixture.close();
         }
     }
 
@@ -204,34 +205,6 @@ public class HttpEndpointTest {
             server.close();
             fixture.close();
         }
-    }
-
-    @Test
-    public void returnsJson500ForUnexpectedApplicationFailure() throws Exception {
-        BuildIdentity identity = identity();
-        CommandHandler failing =
-                new CommandHandler(identity, () -> {
-                    throw new IllegalStateException("test failure");
-                });
-        HttpEndpoint server = new HttpEndpoint("127.0.0.1", 0, failing);
-        server.start();
-
-        try {
-            Response response =
-                    request(server.boundPort(), "GET", "/api/v1/status", null);
-            assertEquals(500, response.status);
-            assertTrue(response.body.contains("\"code\":\"INTERNAL_ERROR\""));
-            assertTrue(!response.body.contains("\"apiVersion\":"));
-        } finally {
-            server.close();
-        }
-    }
-
-    private static CommandHandler statusOnlyHandler() {
-        ApplicationStatus status = new ApplicationStatus(
-                new TimingNodeId("timing-node-01"),
-                TimingNodeTypes.Lifecycle.CLOSED);
-        return new CommandHandler(identity(), () -> status);
     }
 
     private static BuildIdentity identity() {

@@ -1,10 +1,7 @@
 package io.github.brainboxemb.eventtiming.timingpoint.presentation.interfaces.console;
 
-import io.github.brainboxemb.eventtiming.timingpoint.application.ApplicationStatus;
-import io.github.brainboxemb.eventtiming.timingpoint.application.CommandHandler;
-import io.github.brainboxemb.eventtiming.timingpoint.domain.timing.TimingNodeTypes;
-import io.github.brainboxemb.eventtiming.timingdata.TimingNodeId;
 import io.github.brainboxemb.eventtiming.timingpoint.infra.BuildIdentity;
+import io.github.brainboxemb.eventtiming.timingpoint.testsupport.CommandHandlerFixture;
 
 import java.io.StringReader;
 import java.io.StringWriter;
@@ -20,13 +17,15 @@ public class LocalConsoleTest {
     public void helpVersionStatusAndQuitUseSharedApplicationBoundary() {
         AtomicBoolean stopped = new AtomicBoolean(false);
         StringWriter output = new StringWriter();
-        LocalConsole console = new LocalConsole(
-                commandHandler(),
-                () -> stopped.set(true),
-                new StringReader("help\nversion\nstatus\nquit\n"),
-                output);
+        try (CommandHandlerFixture fixture = new CommandHandlerFixture(identity())) {
+            LocalConsole console = new LocalConsole(
+                    fixture.handler(),
+                    () -> stopped.set(true),
+                    new StringReader("help\nversion\nstatus\nquit\n"),
+                    output);
 
-        console.run();
+            console.run();
+        }
 
         String text = output.toString();
         assertTrue(text.contains("help     Show available commands"));
@@ -49,13 +48,15 @@ public class LocalConsoleTest {
     @Test
     public void exitAlsoStopsApplication() {
         AtomicBoolean stopped = new AtomicBoolean(false);
-        LocalConsole console = new LocalConsole(
-                commandHandler(),
-                () -> stopped.set(true),
-                new StringReader("exit\n"),
-                new StringWriter());
+        try (CommandHandlerFixture fixture = new CommandHandlerFixture(identity())) {
+            LocalConsole console = new LocalConsole(
+                    fixture.handler(),
+                    () -> stopped.set(true),
+                    new StringReader("exit\n"),
+                    new StringWriter());
 
-        console.run();
+            console.run();
+        }
 
         assertTrue(stopped.get());
     }
@@ -64,30 +65,27 @@ public class LocalConsoleTest {
     public void unknownCommandDoesNotStopApplication() {
         AtomicBoolean stopped = new AtomicBoolean(false);
         StringWriter output = new StringWriter();
-        LocalConsole console = new LocalConsole(
-                commandHandler(),
-                () -> stopped.set(true),
-                new StringReader("wat\n"),
-                output);
+        try (CommandHandlerFixture fixture = new CommandHandlerFixture(identity())) {
+            LocalConsole console = new LocalConsole(
+                    fixture.handler(),
+                    () -> stopped.set(true),
+                    new StringReader("wat\n"),
+                    output);
 
-        console.run();
+            console.run();
+        }
 
         assertFalse(stopped.get());
         assertTrue(output.toString().contains("Unknown command: wat"));
     }
 
-    private static CommandHandler commandHandler() {
-        BuildIdentity identity = BuildIdentity.firstApiVersion(
+    private static BuildIdentity identity() {
+        return BuildIdentity.firstApiVersion(
                 "event-timing-app",
                 "test-version",
                 "abc123def456",
                 "feature/test",
                 "local",
                 false);
-        return new CommandHandler(
-                identity,
-                () -> new ApplicationStatus(
-                        new TimingNodeId("timing-node-01"),
-                        TimingNodeTypes.Lifecycle.CLOSED));
     }
 }

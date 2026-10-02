@@ -1,10 +1,7 @@
 package io.github.brainboxemb.eventtiming.timingpoint.presentation.interfaces.shell;
 
-import io.github.brainboxemb.eventtiming.timingpoint.application.ApplicationStatus;
-import io.github.brainboxemb.eventtiming.timingpoint.application.CommandHandler;
-import io.github.brainboxemb.eventtiming.timingpoint.domain.timing.TimingNodeTypes;
-import io.github.brainboxemb.eventtiming.timingdata.TimingNodeId;
 import io.github.brainboxemb.eventtiming.timingpoint.infra.BuildIdentity;
+import io.github.brainboxemb.eventtiming.timingpoint.testsupport.CommandHandlerFixture;
 
 import java.io.InputStream;
 import java.io.OutputStreamWriter;
@@ -23,8 +20,9 @@ public class RemoteShellServerTest {
 
     @Test
     public void acceptsFirstCommandBeforeClientReadsBanner() throws Exception {
+        CommandHandlerFixture fixture = new CommandHandlerFixture(identity());
         RemoteShellServer server =
-                new RemoteShellServer("127.0.0.1", 0, commandHandler(), () -> { });
+                new RemoteShellServer("127.0.0.1", 0, fixture.handler(), () -> { });
         server.start();
 
         try (Socket client = connect(server.boundPort())) {
@@ -42,14 +40,16 @@ public class RemoteShellServerTest {
             assertFalse(response.contains("Unknown command"));
         } finally {
             server.close();
+            fixture.close();
         }
     }
 
     @Test
     public void reconnectsAfterDisconnectAndUsesSharedShutdownCommand() throws Exception {
         AtomicBoolean shutdown = new AtomicBoolean(false);
+        CommandHandlerFixture fixture = new CommandHandlerFixture(identity());
         RemoteShellServer server =
-                new RemoteShellServer("127.0.0.1", 0, commandHandler(), () -> shutdown.set(true));
+                new RemoteShellServer("127.0.0.1", 0, fixture.handler(), () -> shutdown.set(true));
         server.start();
 
         try {
@@ -79,6 +79,7 @@ public class RemoteShellServerTest {
             assertTrue(shutdown.get());
         } finally {
             server.close();
+            fixture.close();
         }
     }
 
@@ -110,18 +111,13 @@ public class RemoteShellServerTest {
         return value.toString();
     }
 
-    private static CommandHandler commandHandler() {
-        BuildIdentity identity = BuildIdentity.firstApiVersion(
+    private static BuildIdentity identity() {
+        return BuildIdentity.firstApiVersion(
                 "event-timing-app",
                 "test-version",
                 "abc123def456",
                 "feature/test",
                 "local",
                 false);
-        return new CommandHandler(
-                identity,
-                () -> new ApplicationStatus(
-                        new TimingNodeId("timing-node-01"),
-                        TimingNodeTypes.Lifecycle.CLOSED));
     }
 }
