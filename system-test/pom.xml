@@ -35,6 +35,7 @@
           <systemPropertyVariables>
             <eventTiming.appJar>${maven.multiModuleProjectDirectory}/app/target/event-timing-app-${project.version}.jar</eventTiming.appJar>
             <eventTiming.expectedProjectVersion>${project.version}</eventTiming.expectedProjectVersion>
+            <eventTiming.evidenceDir>${project.build.directory}/evidence</eventTiming.evidenceDir>
           </systemPropertyVariables>
         </configuration>
       </plugin>
