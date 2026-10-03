@@ -113,14 +113,17 @@ future event types remain visible as raw diagnostics.
 
 ### Logs
 
-The **Logs** tab has two explicit sources:
+The **Logs** tab has two explicit sources in this order:
 
-- **Client** — retained local Development Client startup/configuration/connection/request
-  diagnostics;
-- **SI-01 / Device** — live records from the connected LoggingServer plus temporary
-  runtime log-level control.
+- **Device Log** — live records from the connected SI-01 `LoggingServer`, with its own
+  current-level display and temporary runtime level control;
+- **Client Log** — retained local Development Client startup/configuration/connection/request
+  diagnostics, with an independent current-level display and runtime threshold control.
 
-The sources remain independent: the Client log is available when SI-01 is offline.
+The sources and level states remain independent. **Client Log** remains available and its
+level remains controllable when SI-01 is offline. A client-level change is runtime-only;
+the configured startup level is restored on the next Development Client start.
+
 Both sources use the readable project log-line shape
 `HH:mm:ss.SSS - [LEVEL] - message - [sourceClass.sourceMethod]`; Development Client
 records use their actual caller source context rather than one generic client marker.
