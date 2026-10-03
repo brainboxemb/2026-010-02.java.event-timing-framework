@@ -121,6 +121,9 @@ The **Logs** tab has two explicit sources:
   runtime log-level control.
 
 The sources remain independent: the Client log is available when SI-01 is offline.
+Both sources use the readable project log-line shape
+`HH:mm:ss.SSS - [LEVEL] - message - [sourceClass.sourceMethod]`; Development Client
+records use their actual caller source context rather than one generic client marker.
 
 ### Terminal
 
@@ -140,6 +143,7 @@ the API workbench:
 - composes RegistrationId from the presentation prefix + numeric field and converts
   readable date/time to the canonical API timestamp at send time;
 - shows the returned source `seq` as the operation result;
+- shows committed TimingData **Type** and **Code** in separate LogBook columns;
 - queries LogBook metadata without downloading the full LogBook;
 - loads bounded LogBook pages and merges live committed TimingData by stable
   `TimingNodeId + sequenceNumber` key;
@@ -205,11 +209,9 @@ Screenshot generation remains presentation evidence rather than behavioural proo
 
 ## VC-ST1-003 transition
 
-Issue #127 / `VC-ST1-003` still owns the manual Step-4 state-gated Development Client
-verification. The API-first implementation intentionally changes those gating rules, so
-the API-first PR must remain separate from that evidence and must not replace the
-revision being verified until #127 has recorded its result. `STEP4-DEMO.md` therefore
-remains the Step-4 procedure rather than being rewritten to match the new workbench.
+Issue #127 / `VC-ST1-003` owns the manual running-system Development Client
+verification against the current API-first workbench. `STEP4-DEMO.md` is the maintained
+procedure for that baseline.
 
 ## Verify
 

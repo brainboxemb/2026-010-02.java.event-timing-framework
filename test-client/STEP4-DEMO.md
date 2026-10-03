@@ -114,7 +114,7 @@ acceptance; the client does not reimplement those acceptance rules locally.
 ## Reconnect / resynchronisation scenario
 
 1. Open the **Terminal** tab, connect to `127.0.0.1:8023` and enter `quit`.
-2. Verify the application exits cleanly and the Timing view becomes stale or
+2. Verify the application exits cleanly and the API workbench becomes stale or
    disconnected.
 3. Keep `data\step4-demo-timing-data.jsonl`; restart SI-01 with the same demo
    config.

@@ -257,14 +257,13 @@ With JDK 17 selected:
 .\mvnw.cmd -f test-client\pom.xml javafx:run
 ```
 
-The **Status** tab defaults to `http://127.0.0.1:8081` and provides **Get Version** and
-**Get Status** with parsed fields plus raw JSON. The **Events** tab defaults to
-`ws://127.0.0.1:8082/api/v1/events` and shows status plus committed TimingData events.
-The Step-4 **Timing** tab addresses a selected TimingNode, uses one OPEN request carrying
-the entered LocationId while retaining separate closed-state Set Location control,
-provides capability-gated dev `auto-reg`, and rebuilds bounded LogBook state across
-reconnect. The **Terminal** tab connects directly to the development shell on
-`127.0.0.1:8023`, so manual shell verification does not require a separate PuTTY session.
+The **API** tab is the primary work surface for Version/Status, selected TimingNode
+inspection, OPEN-with-LocationId, Close, dev `auto-reg`, bounded LogBook history and
+raw API/selected-record inspection. The LogBook table shows TimingData **Type** and
+**Code** separately. **Events** uses
+`ws://127.0.0.1:8082/api/v1/events` for status/TimingData event inspection.
+**Logs** keeps Development Client and SI-01/Device records as distinct sources, and
+**Terminal** connects directly to the development shell on `127.0.0.1:8023`.
 
 See `test-client/README.md`; the formal Step-4 V04 manual flow is in
 `test-client/STEP4-DEMO.md`.
