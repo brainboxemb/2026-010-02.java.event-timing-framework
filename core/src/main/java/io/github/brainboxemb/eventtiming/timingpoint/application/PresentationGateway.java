@@ -21,16 +21,17 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Shared transport-independent application boundary for client commands and queries.
+ * Shared transport-independent application gateway for Presentation.
  *
  * <p>This class is intentionally small. It is not a command bus, mediator framework or generic
  * message registry. Presentation adapters use these methods instead of calling TimingNode
  * directly, so HTTP, WebSocket, terminal and Engineering Client paths share one application
- * boundary. State-changing application commands map to typed TimingNode commands;
- * application reads map to typed TimingNode queries.</p>
+ * gateway. State-changing operations map to typed TimingNode commands, consistency-sensitive
+ * reads map to typed TimingNode queries, and presentation-facing application metadata,
+ * capabilities and event sources are exposed through the same gateway.</p>
  */
-public final class CommandHandler {
-    private static final Logger LOG = LoggerFactory.getLogger(CommandHandler.class);
+public final class PresentationGateway {
+    private static final Logger LOG = LoggerFactory.getLogger(PresentationGateway.class);
     /** First Step-4 engineering capability set. */
     public static final class Capabilities {
         private final boolean directRegistrationSimulationSupported;
@@ -62,9 +63,9 @@ public final class CommandHandler {
     private final Event<ApplicationStatus> statusChangedEvent = new Event<>();
 
     /**
-     * Creates the application boundary for one fully composed TimingNode.
+     * Creates the presentation-facing application gateway for one fully composed TimingNode.
      */
-    public CommandHandler(BuildIdentity buildIdentity, TimingNode timingNode) {
+    public PresentationGateway(BuildIdentity buildIdentity, TimingNode timingNode) {
         if (buildIdentity == null) {
             throw new IllegalArgumentException("buildIdentity must not be null");
         }

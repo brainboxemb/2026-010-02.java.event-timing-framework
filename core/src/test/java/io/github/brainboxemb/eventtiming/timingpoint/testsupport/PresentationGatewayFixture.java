@@ -4,7 +4,7 @@ import io.github.brainboxemb.eventtiming.timingdata.TimingData;
 import io.github.brainboxemb.eventtiming.timingdata.TimingDataTypes.NodeId;
 import io.github.brainboxemb.eventtiming.timingdata.TimingTimestamp;
 import io.github.brainboxemb.eventtiming.timingdata.defaultprofile.DefaultTimingDataFactory;
-import io.github.brainboxemb.eventtiming.timingpoint.application.CommandHandler;
+import io.github.brainboxemb.eventtiming.timingpoint.application.PresentationGateway;
 import io.github.brainboxemb.eventtiming.timingpoint.domain.timing.TimingNode;
 import io.github.brainboxemb.eventtiming.timingpoint.domain.timingdata.TimingDataPersistence;
 import io.github.brainboxemb.eventtiming.timingpoint.infra.BuildIdentity;
@@ -12,28 +12,28 @@ import io.github.brainboxemb.eventtiming.timingpoint.infra.BuildIdentity;
 import java.util.Collections;
 
 /**
- * Complete running TimingNode/CommandHandler composition for presentation tests.
+ * Complete running TimingNode/PresentationGateway composition for presentation tests.
  *
- * <p>This keeps test convenience out of the production CommandHandler API.</p>
+ * <p>This keeps test convenience out of the production PresentationGateway API.</p>
  */
-public final class CommandHandlerFixture implements AutoCloseable {
+public final class PresentationGatewayFixture implements AutoCloseable {
     private static final TimingTimestamp RECORDED_AT =
             TimingTimestamp.parse("2026-10-01T12:00:01.000000000Z");
 
     private final TimingNode node;
-    private final CommandHandler handler;
+    private final PresentationGateway handler;
 
-    public CommandHandlerFixture(BuildIdentity identity) {
+    public PresentationGatewayFixture(BuildIdentity identity) {
         node = new TimingNode(
                 new NodeId("timing-node-01"),
                 new MemoryPersistence(),
                 new DefaultTimingDataFactory(),
                 () -> RECORDED_AT);
-        handler = new CommandHandler(identity, node);
+        handler = new PresentationGateway(identity, node);
         node.start();
     }
 
-    public CommandHandler handler() {
+    public PresentationGateway handler() {
         return handler;
     }
 

@@ -22,7 +22,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 
-public class CommandHandlerTest {
+public class PresentationGatewayTest {
     private static final TimingTimestamp OBSERVATION_TIME =
             TimingTimestamp.parse("2026-10-01T12:00:00.000000000Z");
     private static final TimingTimestamp RECORDED_AT =
@@ -32,7 +32,7 @@ public class CommandHandlerTest {
     public void versionReturnsAuthoritativeBuildIdentity() {
         BuildIdentity identity = identity();
         TimingNode node = node(new RecordingStore());
-        CommandHandler handler = new CommandHandler(identity, node);
+        PresentationGateway handler = new PresentationGateway(identity, node);
 
         assertSame(identity, handler.version());
     }
@@ -40,7 +40,7 @@ public class CommandHandlerTest {
     @Test
     public void statusComesFromTimingNode() {
         TimingNode node = node(new RecordingStore());
-        CommandHandler handler = new CommandHandler(identity(), node);
+        PresentationGateway handler = new PresentationGateway(identity(), node);
 
         node.start();
         try {
@@ -58,7 +58,7 @@ public class CommandHandlerTest {
     public void fullHandlerOwnsFirstRegistrationApplicationBoundary() {
         RecordingStore store = new RecordingStore();
         TimingNode node = node(store);
-        CommandHandler handler = new CommandHandler(identity(), node);
+        PresentationGateway handler = new PresentationGateway(identity(), node);
         List<ApplicationStatus> statusChanges = new ArrayList<>();
         List<TimingData> committed = new ArrayList<>();
 
@@ -67,7 +67,7 @@ public class CommandHandlerTest {
             handler.statusChanged().subscribe(statusChanges::add);
             handler.newTimingData().subscribe(committed::add);
 
-            CommandHandler.Capabilities capabilities = handler.capabilities();
+            PresentationGateway.Capabilities capabilities = handler.capabilities();
             assertTrue(capabilities.directRegistrationSimulationSupported());
             assertTrue(capabilities.directRegistrationSimulationEnabled());
 
@@ -131,12 +131,12 @@ public class CommandHandlerTest {
 
     @Test(expected = IllegalArgumentException.class)
     public void rejectsMissingBuildIdentity() {
-        new CommandHandler(null, node(new RecordingStore()));
+        new PresentationGateway(null, node(new RecordingStore()));
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void rejectsMissingTimingNode() {
-        new CommandHandler(identity(), null);
+        new PresentationGateway(identity(), null);
     }
 
     private static TimingNode node(RecordingStore store) {

@@ -106,7 +106,7 @@ public final class Composition {
         HttpEndpoint server = new HttpEndpoint(
                 endpoint.bindAddress(),
                 endpoint.port(),
-                application.commandHandler());
+                application.presentationGateway());
         server.start();
         return server;
     }
@@ -122,7 +122,7 @@ public final class Composition {
         WebSocketEndpoint server = new WebSocketEndpoint(
                 endpoint.bindAddress(),
                 endpoint.port(),
-                application.commandHandler());
+                application.presentationGateway());
         server.start();
         return server;
     }
@@ -137,7 +137,7 @@ public final class Composition {
         RemoteShellServer server = new RemoteShellServer(
                 endpoint.bindAddress(),
                 endpoint.port(),
-                application.commandHandler(),
+                application.presentationGateway(),
                 application::close);
         server.start();
         return server;
@@ -145,7 +145,7 @@ public final class Composition {
 
     private static void startLocalConsole(Application application) {
         LocalConsole console = new LocalConsole(
-                application.commandHandler(),
+                application.presentationGateway(),
                 application::close,
                 new InputStreamReader(System.in),
                 new OutputStreamWriter(System.out));

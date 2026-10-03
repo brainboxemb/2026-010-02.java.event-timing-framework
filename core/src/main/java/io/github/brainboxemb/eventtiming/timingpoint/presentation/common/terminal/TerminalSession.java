@@ -1,7 +1,7 @@
 package io.github.brainboxemb.eventtiming.timingpoint.presentation.common.terminal;
 
 import io.github.brainboxemb.eventtiming.timingpoint.application.ApplicationStatus;
-import io.github.brainboxemb.eventtiming.timingpoint.application.CommandHandler;
+import io.github.brainboxemb.eventtiming.timingpoint.application.PresentationGateway;
 import io.github.brainboxemb.eventtiming.timingpoint.infra.BuildIdentity;
 
 import java.io.BufferedReader;
@@ -15,17 +15,17 @@ import java.util.Locale;
 public final class TerminalSession {
     private static final String PROMPT = "event-timing> ";
 
-    private final CommandHandler commandHandler;
+    private final PresentationGateway presentationGateway;
     private final Runnable shutdown;
 
-    public TerminalSession(CommandHandler commandHandler, Runnable shutdown) {
-        if (commandHandler == null) {
-            throw new IllegalArgumentException("commandHandler must not be null");
+    public TerminalSession(PresentationGateway presentationGateway, Runnable shutdown) {
+        if (presentationGateway == null) {
+            throw new IllegalArgumentException("presentationGateway must not be null");
         }
         if (shutdown == null) {
             throw new IllegalArgumentException("shutdown must not be null");
         }
-        this.commandHandler = commandHandler;
+        this.presentationGateway = presentationGateway;
         this.shutdown = shutdown;
     }
 
@@ -95,7 +95,7 @@ public final class TerminalSession {
     }
 
     private void showVersion(PrintWriter output) {
-        BuildIdentity identity = commandHandler.version();
+        BuildIdentity identity = presentationGateway.version();
         output.println(identity.application());
         output.println("  Version      : " + identity.version());
         output.println("  Revision     : " + identity.revision());
@@ -105,7 +105,7 @@ public final class TerminalSession {
     }
 
     private void showStatus(PrintWriter output) {
-        ApplicationStatus status = commandHandler.status();
+        ApplicationStatus status = presentationGateway.status();
         output.println("Timing node");
         output.println("  Id        : " + status.timingNodeId().value());
         output.println("  Lifecycle : " + status.timingNodeLifecycle().name());

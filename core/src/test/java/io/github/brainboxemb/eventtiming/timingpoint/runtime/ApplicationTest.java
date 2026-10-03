@@ -27,17 +27,17 @@ public class ApplicationTest {
 
         assertSame(identity, application.buildIdentity());
         assertSame(timingNode, application.timingNode());
-        assertSame(identity, application.commandHandler().version());
+        assertSame(identity, application.presentationGateway().version());
         assertEquals(Lifecycle.State.NEW, application.state());
 
         application.start();
         try {
             assertEquals(
                     "timing-node-01",
-                    application.commandHandler().status().timingNodeId().value());
+                    application.presentationGateway().status().timingNodeId().value());
             assertEquals(
                     TimingNodeTypes.Lifecycle.CLOSED,
-                    application.commandHandler().status().timingNodeLifecycle());
+                    application.presentationGateway().status().timingNodeLifecycle());
         } finally {
             application.close();
         }

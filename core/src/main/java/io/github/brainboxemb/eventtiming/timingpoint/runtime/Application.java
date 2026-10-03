@@ -1,6 +1,6 @@
 package io.github.brainboxemb.eventtiming.timingpoint.runtime;
 
-import io.github.brainboxemb.eventtiming.timingpoint.application.CommandHandler;
+import io.github.brainboxemb.eventtiming.timingpoint.application.PresentationGateway;
 import io.github.brainboxemb.eventtiming.timingpoint.domain.timing.TimingNode;
 import io.github.brainboxemb.eventtiming.timingpoint.infra.BuildIdentity;
 
@@ -8,7 +8,7 @@ import io.github.brainboxemb.eventtiming.timingpoint.infra.BuildIdentity;
 public final class Application implements AutoCloseable {
     private final BuildIdentity buildIdentity;
     private final TimingNode timingNode;
-    private final CommandHandler commandHandler;
+    private final PresentationGateway presentationGateway;
     private final Lifecycle lifecycle;
 
     Application(BuildIdentity buildIdentity, TimingNode timingNode) {
@@ -20,7 +20,7 @@ public final class Application implements AutoCloseable {
         }
         this.buildIdentity = buildIdentity;
         this.timingNode = timingNode;
-        this.commandHandler = new CommandHandler(buildIdentity, timingNode);
+        this.presentationGateway = new PresentationGateway(buildIdentity, timingNode);
         this.lifecycle = new Lifecycle(buildIdentity);
     }
 
@@ -34,8 +34,8 @@ public final class Application implements AutoCloseable {
         }
     }
 
-    public CommandHandler commandHandler() {
-        return commandHandler;
+    public PresentationGateway presentationGateway() {
+        return presentationGateway;
     }
 
     TimingNode timingNode() {

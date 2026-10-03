@@ -1,6 +1,6 @@
 package io.github.brainboxemb.eventtiming.timingpoint.presentation.interfaces.console;
 
-import io.github.brainboxemb.eventtiming.timingpoint.application.CommandHandler;
+import io.github.brainboxemb.eventtiming.timingpoint.application.PresentationGateway;
 import io.github.brainboxemb.eventtiming.timingpoint.presentation.common.terminal.TerminalSession;
 
 import java.io.IOException;
@@ -16,7 +16,7 @@ public final class LocalConsole implements Runnable {
     private final Writer output;
 
     public LocalConsole(
-            CommandHandler commandHandler,
+            PresentationGateway presentationGateway,
             Runnable shutdown,
             Reader input,
             Writer output) {
@@ -26,7 +26,7 @@ public final class LocalConsole implements Runnable {
         if (output == null) {
             throw new IllegalArgumentException("output must not be null");
         }
-        this.session = new TerminalSession(commandHandler, shutdown);
+        this.session = new TerminalSession(presentationGateway, shutdown);
         this.input = input;
         this.output = output;
     }
