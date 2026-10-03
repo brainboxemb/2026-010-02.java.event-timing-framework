@@ -67,7 +67,7 @@ final class CompactLogFormatter extends Formatter {
             className = "unknown";
         }
         String displayClass = className.startsWith(PROJECT_PACKAGE_PREFIX)
-                ? shortClassName(className)
+                ? projectSourceName(className)
                 : className;
         if (methodName == null || methodName.trim().isEmpty()) {
             return displayClass;
@@ -75,8 +75,15 @@ final class CompactLogFormatter extends Formatter {
         return displayClass + "." + methodName;
     }
 
-    private static String shortClassName(String className) {
-        int separator = className.lastIndexOf('.');
-        return separator < 0 ? className : className.substring(separator + 1);
+    private static String projectSourceName(String className) {
+        String relative = className.substring(PROJECT_PACKAGE_PREFIX.length());
+        int classSeparator = relative.lastIndexOf('.');
+        if (classSeparator < 0) {
+            return relative;
+        }
+        int packageSeparator = relative.lastIndexOf('.', classSeparator - 1);
+        return packageSeparator < 0
+                ? relative
+                : relative.substring(packageSeparator + 1);
     }
 }
