@@ -29,8 +29,8 @@ import org.slf4j.LoggerFactory;
  * boundary. State-changing application commands map to typed TimingNode commands;
  * application reads map to typed TimingNode queries.</p>
  */
-public final class CommandHandler {
-    private static final Logger LOG = LoggerFactory.getLogger(CommandHandler.class);
+public final class PresentationGateway {
+    private static final Logger LOG = LoggerFactory.getLogger(PresentationGateway.class);
     /** First Step-4 engineering capability set. */
     public static final class Capabilities {
         private final boolean directRegistrationSimulationSupported;
@@ -64,7 +64,7 @@ public final class CommandHandler {
     /**
      * Creates the application boundary for one fully composed TimingNode.
      */
-    public CommandHandler(BuildIdentity buildIdentity, TimingNode timingNode) {
+    public PresentationGateway(BuildIdentity buildIdentity, TimingNode timingNode) {
         if (buildIdentity == null) {
             throw new IllegalArgumentException("buildIdentity must not be null");
         }

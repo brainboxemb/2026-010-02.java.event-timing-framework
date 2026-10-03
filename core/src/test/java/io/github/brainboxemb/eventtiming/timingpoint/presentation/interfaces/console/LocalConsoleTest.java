@@ -1,7 +1,7 @@
 package io.github.brainboxemb.eventtiming.timingpoint.presentation.interfaces.console;
 
 import io.github.brainboxemb.eventtiming.timingpoint.infra.BuildIdentity;
-import io.github.brainboxemb.eventtiming.timingpoint.testsupport.CommandHandlerFixture;
+import io.github.brainboxemb.eventtiming.timingpoint.testsupport.PresentationGatewayFixture;
 
 import java.io.StringReader;
 import java.io.StringWriter;
@@ -17,7 +17,7 @@ public class LocalConsoleTest {
     public void helpVersionStatusAndQuitUseSharedApplicationBoundary() {
         AtomicBoolean stopped = new AtomicBoolean(false);
         StringWriter output = new StringWriter();
-        try (CommandHandlerFixture fixture = new CommandHandlerFixture(identity())) {
+        try (PresentationGatewayFixture fixture = new PresentationGatewayFixture(identity())) {
             LocalConsole console = new LocalConsole(
                     fixture.handler(),
                     () -> stopped.set(true),
@@ -48,7 +48,7 @@ public class LocalConsoleTest {
     @Test
     public void exitAlsoStopsApplication() {
         AtomicBoolean stopped = new AtomicBoolean(false);
-        try (CommandHandlerFixture fixture = new CommandHandlerFixture(identity())) {
+        try (PresentationGatewayFixture fixture = new PresentationGatewayFixture(identity())) {
             LocalConsole console = new LocalConsole(
                     fixture.handler(),
                     () -> stopped.set(true),
@@ -65,7 +65,7 @@ public class LocalConsoleTest {
     public void unknownCommandDoesNotStopApplication() {
         AtomicBoolean stopped = new AtomicBoolean(false);
         StringWriter output = new StringWriter();
-        try (CommandHandlerFixture fixture = new CommandHandlerFixture(identity())) {
+        try (PresentationGatewayFixture fixture = new PresentationGatewayFixture(identity())) {
             LocalConsole console = new LocalConsole(
                     fixture.handler(),
                     () -> stopped.set(true),

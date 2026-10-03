@@ -11,7 +11,7 @@ import io.github.brainboxemb.eventtiming.timingdata.TimingDataTypes.Registration
 import io.github.brainboxemb.eventtiming.timingdata.TimingDataCodec;
 import io.github.brainboxemb.eventtiming.timingdata.TimingTimestamp;
 import io.github.brainboxemb.eventtiming.timingdata.defaultprofile.DefaultTimingDataCodec;
-import io.github.brainboxemb.eventtiming.timingpoint.application.CommandHandler;
+import io.github.brainboxemb.eventtiming.timingpoint.application.PresentationGateway;
 import io.github.brainboxemb.eventtiming.timingpoint.domain.timing.TimingNodeTypes.CloseResult;
 import io.github.brainboxemb.eventtiming.timingpoint.domain.timing.TimingNodeTypes.OpenResult;
 import io.github.brainboxemb.eventtiming.timingpoint.domain.timing.TimingNodeTypes.OperationException;
@@ -35,7 +35,7 @@ import org.slf4j.LoggerFactory;
  * HTTP/JSON transport for IF-03.
  *
  * <p>This adapter owns only HTTP and JSON mapping. All state-dependent decisions
- * are delegated to {@link CommandHandler}; it never calls TimingNode directly.</p>
+ * are delegated to {@link PresentationGateway}; it never calls TimingNode directly.</p>
  */
 public final class HttpEndpoint implements AutoCloseable {
     private static final Logger LOG = LoggerFactory.getLogger(HttpEndpoint.class);
@@ -44,26 +44,26 @@ public final class HttpEndpoint implements AutoCloseable {
 
     private final String bindAddress;
     private final int port;
-    private final CommandHandler commandHandler;
+    private final PresentationGateway presentationGateway;
     private final TimingDataCodec timingDataCodec;
     private final JsonFactory jsonFactory = new JsonFactory();
 
     private HttpServer server;
     private ExecutorService executor;
 
-    public HttpEndpoint(String bindAddress, int port, CommandHandler commandHandler) {
+    public HttpEndpoint(String bindAddress, int port, PresentationGateway presentationGateway) {
         if (bindAddress == null || bindAddress.trim().isEmpty()) {
             throw new IllegalArgumentException("bindAddress must not be blank");
         }
         if (port < 0 || port > 65535) {
             throw new IllegalArgumentException("port must be between 0 and 65535");
         }
-        if (commandHandler == null) {
-            throw new IllegalArgumentException("commandHandler must not be null");
+        if (presentationGateway == null) {
+            throw new IllegalArgumentException("presentationGateway must not be null");
         }
         this.bindAddress = bindAddress.trim();
         this.port = port;
-        this.commandHandler = commandHandler;
+        this.presentationGateway = presentationGateway;
         this.timingDataCodec = new DefaultTimingDataCodec();
     }
 
@@ -120,12 +120,12 @@ public final class HttpEndpoint implements AutoCloseable {
 
         if ("/api/v1/version".equals(path)) {
             requireMethod(exchange, "GET");
-            sendJson(exchange, 200, MessageWriter.version(commandHandler.version()));
+            sendJson(exchange, 200, MessageWriter.version(presentationGateway.version()));
             return;
         }
         if ("/api/v1/status".equals(path)) {
             requireMethod(exchange, "GET");
-            sendJson(exchange, 200, MessageWriter.status(commandHandler.status()));
+            sendJson(exchange, 200, MessageWriter.status(presentationGateway.status()));
             return;
         }
         if ("/api/v1/capabilities".equals(path)) {
@@ -133,7 +133,7 @@ public final class HttpEndpoint implements AutoCloseable {
             sendJson(
                     exchange,
                     200,
-                    MessageWriter.capabilities(commandHandler.capabilities()));
+                    MessageWriter.capabilities(presentationGateway.capabilities()));
             return;
         }
         if (path.startsWith("/api/v1/node/")) {
@@ -179,7 +179,7 @@ public final class HttpEndpoint implements AutoCloseable {
             sendJson(
                     exchange,
                     200,
-                    MessageWriter.result(commandHandler.close().name()));
+                    MessageWriter.result(presentationGateway.close().name()));
             return;
         }
         if ("/logbook".equals(route.resource)) {
@@ -229,7 +229,7 @@ public final class HttpEndpoint implements AutoCloseable {
 
     private void requireCurrentNode(HttpExchange exchange, String nodeId)
             throws IOException {
-        if (commandHandler.status().timingNodeId().value().equals(nodeId)) {
+        if (presentationGateway.status().timingNodeId().value().equals(nodeId)) {
             return;
         }
         sendJson(
@@ -250,7 +250,7 @@ public final class HttpEndpoint implements AutoCloseable {
             throw invalidValue(ex.getMessage());
         }
 
-        SetLocationResult result = commandHandler.setLocation(locationId);
+        SetLocationResult result = presentationGateway.setLocation(locationId);
         if (result == SetLocationResult.NODE_NOT_CLOSED) {
             sendJson(
                     exchange,
@@ -267,7 +267,7 @@ public final class HttpEndpoint implements AutoCloseable {
     }
 
     private void handleOpen(HttpExchange exchange) throws IOException {
-        OpenResult result = commandHandler.open();
+        OpenResult result = presentationGateway.open();
         if (result == OpenResult.NO_LOCATION) {
             sendJson(
                     exchange,
@@ -295,7 +295,7 @@ public final class HttpEndpoint implements AutoCloseable {
             throw invalidValue(ex.getMessage());
         }
 
-        if (!commandHandler.capabilities().directRegistrationSimulationEnabled()) {
+        if (!presentationGateway.capabilities().directRegistrationSimulationEnabled()) {
             sendJson(
                     exchange,
                     403,
@@ -306,7 +306,7 @@ public final class HttpEndpoint implements AutoCloseable {
         }
 
         RegistrationResult result =
-                commandHandler.commitAutomaticRegistration(registrationId, observationTime);
+                presentationGateway.commitAutomaticRegistration(registrationId, observationTime);
         if (result.outcome() == RegistrationResult.Outcome.NODE_NOT_OPEN) {
             sendJson(
                     exchange,
@@ -329,7 +329,7 @@ public final class HttpEndpoint implements AutoCloseable {
             sendJson(
                     exchange,
                     200,
-                    MessageWriter.logBookInfo(commandHandler.logBookCount()));
+                    MessageWriter.logBookInfo(presentationGateway.logBookCount()));
             return;
         }
 
@@ -337,14 +337,14 @@ public final class HttpEndpoint implements AutoCloseable {
         StringBuilder records = new StringBuilder();
         int count;
         if (request.last != null) {
-            count = commandHandler.visitLatestLogBook(
+            count = presentationGateway.visitLatestLogBook(
                     request.last.intValue(),
                     data -> MessageWriter.appendLogBookRecord(
                             records,
                             data,
                             timingDataCodec));
         } else {
-            count = commandHandler.visitLogBookFrom(
+            count = presentationGateway.visitLogBookFrom(
                     request.from.longValue(),
                     request.limit.intValue(),
                     data -> MessageWriter.appendLogBookRecord(

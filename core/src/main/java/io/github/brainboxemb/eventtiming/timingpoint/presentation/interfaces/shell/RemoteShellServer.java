@@ -1,6 +1,6 @@
 package io.github.brainboxemb.eventtiming.timingpoint.presentation.interfaces.shell;
 
-import io.github.brainboxemb.eventtiming.timingpoint.application.CommandHandler;
+import io.github.brainboxemb.eventtiming.timingpoint.application.PresentationGateway;
 import io.github.brainboxemb.eventtiming.timingpoint.presentation.common.terminal.TerminalSession;
 
 import java.io.IOException;
@@ -39,7 +39,7 @@ public final class RemoteShellServer implements AutoCloseable {
     public RemoteShellServer(
             String bindAddress,
             int port,
-            CommandHandler commandHandler,
+            PresentationGateway presentationGateway,
             Runnable shutdown) {
         if (bindAddress == null || bindAddress.trim().isEmpty()) {
             throw new IllegalArgumentException("bindAddress must not be blank");
@@ -49,7 +49,7 @@ public final class RemoteShellServer implements AutoCloseable {
         }
         this.bindAddress = bindAddress.trim();
         this.port = port;
-        this.session = new TerminalSession(commandHandler, shutdown);
+        this.session = new TerminalSession(presentationGateway, shutdown);
     }
 
     public synchronized void start() throws IOException {

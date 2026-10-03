@@ -1,7 +1,7 @@
 package io.github.brainboxemb.eventtiming.timingpoint.presentation.interfaces.shell;
 
 import io.github.brainboxemb.eventtiming.timingpoint.infra.BuildIdentity;
-import io.github.brainboxemb.eventtiming.timingpoint.testsupport.CommandHandlerFixture;
+import io.github.brainboxemb.eventtiming.timingpoint.testsupport.PresentationGatewayFixture;
 
 import java.io.InputStream;
 import java.io.OutputStreamWriter;
@@ -20,7 +20,7 @@ public class RemoteShellServerTest {
 
     @Test
     public void acceptsFirstCommandBeforeClientReadsBanner() throws Exception {
-        CommandHandlerFixture fixture = new CommandHandlerFixture(identity());
+        PresentationGatewayFixture fixture = new PresentationGatewayFixture(identity());
         RemoteShellServer server =
                 new RemoteShellServer("127.0.0.1", 0, fixture.handler(), () -> { });
         server.start();
@@ -47,7 +47,7 @@ public class RemoteShellServerTest {
     @Test
     public void reconnectsAfterDisconnectAndUsesSharedShutdownCommand() throws Exception {
         AtomicBoolean shutdown = new AtomicBoolean(false);
-        CommandHandlerFixture fixture = new CommandHandlerFixture(identity());
+        PresentationGatewayFixture fixture = new PresentationGatewayFixture(identity());
         RemoteShellServer server =
                 new RemoteShellServer("127.0.0.1", 0, fixture.handler(), () -> shutdown.set(true));
         server.start();

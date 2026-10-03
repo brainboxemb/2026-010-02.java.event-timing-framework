@@ -32,7 +32,7 @@ public class CompositionTest {
         try {
             assertEquals(
                     "configured-node",
-                    application.commandHandler().status().timingNodeId().value());
+                    application.presentationGateway().status().timingNodeId().value());
         } finally {
             application.close();
         }

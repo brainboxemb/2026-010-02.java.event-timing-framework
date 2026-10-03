@@ -6,7 +6,7 @@ import io.github.brainboxemb.eventtiming.timingdata.TimingData;
 import io.github.brainboxemb.eventtiming.timingdata.TimingDataTypes.NodeId;
 import io.github.brainboxemb.eventtiming.timingdata.TimingTimestamp;
 import io.github.brainboxemb.eventtiming.timingdata.defaultprofile.DefaultTimingDataFactory;
-import io.github.brainboxemb.eventtiming.timingpoint.application.CommandHandler;
+import io.github.brainboxemb.eventtiming.timingpoint.application.PresentationGateway;
 import io.github.brainboxemb.eventtiming.timingpoint.domain.timing.TimingNode;
 import io.github.brainboxemb.eventtiming.timingpoint.domain.timingdata.TimingDataPersistence;
 import io.github.brainboxemb.eventtiming.timingpoint.infra.BuildIdentity;
@@ -164,7 +164,7 @@ public class WebSocketEndpointTest {
 
     private static final class Fixture implements AutoCloseable {
         private final TimingNode node;
-        private final CommandHandler handler;
+        private final PresentationGateway handler;
 
         private Fixture() {
             node = new TimingNode(
@@ -172,7 +172,7 @@ public class WebSocketEndpointTest {
                     new MemoryStore(),
                     new DefaultTimingDataFactory(),
                     () -> RECORDED_AT);
-            handler = new CommandHandler(identity(), node);
+            handler = new PresentationGateway(identity(), node);
         }
 
         private void start() {

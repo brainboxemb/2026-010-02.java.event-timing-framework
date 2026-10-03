@@ -4,7 +4,7 @@ import io.github.brainboxemb.eventtiming.timingdata.TimingData;
 import io.github.brainboxemb.eventtiming.timingdata.TimingDataCodec;
 import io.github.brainboxemb.eventtiming.timingdata.defaultprofile.DefaultTimingDataCodec;
 import io.github.brainboxemb.eventtiming.timingpoint.application.ApplicationStatus;
-import io.github.brainboxemb.eventtiming.timingpoint.application.CommandHandler;
+import io.github.brainboxemb.eventtiming.timingpoint.application.PresentationGateway;
 import io.github.brainboxemb.eventtiming.timingpoint.platform.events.EventSource;
 
 import java.io.IOException;
@@ -32,7 +32,7 @@ import org.slf4j.LoggerFactory;
  * Server-to-client IF-03 event stream.
  *
  * <p>The endpoint subscribes only to the transport-independent
- * {@link CommandHandler}. It sends one complete STATUS_SNAPSHOT when a client
+ * {@link PresentationGateway}. It sends one complete STATUS_SNAPSHOT when a client
  * connects, then broadcasts authoritative STATUS_CHANGED and
  * TIMING_DATA_COMMITTED notifications. Historical TimingData is deliberately
  * not replayed here; reconnect recovery uses the HTTP history resource.</p>
@@ -46,7 +46,7 @@ public final class WebSocketEndpoint implements AutoCloseable {
 
     private final String bindAddress;
     private final int port;
-    private final CommandHandler commandHandler;
+    private final PresentationGateway presentationGateway;
     private final Clock clock;
     private final TimingDataCodec timingDataCodec;
     private final Consumer<ApplicationStatus> statusChangedListener =
@@ -63,8 +63,8 @@ public final class WebSocketEndpoint implements AutoCloseable {
     public WebSocketEndpoint(
             String bindAddress,
             int port,
-            CommandHandler commandHandler) {
-        this(bindAddress, port, commandHandler, Clock.systemUTC());
+            PresentationGateway presentationGateway) {
+        this(bindAddress, port, presentationGateway, Clock.systemUTC());
     }
 
     /**
@@ -75,7 +75,7 @@ public final class WebSocketEndpoint implements AutoCloseable {
     WebSocketEndpoint(
             String bindAddress,
             int port,
-            CommandHandler commandHandler,
+            PresentationGateway presentationGateway,
             Clock clock) {
         if (bindAddress == null || bindAddress.trim().isEmpty()) {
             throw new IllegalArgumentException("bindAddress must not be blank");
@@ -83,19 +83,19 @@ public final class WebSocketEndpoint implements AutoCloseable {
         if (port < 0 || port > 65535) {
             throw new IllegalArgumentException("port must be between 0 and 65535");
         }
-        if (commandHandler == null) {
-            throw new IllegalArgumentException("commandHandler must not be null");
+        if (presentationGateway == null) {
+            throw new IllegalArgumentException("presentationGateway must not be null");
         }
         if (clock == null) {
             throw new IllegalArgumentException("clock must not be null");
         }
         this.bindAddress = bindAddress.trim();
         this.port = port;
-        this.commandHandler = commandHandler;
+        this.presentationGateway = presentationGateway;
         this.clock = clock;
         this.timingDataCodec = new DefaultTimingDataCodec();
-        this.statusChanged = commandHandler.statusChanged();
-        this.newTimingData = commandHandler.newTimingData();
+        this.statusChanged = presentationGateway.statusChanged();
+        this.newTimingData = presentationGateway.newTimingData();
     }
 
     /**
@@ -161,10 +161,10 @@ public final class WebSocketEndpoint implements AutoCloseable {
      * Broadcasts the current complete status.
      *
      * <p>Kept as a small diagnostic/test hook. Normal Step-4 status changes are
-     * published automatically from the CommandHandler subscription.</p>
+     * published automatically from the PresentationGateway subscription.</p>
      */
     public void publishStatusChanged() {
-        broadcastStatusChanged(commandHandler.status());
+        broadcastStatusChanged(presentationGateway.status());
     }
 
     private void broadcastStatusChanged(ApplicationStatus status) {
@@ -207,7 +207,7 @@ public final class WebSocketEndpoint implements AutoCloseable {
         return MessageWriter.statusEvent(
                 "STATUS_SNAPSHOT",
                 clock.instant(),
-                commandHandler.status());
+                presentationGateway.status());
     }
 
     @Override
