@@ -38,7 +38,7 @@ final class TimingPane extends VBox {
     private final Label connection = new Label("DISCONNECTED");
     private final Button connect = new Button("Connect live");
     private final Button disconnect = new Button("Disconnect");
-    private final Button syncView = new Button("Sync view");
+    private final Button syncViewButton = new Button("Sync view");
 
     private final ComboBox<String> node = new ComboBox<>();
     private final Label state = new Label("-");
@@ -86,7 +86,7 @@ final class TimingPane extends VBox {
                 connection,
                 connect,
                 disconnect,
-                syncView);
+                syncViewButton);
 
         node.setPrefWidth(230);
         locationInput.setPrefColumnCount(8);
@@ -155,10 +155,10 @@ final class TimingPane extends VBox {
             connectLive.run();
         });
         disconnect.setOnAction(event -> disconnectLive.run());
-        syncView.setTooltip(new Tooltip(
+        syncViewButton.setTooltip(new Tooltip(
                 "Reload current status, capabilities and LogBook history, "
                         + "then reconcile buffered live events."));
-        syncView.setOnAction(event -> syncView());
+        syncViewButton.setOnAction(event -> syncView());
 
         node.setOnAction(event -> {
             if (updatingNodeSelection) {
@@ -338,7 +338,7 @@ final class TimingPane extends VBox {
     }
 
     /**
-     * Applies live events received after the syncView baseline in delivery order.
+     * Applies live events received after the synchronisation baseline in delivery order.
      *
      * <p>This method runs on the JavaFX application thread. Events are buffered
      * only while the Timing view is RECONNECTING; raw Events-tab diagnostics are
@@ -365,7 +365,7 @@ final class TimingPane extends VBox {
 
         bufferedEvents.clear();
         model.viewState(TimingViewModel.ViewState.RECONNECTING);
-        connection.setText("RECONNECTING");
+        connection.setText("SYNCING");
         refresh();
 
         CompletableFuture
@@ -531,7 +531,7 @@ final class TimingPane extends VBox {
         registrationTime.setDisable(!controls.autoReg());
         now.setDisable(!controls.autoReg());
         autoReg.setDisable(!controls.autoReg());
-        syncView.setDisable(model.viewState() == TimingViewModel.ViewState.RECONNECTING);
+        syncViewButton.setDisable(model.viewState() == TimingViewModel.ViewState.RECONNECTING);
     }
 
     private void refreshLogBook() {
