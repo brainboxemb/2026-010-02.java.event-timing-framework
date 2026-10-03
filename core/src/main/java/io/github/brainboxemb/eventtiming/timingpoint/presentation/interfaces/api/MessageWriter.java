@@ -3,7 +3,7 @@ package io.github.brainboxemb.eventtiming.timingpoint.presentation.interfaces.ap
 import io.github.brainboxemb.eventtiming.timingdata.TimingData;
 import io.github.brainboxemb.eventtiming.timingdata.TimingDataCodec;
 import io.github.brainboxemb.eventtiming.timingpoint.application.ApplicationStatus;
-import io.github.brainboxemb.eventtiming.timingpoint.application.CommandHandler;
+import io.github.brainboxemb.eventtiming.timingpoint.application.PresentationGateway;
 import io.github.brainboxemb.eventtiming.timingpoint.infra.BuildIdentity;
 
 import java.nio.charset.StandardCharsets;
@@ -39,7 +39,7 @@ public final class MessageWriter {
                 + "}";
     }
 
-    public static String capabilities(CommandHandler.Capabilities capabilities) {
+    public static String capabilities(PresentationGateway.Capabilities capabilities) {
         return "{"
                 + "\"capabilities\":[{"
                 + "\"id\":\"DIRECT_REGISTRATION_SIMULATION\","
