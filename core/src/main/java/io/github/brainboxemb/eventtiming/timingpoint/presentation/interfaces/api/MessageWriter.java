@@ -4,6 +4,7 @@ import io.github.brainboxemb.eventtiming.timingdata.TimingData;
 import io.github.brainboxemb.eventtiming.timingdata.TimingDataCodec;
 import io.github.brainboxemb.eventtiming.timingpoint.application.ApplicationStatus;
 import io.github.brainboxemb.eventtiming.timingpoint.application.PresentationGateway;
+import io.github.brainboxemb.eventtiming.timingpoint.domain.timing.TimingNodeTypes.Problem;
 import io.github.brainboxemb.eventtiming.timingpoint.infra.BuildIdentity;
 
 import java.nio.charset.StandardCharsets;
@@ -35,8 +36,33 @@ public final class MessageWriter {
                 + "\"locationId\":" + location + ","
                 + "\"state\":" + quote(status.timingNodeLifecycle().name())
                 + "}],"
-                + "\"problems\":[]"
+                + "\"problems\":" + problems(status)
                 + "}";
+    }
+
+    private static String problems(ApplicationStatus status) {
+        StringBuilder json = new StringBuilder();
+        json.append('[');
+        for (Problem problem : status.problems()) {
+            if (json.length() > 1) {
+                json.append(',');
+            }
+            json.append('{')
+                    .append("\"code\":")
+                    .append(quote(problem.code().name()))
+                    .append(',')
+                    .append("\"severity\":")
+                    .append(quote(problem.severity().name()))
+                    .append(',')
+                    .append("\"nodeId\":")
+                    .append(quote(status.timingNodeId().value()))
+                    .append(',')
+                    .append("\"message\":")
+                    .append(quote(problem.message()))
+                    .append('}');
+        }
+        json.append(']');
+        return json.toString();
     }
 
     public static String capabilities(PresentationGateway.Capabilities capabilities) {

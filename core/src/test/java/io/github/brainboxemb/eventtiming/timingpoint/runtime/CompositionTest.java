@@ -16,7 +16,7 @@ import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.assertTrue;
 
 public class CompositionTest {
     @Rule
@@ -39,7 +39,7 @@ public class CompositionTest {
     }
 
     @Test
-    public void composedApplicationRecoversConfiguredTimingDataFileBeforeWorkerStarts()
+    public void composedApplicationContainsTimingDataRecoveryFailureAsNodeError()
             throws Exception {
         Path file = temporaryFolder.getRoot().toPath().resolve("timing-data.jsonl");
         Files.write(
@@ -48,11 +48,21 @@ public class CompositionTest {
 
         Application application = Composition.create(identity(), config(file));
 
+        application.start();
         try {
-            application.start();
-            fail("expected TimingData recovery failure");
-        } catch (TimingNodeTypes.StartupException expected) {
-            // The configured I/O store was opened during runtime startup.
+            assertEquals(Lifecycle.State.RUNNING, application.state());
+            assertEquals(
+                    TimingNodeTypes.Lifecycle.ERROR,
+                    application.presentationGateway().status().timingNodeLifecycle());
+            assertEquals(
+                    1,
+                    application.presentationGateway().status().problems().size());
+            assertEquals(
+                    TimingNodeTypes.ProblemCode.TIMING_DATA_RECOVERY_FAILED,
+                    application.presentationGateway().status().problems().get(0).code());
+            assertTrue(
+                    application.presentationGateway().status().problems().get(0).message()
+                            .contains("TimingData recovery failed"));
         } finally {
             application.close();
         }

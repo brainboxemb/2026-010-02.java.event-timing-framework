@@ -193,7 +193,8 @@ public final class PresentationGateway {
         return new ApplicationStatus(
                 status.timingNodeId(),
                 status.lifecycle(),
-                status.locationId());
+                status.locationId(),
+                status.problems());
     }
 
 }

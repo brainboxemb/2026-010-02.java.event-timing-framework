@@ -192,6 +192,50 @@ public class HttpEndpointTest {
     }
 
     @Test
+    public void exposesContainedRecoveryFailureAndRejectsNormalNodeOperation()
+            throws Exception {
+        TimingNode node = new TimingNode(
+                new NodeId("TN-01"),
+                new FailingRecoveryStore(),
+                new DefaultTimingDataFactory(),
+                () -> RECORDED_AT);
+        PresentationGateway handler = new PresentationGateway(identity(), node);
+        node.start();
+        HttpEndpoint server = new HttpEndpoint("127.0.0.1", 0, handler);
+        server.start();
+
+        try {
+            Response status =
+                    request(server.boundPort(), "GET", "/api/v1/status", null);
+            assertEquals(200, status.status);
+            assertTrue(status.body.contains("\"id\":\"TN-01\""));
+            assertTrue(status.body.contains("\"locationId\":null"));
+            assertTrue(status.body.contains("\"state\":\"ERROR\""));
+            assertTrue(status.body.contains(
+                    "\"code\":\"TIMING_DATA_RECOVERY_FAILED\""));
+            assertTrue(status.body.contains("\"severity\":\"ERROR\""));
+            assertTrue(status.body.contains("\"nodeId\":\"TN-01\""));
+            assertTrue(status.body.contains("expected recovery failure"));
+
+            Response open = request(
+                    server.boundPort(),
+                    "POST",
+                    "/api/v1/node/TN-01/open",
+                    "{\"locationId\":24}");
+            assertEquals(503, open.status);
+            assertTrue(open.body.contains("\"code\":\"OPERATION_FAILED\""));
+            assertTrue(open.body.contains("expected recovery failure"));
+
+            Response unchanged =
+                    request(server.boundPort(), "GET", "/api/v1/status", null);
+            assertTrue(unchanged.body.contains("\"state\":\"ERROR\""));
+        } finally {
+            server.close();
+            node.stop();
+        }
+    }
+
+    @Test
     public void mapsRequestAndMethodFailuresToStableJsonErrors() throws Exception {
         Fixture fixture = new Fixture();
         fixture.start();
@@ -308,6 +352,19 @@ public class HttpEndpointTest {
         @Override
         public void close() {
             node.stop();
+        }
+    }
+
+    private static final class FailingRecoveryStore
+            implements TimingDataPersistence {
+        @Override
+        public LoadResult load() throws PersistenceException {
+            throw new PersistenceException("expected recovery failure");
+        }
+
+        @Override
+        public void append(TimingData data) {
+            throw new AssertionError("ERROR TimingNode must not append TimingData");
         }
     }
 

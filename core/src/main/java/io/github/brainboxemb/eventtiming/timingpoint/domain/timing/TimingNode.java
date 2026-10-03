@@ -12,7 +12,6 @@ import io.github.brainboxemb.eventtiming.timingpoint.domain.timing.TimingNodeTyp
 import io.github.brainboxemb.eventtiming.timingpoint.domain.timing.TimingNodeTypes.OperationException;
 import io.github.brainboxemb.eventtiming.timingpoint.domain.timing.TimingNodeTypes.RegistrationResult;
 import io.github.brainboxemb.eventtiming.timingpoint.domain.timing.TimingNodeTypes.Status;
-import io.github.brainboxemb.eventtiming.timingpoint.domain.timing.TimingNodeTypes.StartupException;
 
 import java.util.concurrent.Callable;
 import java.util.concurrent.CancellationException;
@@ -49,7 +48,6 @@ public final class TimingNode {
     private final Event<Status> statusChangedEvent = new Event<>();
     private final Event<TimingData> newTimingDataEvent = new Event<>();
 
-    private Throwable startupFailure;
 
     public TimingNode(
             NodeId timingNodeId,
@@ -106,18 +104,13 @@ public final class TimingNode {
             throw new IllegalStateException(
                     "TimingNode can only start once; worker state=" + serialWorker.state());
         }
-        if (startupFailure != null) {
-            throw new StartupException(
-                    "TimingNode cannot restart after failed TimingData recovery",
-                    startupFailure);
-        }
-
         try {
             logic.recoverTimingData();
         } catch (TimingDataPersistence.PersistenceException | RuntimeException ex) {
-            startupFailure = ex;
-            throw new StartupException(
-                    "TimingData recovery failed for " + timingNodeId().value(),
+            logic.markTimingDataRecoveryFailed(ex);
+            LOG.error(
+                    "TimingData recovery failed for {}; TimingNode remains available in ERROR state",
+                    timingNodeId().value(),
                     ex);
         }
         serialWorker.start();
@@ -241,6 +234,9 @@ public final class TimingNode {
         if (left.timingDataTailRecovered() != right.timingDataTailRecovered()) {
             return false;
         }
+        if (!left.problems().equals(right.problems())) {
+            return false;
+        }
         if (!left.hasLocation()) {
             return !right.hasLocation();
         }
@@ -313,10 +309,15 @@ public final class TimingNode {
                     operation + " was cancelled because the TimingNode worker failed",
                     ex);
         } catch (ExecutionException ex) {
+            Throwable cause = ex.getCause();
+            String detail = cause == null ? null : cause.getMessage();
             throw new OperationException(
                     OperationException.Reason.FAILED,
-                    operation + " failed while executing on the TimingNode",
-                    ex.getCause());
+                    operation + " failed while executing on the TimingNode"
+                            + (detail == null || detail.trim().isEmpty()
+                                    ? ""
+                                    : ": " + detail.trim()),
+                    cause);
         }
     }
 

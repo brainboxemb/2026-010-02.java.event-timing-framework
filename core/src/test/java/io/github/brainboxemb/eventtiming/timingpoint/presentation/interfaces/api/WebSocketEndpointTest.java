@@ -131,6 +131,46 @@ public class WebSocketEndpointTest {
         }
     }
 
+    @Test
+    public void snapshotExposesContainedTimingDataRecoveryFailure()
+            throws Exception {
+        TimingNode node = new TimingNode(
+                new NodeId("TN-01"),
+                new FailingRecoveryStore(),
+                new DefaultTimingDataFactory(),
+                () -> RECORDED_AT);
+        PresentationGateway handler = new PresentationGateway(identity(), node);
+        node.start();
+        WebSocketEndpoint server = new WebSocketEndpoint(
+                "127.0.0.1",
+                0,
+                handler,
+                EVENT_CLOCK);
+        server.start();
+
+        try {
+            TestClient client = connect(server.boundPort());
+            try {
+                String snapshot = client.awaitMessage();
+                assertNotNull(snapshot);
+                assertTrue(snapshot.contains("\"eventType\":\"STATUS_SNAPSHOT\""));
+                assertTrue(snapshot.contains("\"id\":\"TN-01\""));
+                assertTrue(snapshot.contains("\"locationId\":null"));
+                assertTrue(snapshot.contains("\"state\":\"ERROR\""));
+                assertTrue(snapshot.contains(
+                        "\"code\":\"TIMING_DATA_RECOVERY_FAILED\""));
+                assertTrue(snapshot.contains("\"severity\":\"ERROR\""));
+                assertTrue(snapshot.contains("\"nodeId\":\"TN-01\""));
+                assertTrue(snapshot.contains("expected recovery failure"));
+            } finally {
+                client.closeBlocking();
+            }
+        } finally {
+            server.close();
+            node.stop();
+        }
+    }
+
     private static TestClient connect(int port) throws Exception {
         TestClient client = new TestClient(
                 new URI("ws://127.0.0.1:" + port + WebSocketEndpoint.EVENTS_PATH));
@@ -182,6 +222,19 @@ public class WebSocketEndpointTest {
         @Override
         public void close() {
             node.stop();
+        }
+    }
+
+    private static final class FailingRecoveryStore
+            implements TimingDataPersistence {
+        @Override
+        public LoadResult load() throws PersistenceException {
+            throw new PersistenceException("expected recovery failure");
+        }
+
+        @Override
+        public void append(TimingData data) {
+            throw new AssertionError("ERROR TimingNode must not append TimingData");
         }
     }
 

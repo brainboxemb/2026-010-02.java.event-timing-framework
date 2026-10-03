@@ -14,10 +14,15 @@ import io.github.brainboxemb.eventtiming.timingpoint.domain.timingdata.TimingDat
 import io.github.brainboxemb.eventtiming.timingpoint.domain.timing.TimingNodeTypes.CloseResult;
 import io.github.brainboxemb.eventtiming.timingpoint.domain.timing.TimingNodeTypes.Lifecycle;
 import io.github.brainboxemb.eventtiming.timingpoint.domain.timing.TimingNodeTypes.OpenResult;
+import io.github.brainboxemb.eventtiming.timingpoint.domain.timing.TimingNodeTypes.Problem;
+import io.github.brainboxemb.eventtiming.timingpoint.domain.timing.TimingNodeTypes.ProblemCode;
+import io.github.brainboxemb.eventtiming.timingpoint.domain.timing.TimingNodeTypes.ProblemSeverity;
 import io.github.brainboxemb.eventtiming.timingpoint.domain.timing.TimingNodeTypes.RegistrationResult;
 import io.github.brainboxemb.eventtiming.timingpoint.domain.timing.TimingNodeTypes.SetLocationResult;
 import io.github.brainboxemb.eventtiming.timingpoint.domain.timing.TimingNodeTypes.Status;
 
+import java.util.Collections;
+import java.util.List;
 import java.util.function.Consumer;
 
 /**
@@ -38,6 +43,7 @@ final class TimingNodeLogic {
     private LocationId locationId;
     private boolean timingDataTailRecovered;
     private Throwable timingDataCommitFailure;
+    private List<Problem> problems = Collections.emptyList();
 
     TimingNodeLogic(
             NodeId timingNodeId,
@@ -73,6 +79,7 @@ final class TimingNodeLogic {
         if (newLocationId == null) {
             throw new IllegalArgumentException("locationId must not be null");
         }
+        ensureOperational();
         if (lifecycle == Lifecycle.OPEN) {
             return OpenResult.ALREADY_OPEN;
         }
@@ -82,6 +89,7 @@ final class TimingNodeLogic {
     }
 
     CloseResult close() {
+        ensureOperational();
         if (lifecycle == Lifecycle.CLOSED) {
             return CloseResult.ALREADY_CLOSED;
         }
@@ -90,6 +98,7 @@ final class TimingNodeLogic {
     }
 
     SetLocationResult setLocation(LocationId newLocationId) {
+        ensureOperational();
         if (lifecycle != Lifecycle.CLOSED) {
             return SetLocationResult.NODE_NOT_CLOSED;
         }
@@ -101,6 +110,7 @@ final class TimingNodeLogic {
             RegistrationId registrationId,
             TimingTimestamp observationTime)
             throws TimingDataPersistence.PersistenceException {
+        ensureOperational();
         if (lifecycle != Lifecycle.OPEN) {
             return RegistrationResult.nodeNotOpen();
         }
@@ -117,6 +127,7 @@ final class TimingNodeLogic {
             TimingTimestamp effectiveTime,
             ManualTimeSource registrationTimeSource)
             throws TimingDataPersistence.PersistenceException {
+        ensureOperational();
         if (lifecycle != Lifecycle.OPEN) {
             return RegistrationResult.nodeNotOpen();
         }
@@ -130,6 +141,7 @@ final class TimingNodeLogic {
     }
 
     int timingDataCount() {
+        ensureOperational();
         return logBook.size();
     }
 
@@ -137,6 +149,7 @@ final class TimingNodeLogic {
             long fromSequence,
             int limit,
             Consumer<TimingData> visitor) {
+        ensureOperational();
         logBook.visitRange(fromSequence, limit, visitor);
         return logBook.size();
     }
@@ -144,6 +157,7 @@ final class TimingNodeLogic {
     int visitLatestTimingData(
             int limit,
             Consumer<TimingData> visitor) {
+        ensureOperational();
         logBook.visitLatest(limit, visitor);
         return logBook.size();
     }
@@ -153,7 +167,8 @@ final class TimingNodeLogic {
                 timingNodeId,
                 lifecycle,
                 locationId,
-                timingDataTailRecovered);
+                timingDataTailRecovered,
+                problems);
     }
 
     void recoverTimingData() throws TimingDataPersistence.PersistenceException {
@@ -164,6 +179,26 @@ final class TimingNodeLogic {
         timingDataTailRecovered = loadResult.repairedIncompleteTail();
     }
 
+    void markTimingDataRecoveryFailed(Throwable failure) {
+        if (failure == null) {
+            throw new IllegalArgumentException("failure must not be null");
+        }
+        lifecycle = Lifecycle.ERROR;
+        locationId = null;
+        timingDataTailRecovered = false;
+
+        String detail = failure.getMessage();
+        String message = "TimingData recovery failed for " + timingNodeId.value();
+        if (detail != null && !detail.trim().isEmpty()) {
+            message += ": " + detail.trim();
+        }
+        problems = Collections.singletonList(
+                new Problem(
+                        ProblemCode.TIMING_DATA_RECOVERY_FAILED,
+                        ProblemSeverity.ERROR,
+                        message));
+    }
+
     private Context nextRegistrationContext(TimingTimestamp effectiveTime) {
         return new Context(
                 timingNodeId,
@@ -171,6 +206,16 @@ final class TimingNodeLogic {
                 locationId,
                 effectiveTime,
                 timeSource.now());
+    }
+
+    private void ensureOperational() {
+        if (lifecycle != Lifecycle.ERROR) {
+            return;
+        }
+        String detail = problems.isEmpty()
+                ? "TimingNode is in ERROR"
+                : problems.get(0).message();
+        throw new IllegalStateException(detail);
     }
 
     private void ensureTimingDataCommitAvailable() {

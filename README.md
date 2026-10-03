@@ -314,7 +314,8 @@ launch the separate application process. Deliberate full system verification is 
 
 That profile adds `system-test` after the application JAR has been packaged. Formal
 verification-case IDs are preserved in the Java class names:
-`VC-ST1-001 -> VcSt1_001Test` and `VC-ST1-002 -> VcSt1_002Test`. VC-ST1-001
+`VC-ST1-001 -> VcSt1_001Test`, `VC-ST1-002 -> VcSt1_002Test` and
+`VC-ST1-004 -> VcSt1_004Test`. VC-ST1-001
 launches the JAR as a child JVM with temporary loopback ports and verifies version, compact
 status, WebSocket snapshot/reconnect and controlled shutdown. VC-ST1-002 drives the Step-4
 public registration flow through IF-03: capabilities, OPEN-with-LocationId plus separate
@@ -322,7 +323,11 @@ closed-state location control, invalid OPEN-state location change, dev `auto-reg
 live committed TimingData and bounded LogBook history. It then verifies a WebSocket reconnect and a full SI-01 process restart
 against the same TimingData file: the committed record remains queryable while the node
 starts CLOSED with no operational location, and recovered history is not emitted as a
-new `TIMING_DATA_COMMITTED` event. The verifier imports no
+new `TIMING_DATA_COMMITTED` event. VC-ST1-004 supplies persisted TimingData owned by a
+different NodeId and verifies degraded startup containment: SI-01 remains running,
+IF-03 and the Remote Shell remain diagnostic, the affected node reports `ERROR` with
+`TIMING_DATA_RECOVERY_FAILED`, normal node operations are rejected, reconnect
+snapshots remain consistent and controlled shutdown still works. The verifier imports no
 core/application classes, so this remains process-level black-box verification rather than
 another in-process component test.
 
@@ -367,7 +372,7 @@ The command-line split is:
 # Normal product verification: core/app tests, no separate process launch
 .\mvnw.cmd verify
 
-# Deliberate VC-ST1 black-box verification (VC-ST1-001 + VC-ST1-002)
+# Deliberate VC-ST1 black-box verification (VC-ST1-001 + VC-ST1-002 + VC-ST1-004)
 .\mvnw.cmd verify -Psystem-test
 
 java -jar app\target\timing-point-app-0.2.3-SNAPSHOT.jar config\application.yml
