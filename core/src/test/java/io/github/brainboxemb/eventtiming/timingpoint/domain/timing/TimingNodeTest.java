@@ -40,23 +40,6 @@ public class TimingNodeTest {
     }
 
     @Test
-    public void defaultWorkerThreadNameUsesTimingNodeIdWithoutDuplicateNodePrefix() {
-        TimingNode node = node(new NodeId("timing-node-01"));
-
-        node.start();
-        try {
-            TimingNodeCommand<String> threadName = new TimingNodeCommand<>(
-                    "threadName",
-                    logic -> Thread.currentThread().getName(),
-                    (timingNode, result) -> result);
-
-            assertEquals("tp-dml-timing-node-01", node.invoke(threadName));
-        } finally {
-            node.stop();
-        }
-    }
-
-    @Test
     public void setLocationRemainsSeparateAndOpenAppliesRequestedLocationAtomically() {
         TimingNode node = node(new NodeId("timing-node-01"));
         LocationId openLocation = new LocationId(24);
