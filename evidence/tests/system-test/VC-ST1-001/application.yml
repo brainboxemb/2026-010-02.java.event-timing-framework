@@ -1,0 +1,22 @@
+timingNodeId: timing-node-blackbox
+io:
+  storage:
+    timingData:
+      path: timing-data.jsonl
+presentation:
+  remoteShell:
+    bindAddress: 127.0.0.1
+    port: 39443
+  api:
+    http:
+      bindAddress: 127.0.0.1
+      port: 43123
+    webSocket:
+      bindAddress: 127.0.0.1
+      port: 42167
+logging:
+  level: INFO
+  file:
+    path: logs
+    rotateBytes: 1048576
+    retainedFiles: 5

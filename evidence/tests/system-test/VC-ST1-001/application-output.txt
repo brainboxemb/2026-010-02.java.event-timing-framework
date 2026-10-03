@@ -1,0 +1,8 @@
+18:59:22.050 - [INFO] - Starting timing-application 0.2.3-SNAPSHOT (revision=4651ffbc168f78ef1a3416d5c1480c7f8712e23e sourceRef=main buildOrigin=github-actions dirty=false) - [runtime.Lifecycle.start]
+18:59:22.051 - [INFO] - Application lifecycle state=RUNNING - [runtime.Lifecycle.start]
+18:59:22.058 - [INFO] - HTTP IF-03 listening on 127.0.0.1:43123 - [api.HttpEndpoint.start]
+18:59:22.079 - [INFO] - WebSocket IF-03 listening on 127.0.0.1:42167/api/v1/events - [api.WebSocketEndpoint.start]
+18:59:22.081 - [INFO] - Remote terminal listening on 127.0.0.1:39443 - [shell.RemoteShellServer.start]
+Local console ready. Type 'help' for commands.
+event-timing> 18:59:22.157 - [INFO] - Stopped timing-application 0.2.3-SNAPSHOT with lifecycle state=STOPPED - [runtime.Lifecycle.stop]
+timing-application lifecycle OK version=0.2.3-SNAPSHOT state=STOPPED

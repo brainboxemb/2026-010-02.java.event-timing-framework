@@ -1,0 +1,22 @@
+timingNodeId: Test
+io:
+  storage:
+    timingData:
+      path: timing-data.jsonl
+presentation:
+  remoteShell:
+    bindAddress: 127.0.0.1
+    port: 37183
+  api:
+    http:
+      bindAddress: 127.0.0.1
+      port: 41567
+    webSocket:
+      bindAddress: 127.0.0.1
+      port: 38047
+logging:
+  level: INFO
+  file:
+    path: logs
+    rotateBytes: 1048576
+    retainedFiles: 5

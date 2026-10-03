@@ -1,0 +1,17 @@
+18:59:21.443 - [ERROR] - TimingData recovery failed for TN-01; TimingNode remains available in ERROR state - [timing.TimingNode.start]
+io.github.brainboxemb.eventtiming.timingpoint.domain.timingdata.TimingDataPersistence$PersistenceException: TimingData record 1 belongs to TN-99 but persistence owns TN-01
+	at io.github.brainboxemb.eventtiming.timingpoint.domain.timingdata.DefaultTimingDataPersistence.validateStreamRecord(DefaultTimingDataPersistence.java:110)
+	at io.github.brainboxemb.eventtiming.timingpoint.domain.timingdata.DefaultTimingDataPersistence.load(DefaultTimingDataPersistence.java:54)
+	at io.github.brainboxemb.eventtiming.timingpoint.domain.timing.TimingNodeLogic.recoverTimingData(TimingNodeLogic.java:175)
+	at io.github.brainboxemb.eventtiming.timingpoint.domain.timing.TimingNode.start(TimingNode.java:108)
+	at io.github.brainboxemb.eventtiming.timingpoint.runtime.Application.start(Application.java:28)
+	at io.github.brainboxemb.eventtiming.timingpoint.runtime.Composition.run(Composition.java:46)
+	at io.github.brainboxemb.eventtiming.timingpoint.app.Main.main(Main.java:49)
+18:59:21.444 - [INFO] - Starting timing-application 0.2.3-SNAPSHOT (revision=4651ffbc168f78ef1a3416d5c1480c7f8712e23e sourceRef=main buildOrigin=github-actions dirty=false) - [runtime.Lifecycle.start]
+18:59:21.444 - [INFO] - Application lifecycle state=RUNNING - [runtime.Lifecycle.start]
+18:59:21.451 - [INFO] - HTTP IF-03 listening on 127.0.0.1:33611 - [api.HttpEndpoint.start]
+18:59:21.471 - [INFO] - WebSocket IF-03 listening on 127.0.0.1:38369/api/v1/events - [api.WebSocketEndpoint.start]
+18:59:21.473 - [INFO] - Remote terminal listening on 127.0.0.1:46257 - [shell.RemoteShellServer.start]
+Local console ready. Type 'help' for commands.
+event-timing> 18:59:21.553 - [INFO] - Stopped timing-application 0.2.3-SNAPSHOT with lifecycle state=STOPPED - [runtime.Lifecycle.stop]
+timing-application lifecycle OK version=0.2.3-SNAPSHOT state=STOPPED
