@@ -46,7 +46,7 @@ public class ApiClientTest {
                 "{"
                         + "\"nodes\":["
                         + "{"
-                        + "\"id\":\"timing-node-01\","
+                        + "\"id\":\"TN-01\","
                         + "\"locationId\":24,"
                         + "\"state\":\"OPEN\""
                         + "},"
@@ -78,7 +78,7 @@ public class ApiClientTest {
 
         var status = client.getStatus();
         assertEquals(2, status.nodes().size());
-        assertEquals("timing-node-01", status.nodes().get(0).id());
+        assertEquals("TN-01", status.nodes().get(0).id());
         assertEquals(24, status.nodes().get(0).locationId());
         assertEquals("OPEN", status.nodes().get(0).state());
         assertEquals("timing-node-02", status.nodes().get(1).id());
@@ -132,19 +132,19 @@ public class ApiClientTest {
         server.start();
 
         ApiClient client = client();
-        assertEquals("UPDATED", client.setLocation("timing-node-01", 23).result());
-        assertEquals("OPENED", client.open("timing-node-01", 24).result());
+        assertEquals("UPDATED", client.setLocation("TN-01", 23).result());
+        assertEquals("OPENED", client.open("TN-01", 24).result());
         assertEquals(2L, client.autoReg(
-                "timing-node-01",
+                "TN-01",
                 "N0002",
                 "2026-10-01T12:00:04.000000000Z").seq());
 
-        var info = client.getLogBookInfo("timing-node-01");
+        var info = client.getLogBookInfo("TN-01");
         assertEquals(2L, info.count());
         assertEquals(1L, info.first());
         assertEquals(2L, info.last());
 
-        var page = client.getLogBookFrom("timing-node-01", 1L, 100);
+        var page = client.getLogBookFrom("TN-01", 1L, 100);
         assertEquals(2L, page.count());
         assertNull(page.next());
         assertEquals(2, page.records().size());
@@ -153,26 +153,26 @@ public class ApiClientTest {
         assertEquals(List.of("ADD"), page.records().get(0).codes());
         assertTrue(page.records().get(0).rawJson().contains("\"seqNr\":1"));
         assertEquals(
-                new ApiClient.TimingDataKey("timing-node-01", 2L),
+                new ApiClient.TimingDataKey("TN-01", 2L),
                 page.records().get(1).key());
 
-        var latest = client.getLogBookLast("timing-node-01", 1);
+        var latest = client.getLogBookLast("TN-01", 1);
         assertEquals(1, latest.records().size());
         assertEquals(2L, latest.records().get(0).sequenceNumber());
 
-        assertEquals("CLOSED", client.close("timing-node-01").result());
+        assertEquals("CLOSED", client.close("TN-01").result());
 
         assertEquals("PUT", requests.get(0).method());
-        assertEquals("/api/v1/node/timing-node-01/location", requests.get(0).uri());
+        assertEquals("/api/v1/node/TN-01/location", requests.get(0).uri());
         assertTrue(requests.get(0).body().contains("\"locationId\":23"));
 
         assertEquals("POST", requests.get(1).method());
-        assertEquals("/api/v1/node/timing-node-01/open", requests.get(1).uri());
+        assertEquals("/api/v1/node/TN-01/open", requests.get(1).uri());
         assertTrue(requests.get(1).body().contains("\"locationId\":24"));
 
         assertEquals("POST", requests.get(2).method());
         assertEquals(
-                "/api/v1/dev/node/timing-node-01/auto-reg",
+                "/api/v1/dev/node/TN-01/auto-reg",
                 requests.get(2).uri());
         assertTrue(requests.get(2).body().contains("\"id\":\"N0002\""));
         assertTrue(requests.get(2).body().contains(
@@ -194,7 +194,7 @@ public class ApiClientTest {
         ApiClient.ApiException error = assertThrows(
                 ApiClient.ApiException.class,
                 () -> client().autoReg(
-                        "timing-node-01",
+                        "TN-01",
                         "N0001",
                         "2026-10-01T12:00:00.000000000Z"));
 
@@ -208,10 +208,10 @@ public class ApiClientTest {
         ApiClient client = new ApiClient(URI.create("http://127.0.0.1:8081"));
         assertThrows(
                 IllegalArgumentException.class,
-                () -> client.getLogBookFrom("timing-node-01", 0L, 100));
+                () -> client.getLogBookFrom("TN-01", 0L, 100));
         assertThrows(
                 IllegalArgumentException.class,
-                () -> client.getLogBookLast("timing-node-01", 1001));
+                () -> client.getLogBookLast("TN-01", 1001));
     }
 
     private ApiClient client() {
@@ -222,7 +222,7 @@ public class ApiClientTest {
     private static String timingData(long sequence, String registrationId) {
         return "{"
                 + "\"v\":1,"
-                + "\"nodeId\":\"timing-node-01\","
+                + "\"nodeId\":\"TN-01\","
                 + "\"seqNr\":" + sequence + ","
                 + "\"locId\":24,"
                 + "\"recType\":\"AUTO_REG\","

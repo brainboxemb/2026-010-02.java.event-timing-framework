@@ -24,7 +24,7 @@ import static org.junit.Assert.fail;
 public class TimingNodeTest {
     @Test
     public void startsClosedWithoutLocation() {
-        NodeId id = new NodeId("timing-node-01");
+        NodeId id = new NodeId("TN-01");
         TimingNode node = node(id);
 
         node.start();
@@ -40,8 +40,25 @@ public class TimingNodeTest {
     }
 
     @Test
+    public void defaultWorkerThreadNameIncludesConfiguredTimingNodeId() {
+        TimingNode node = node(new NodeId("TN-42"));
+
+        node.start();
+        try {
+            TimingNodeCommand<String> threadName = new TimingNodeCommand<>(
+                    "threadName",
+                    logic -> Thread.currentThread().getName(),
+                    (timingNode, result) -> result);
+
+            assertEquals("tp-dml-node-TN-42", node.invoke(threadName));
+        } finally {
+            node.stop();
+        }
+    }
+
+    @Test
     public void setLocationRemainsSeparateAndOpenAppliesRequestedLocationAtomically() {
-        TimingNode node = node(new NodeId("timing-node-01"));
+        TimingNode node = node(new NodeId("TN-01"));
         LocationId openLocation = new LocationId(24);
 
         node.start();
@@ -90,7 +107,7 @@ public class TimingNodeTest {
 
     @Test
     public void repeatedLifecycleCommandsReturnProcessedResults() {
-        TimingNode node = node(new NodeId("timing-node-01"));
+        TimingNode node = node(new NodeId("TN-01"));
 
         node.start();
         try {
@@ -117,7 +134,7 @@ public class TimingNodeTest {
     public void timeoutDoesNotCancelAcceptedOperation() throws Exception {
         SerialWorker worker = new SerialWorker(2, "timing-node-test");
         TimingNode node = node(
-                new NodeId("timing-node-01"),
+                new NodeId("TN-01"),
                 worker,
                 25L);
         CountDownLatch blockerStarted = new CountDownLatch(1);
@@ -159,7 +176,7 @@ public class TimingNodeTest {
     public void stateDependentOperationsAreDecidedInQueueOrder() throws Exception {
         SerialWorker worker = new SerialWorker(4, "timing-node-test");
         TimingNode node = node(
-                new NodeId("timing-node-01"),
+                new NodeId("TN-01"),
                 worker,
                 1000L);
         CountDownLatch blockerStarted = new CountDownLatch(1);
@@ -221,7 +238,7 @@ public class TimingNodeTest {
             throws Exception {
         SerialWorker worker = new SerialWorker(2, "timing-node-submit-test");
         TimingNode node = node(
-                new NodeId("timing-node-01"),
+                new NodeId("TN-01"),
                 worker,
                 1000L);
         CountDownLatch blockerStarted = new CountDownLatch(1);
@@ -276,7 +293,7 @@ public class TimingNodeTest {
 
     @Test
     public void operationBeforeStartIsUnavailable() {
-        TimingNode node = node(new NodeId("timing-node-01"));
+        TimingNode node = node(new NodeId("TN-01"));
 
         try {
             node.query(TimingNodeQueries.status());

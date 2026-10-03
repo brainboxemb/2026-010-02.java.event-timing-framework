@@ -7,16 +7,16 @@ import static org.junit.Assert.assertEquals;
 public class NodeIdTest {
     @Test
     public void keepsStableIdentifierValue() {
-        TimingDataTypes.NodeId id = new TimingDataTypes.NodeId("timing-node-01");
+        TimingDataTypes.NodeId id = new TimingDataTypes.NodeId("TN-01");
 
-        assertEquals("timing-node-01", id.value());
-        assertEquals(new TimingDataTypes.NodeId("timing-node-01"), id);
-        assertEquals("timing-node-01", id.toString());
+        assertEquals("TN-01", id.value());
+        assertEquals(new TimingDataTypes.NodeId("TN-01"), id);
+        assertEquals("TN-01", id.toString());
     }
 
     @Test
     public void trimsConfigurationWhitespace() {
-        assertEquals("timing-node-01", new TimingDataTypes.NodeId("  timing-node-01  ").value());
+        assertEquals("TN-01", new TimingDataTypes.NodeId("  TN-01  ").value());
     }
 
     @Test(expected = IllegalArgumentException.class)

@@ -76,7 +76,7 @@ Open the **Timing** tab and choose **Connect live**.
 1. Verify the Timing view first shows **CONNECTED / syncing** or
    **SYNCING**, keeps state-changing controls disabled during synchronisation, and
    only then becomes **LIVE**. Verify it shows:
-   - TimingNode `timing-node-01`;
+   - TimingNode `TN-01`;
    - state `CLOSED`;
    - no current LocationId;
    - **Set location**, **Open** and **Close** available once LIVE;

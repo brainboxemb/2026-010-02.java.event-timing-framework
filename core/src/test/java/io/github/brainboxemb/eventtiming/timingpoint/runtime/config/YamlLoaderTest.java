@@ -21,10 +21,10 @@ public class YamlLoaderTest {
     @Test
     public void loadsSingleTimingNodeIdAndStorageWithoutPresentation() throws Exception {
         Config config = load(
-                "timingNodeId: timing-node-01\n"
+                "timingNodeId: TN-01\n"
                         + timingDataStorage());
 
-        assertEquals("timing-node-01", config.timingNodeId().value());
+        assertEquals("TN-01", config.timingNodeId().value());
         assertNull(config.presentation().remoteShell());
         assertNull(config.presentation().api());
         assertNull(config.logging());
@@ -37,7 +37,7 @@ public class YamlLoaderTest {
     @Test
     public void loadsImplementedPresentationConfig() throws Exception {
         Config config = load(
-                "timingNodeId: timing-node-01\n"
+                "timingNodeId: TN-01\n"
                         + timingDataStorage()
                         + "presentation:\n"
                         + "  remoteShell:\n"
@@ -64,7 +64,7 @@ public class YamlLoaderTest {
     @Test
     public void loadsRuntimeLoggingConfig() throws Exception {
         Config config = load(
-                "timingNodeId: timing-node-01\n"
+                "timingNodeId: TN-01\n"
                         + timingDataStorage()
                         + "logging:\n"
                         + "  level: DEBUG\n"
@@ -89,7 +89,7 @@ public class YamlLoaderTest {
     @Test(expected = IllegalArgumentException.class)
     public void rejectsUnsupportedLoggingLevel() throws Exception {
         load(
-                "timingNodeId: timing-node-01\n"
+                "timingNodeId: TN-01\n"
                         + "logging:\n"
                         + "  level: VERBOSE\n"
                         + "  file:\n"
@@ -100,13 +100,13 @@ public class YamlLoaderTest {
 
     @Test(expected = IllegalArgumentException.class)
     public void rejectsMissingTimingDataStorage() throws Exception {
-        load("timingNodeId: timing-node-01\n");
+        load("timingNodeId: TN-01\n");
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void rejectsBlankTimingDataPath() throws Exception {
         load(
-                "timingNodeId: timing-node-01\n"
+                "timingNodeId: TN-01\n"
                         + "io:\n"
                         + "  storage:\n"
                         + "    timingData:\n"
@@ -125,13 +125,13 @@ public class YamlLoaderTest {
 
     @Test(expected = IllegalArgumentException.class)
     public void rejectsUnknownRootField() throws Exception {
-        load("timingNodeId: timing-node-01\nunknown: true\n");
+        load("timingNodeId: TN-01\nunknown: true\n");
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void rejectsUnknownHttpField() throws Exception {
         load(
-                "timingNodeId: timing-node-01\n"
+                "timingNodeId: TN-01\n"
                         + "presentation:\n"
                         + "  api:\n"
                         + "    http:\n"
@@ -143,7 +143,7 @@ public class YamlLoaderTest {
     @Test(expected = IllegalArgumentException.class)
     public void rejectsMissingHttpBindAddress() throws Exception {
         load(
-                "timingNodeId: timing-node-01\n"
+                "timingNodeId: TN-01\n"
                         + "presentation:\n"
                         + "  api:\n"
                         + "    http:\n"
@@ -153,7 +153,7 @@ public class YamlLoaderTest {
     @Test(expected = IllegalArgumentException.class)
     public void rejectsInvalidHttpPort() throws Exception {
         load(
-                "timingNodeId: timing-node-01\n"
+                "timingNodeId: TN-01\n"
                         + "presentation:\n"
                         + "  api:\n"
                         + "    http:\n"
@@ -164,7 +164,7 @@ public class YamlLoaderTest {
     @Test(expected = IllegalArgumentException.class)
     public void rejectsEmptyApi() throws Exception {
         load(
-                "timingNodeId: timing-node-01\n"
+                "timingNodeId: TN-01\n"
                         + "presentation:\n"
                         + "  api: {}\n");
     }

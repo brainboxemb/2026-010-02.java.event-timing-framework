@@ -24,7 +24,7 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 public class DefaultTimingDataPersistenceTest {
-    private static final NodeId NODE_ID = new NodeId("timing-node-01");
+    private static final NodeId NODE_ID = new NodeId("TN-01");
     private static final TimingTimestamp EFFECTIVE =
             TimingTimestamp.parse("2026-10-01T12:00:00.000000000Z");
     private static final TimingTimestamp RECORDED =

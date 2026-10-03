@@ -40,7 +40,7 @@ public class LocalConsoleTest {
         assertTrue(text.contains("Build origin : local"));
         assertTrue(text.contains("Source state : clean"));
         assertTrue(text.contains("Timing node"));
-        assertTrue(text.contains("Id        : timing-node-01"));
+        assertTrue(text.contains("Id        : TN-01"));
         assertTrue(text.contains("Lifecycle : CLOSED"));
         assertTrue(stopped.get());
     }

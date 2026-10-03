@@ -33,7 +33,7 @@ public class ApplicationTest {
         application.start();
         try {
             assertEquals(
-                    "timing-node-01",
+                    "TN-01",
                     application.presentationGateway().status().timingNodeId().value());
             assertEquals(
                     TimingNodeTypes.Lifecycle.CLOSED,
@@ -71,7 +71,7 @@ public class ApplicationTest {
 
     private static TimingNode timingNode() {
         return new TimingNode(
-                new NodeId("timing-node-01"),
+                new NodeId("TN-01"),
                 new NoOpPersistence(),
                 new DefaultTimingDataFactory(),
                 () -> TimingTimestamp.parse(
