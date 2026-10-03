@@ -24,13 +24,14 @@ final class ClientLog implements AutoCloseable {
             StackWalker.getInstance(StackWalker.Option.RETAIN_CLASS_REFERENCE);
 
     private final BufferedWriter writer;
-    private final int threshold;
+    private volatile int threshold;
+    private volatile String level;
     private final List<String> history = new ArrayList<>();
     private final List<Consumer<String>> listeners = new CopyOnWriteArrayList<>();
 
-    private ClientLog(BufferedWriter writer, int threshold) {
+    private ClientLog(BufferedWriter writer, String level) {
         this.writer = writer;
-        this.threshold = threshold;
+        setLevel(level);
     }
 
     static ClientLog open(Path directory, String level) throws IOException {
@@ -49,7 +50,7 @@ final class ClientLog implements AutoCloseable {
                 file,
                 StandardOpenOption.CREATE_NEW,
                 StandardOpenOption.WRITE);
-        return new ClientLog(writer, severity(level));
+        return new ClientLog(writer, level);
     }
 
     void trace(String message) {
@@ -70,6 +71,16 @@ final class ClientLog implements AutoCloseable {
 
     void error(String message) {
         log("ERROR", message);
+    }
+
+    String level() {
+        return level;
+    }
+
+    void setLevel(String value) {
+        String normalized = normalizeLevel(value);
+        threshold = severity(normalized);
+        level = normalized;
     }
 
     synchronized String snapshot() {
@@ -124,6 +135,12 @@ final class ClientLog implements AutoCloseable {
                 ? className
                 : className.substring(packageSeparator + 1);
         return displayClass + "." + methodName;
+    }
+
+    private static String normalizeLevel(String value) {
+        String normalized = value == null ? "" : value.trim().toUpperCase(Locale.ROOT);
+        severity(normalized);
+        return normalized;
     }
 
     private static int severity(String value) {
