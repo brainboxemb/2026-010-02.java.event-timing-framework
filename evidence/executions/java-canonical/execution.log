@@ -1,0 +1,342 @@
+Java canonical verify
+repository=brainboxemb/2026-010-02.java.timing-point-application
+source_revision=4651ffbc168f78ef1a3416d5c1480c7f8712e23e
+checked_out_sha=4651ffbc168f78ef1a3416d5c1480c7f8712e23e
+tool_java_project_revision=c0ca2e1365a64bc626ca331a8170d13340ae0b36
+tool_java_project_version=0.3.2
+
+> java -version
+openjdk version "1.8.0_504"
+OpenJDK Runtime Environment (Temurin)(build 1.8.0_504-b01)
+OpenJDK 64-Bit Server VM (Temurin)(build 25.504-b01, mixed mode)
+
+> ./mvnw --version
+Apache Maven 3.9.16 (2bdd9fddda4b155ebf8000e807eb73fd829a51d5)
+Maven home: /home/runner/.m2/wrapper/dists/apache-maven-3.9.16/56ba1f9f
+Java version: 1.8.0_504, vendor: Temurin, runtime: /usr/lib/jvm/temurin-8-jdk-amd64/jre
+Default locale: en, platform encoding: UTF-8
+OS name: "linux", version: "6.17.0-1022-azure", arch: "amd64", family: "unix"
+
+> ./mvnw --batch-mode --no-transfer-progress verify
+[INFO] Scanning for projects...
+[INFO] ------------------------------------------------------------------------
+[INFO] Reactor Build Order:
+[INFO] 
+[INFO] Timing Point Parent                                                [pom]
+[INFO] Event Timing Data                                                  [jar]
+[INFO] Timing Point Application Core                                      [jar]
+[INFO] Timing Point Application                                           [jar]
+[INFO] 
+[INFO] -------< io.github.brainboxemb.eventtiming:timing-point-parent >--------
+[INFO] Building Timing Point Parent 0.2.3-SNAPSHOT                        [1/4]
+[INFO]   from pom.xml
+[INFO] --------------------------------[ pom ]---------------------------------
+[INFO] 
+[INFO] --------< io.github.brainboxemb.eventtiming:event-timing-data >---------
+[INFO] Building Event Timing Data 0.2.3-SNAPSHOT                          [2/4]
+[INFO]   from shared/timing-data/pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- resources:3.4.0:resources (default-resources) @ event-timing-data ---
+[INFO] skip non existing resourceDirectory /home/runner/work/2026-010-02.java.timing-point-application/2026-010-02.java.timing-point-application/shared/timing-data/src/main/resources
+[INFO] 
+[INFO] --- compiler:3.13.0:compile (default-compile) @ event-timing-data ---
+[INFO] Recompiling the module because of changed source code.
+[INFO] Compiling 8 source files with javac [debug target 1.8] to target/classes
+[INFO] 
+[INFO] --- resources:3.4.0:testResources (default-testResources) @ event-timing-data ---
+[INFO] skip non existing resourceDirectory /home/runner/work/2026-010-02.java.timing-point-application/2026-010-02.java.timing-point-application/shared/timing-data/src/test/resources
+[INFO] 
+[INFO] --- compiler:3.13.0:testCompile (default-testCompile) @ event-timing-data ---
+[INFO] Recompiling the module because of changed dependency.
+[INFO] Compiling 9 source files with javac [debug target 1.8] to target/test-classes
+[INFO] 
+[INFO] --- surefire:3.2.5:test (default-test) @ event-timing-data ---
+[INFO] Using auto detected provider org.apache.maven.surefire.junit4.JUnit4Provider
+[INFO] 
+[INFO] -------------------------------------------------------
+[INFO]  T E S T S
+[INFO] -------------------------------------------------------
+[INFO] Running io.github.brainboxemb.eventtiming.timingdata.NodeIdTest
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.024 s -- in io.github.brainboxemb.eventtiming.timingdata.NodeIdTest
+[INFO] Running io.github.brainboxemb.eventtiming.timingdata.RegistrationIdTest
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0 s -- in io.github.brainboxemb.eventtiming.timingdata.RegistrationIdTest
+[INFO] Running io.github.brainboxemb.eventtiming.timingdata.TimingDataFactoryTest
+[INFO] Tests run: 8, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.004 s -- in io.github.brainboxemb.eventtiming.timingdata.TimingDataFactoryTest
+[INFO] Running io.github.brainboxemb.eventtiming.timingdata.TimingDataProviderTest
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0 s -- in io.github.brainboxemb.eventtiming.timingdata.TimingDataProviderTest
+[INFO] Running io.github.brainboxemb.eventtiming.timingdata.LocationIdTest
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0 s -- in io.github.brainboxemb.eventtiming.timingdata.LocationIdTest
+[INFO] Running io.github.brainboxemb.eventtiming.timingdata.TimingDataCodecTest
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.001 s -- in io.github.brainboxemb.eventtiming.timingdata.TimingDataCodecTest
+[INFO] Running io.github.brainboxemb.eventtiming.timingdata.defaultprofile.DefaultTimingDataCodecTest
+[INFO] Tests run: 10, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.032 s -- in io.github.brainboxemb.eventtiming.timingdata.defaultprofile.DefaultTimingDataCodecTest
+[INFO] Running io.github.brainboxemb.eventtiming.timingdata.TimingTimestampTest
+[INFO] Tests run: 6, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.007 s -- in io.github.brainboxemb.eventtiming.timingdata.TimingTimestampTest
+[INFO] Running io.github.brainboxemb.eventtiming.timingdata.TimingDataTest
+[INFO] Tests run: 6, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0 s -- in io.github.brainboxemb.eventtiming.timingdata.TimingDataTest
+[INFO] 
+[INFO] Results:
+[INFO] 
+[INFO] Tests run: 43, Failures: 0, Errors: 0, Skipped: 0
+[INFO] 
+[INFO] 
+[INFO] --- jar:3.5.0:jar (default-jar) @ event-timing-data ---
+[INFO] Building jar: /home/runner/work/2026-010-02.java.timing-point-application/2026-010-02.java.timing-point-application/shared/timing-data/target/event-timing-data-0.2.3-SNAPSHOT.jar
+[INFO] 
+[INFO] --------< io.github.brainboxemb.eventtiming:timing-point-core >---------
+[INFO] Building Timing Point Application Core 0.2.3-SNAPSHOT              [3/4]
+[INFO]   from core/pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- resources:3.4.0:resources (default-resources) @ timing-point-core ---
+[INFO] skip non existing resourceDirectory /home/runner/work/2026-010-02.java.timing-point-application/2026-010-02.java.timing-point-application/core/src/main/resources
+[INFO] 
+[INFO] --- compiler:3.13.0:compile (default-compile) @ timing-point-core ---
+[INFO] Recompiling the module because of changed dependency.
+[INFO] Compiling 44 source files with javac [debug target 1.8] to target/classes
+[INFO] 
+[INFO] --- resources:3.4.0:testResources (default-testResources) @ timing-point-core ---
+[INFO] skip non existing resourceDirectory /home/runner/work/2026-010-02.java.timing-point-application/2026-010-02.java.timing-point-application/core/src/test/resources
+[INFO] 
+[INFO] --- compiler:3.13.0:testCompile (default-testCompile) @ timing-point-core ---
+[INFO] Recompiling the module because of changed dependency.
+[INFO] Compiling 22 source files with javac [debug target 1.8] to target/test-classes
+[INFO] 
+[INFO] --- surefire:3.2.5:test (default-test) @ timing-point-core ---
+[INFO] Using auto detected provider org.apache.maven.surefire.junit4.JUnit4Provider
+[INFO] 
+[INFO] -------------------------------------------------------
+[INFO]  T E S T S
+[INFO] -------------------------------------------------------
+[INFO] Running io.github.brainboxemb.eventtiming.timingpoint.application.ApplicationStatusTest
+[INFO] Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.026 s -- in io.github.brainboxemb.eventtiming.timingpoint.application.ApplicationStatusTest
+[INFO] Running io.github.brainboxemb.eventtiming.timingpoint.application.PresentationGatewayTest
+SLF4J(W): No SLF4J providers were found.
+SLF4J(W): Defaulting to no-operation (NOP) logger implementation
+SLF4J(W): See https://www.slf4j.org/codes.html#noProviders for further details.
+[INFO] Tests run: 6, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.135 s -- in io.github.brainboxemb.eventtiming.timingpoint.application.PresentationGatewayTest
+[INFO] Running io.github.brainboxemb.eventtiming.timingpoint.io.storage.FileAppendOnlyRecordStoreTest
+[INFO] Tests run: 7, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.064 s -- in io.github.brainboxemb.eventtiming.timingpoint.io.storage.FileAppendOnlyRecordStoreTest
+[INFO] Running io.github.brainboxemb.eventtiming.timingpoint.infra.loggingserver.LoggingServerTest
+18:58:36.070 - [INFO] - A08 live message - [loggingserver.LoggingServerTest.streamsLiveRecordsAndChangesRuntimeLevel]
+18:58:36.072 - [DEBUG] - A08 debug message - [loggingserver.LoggingServerTest.streamsLiveRecordsAndChangesRuntimeLevel]
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.021 s -- in io.github.brainboxemb.eventtiming.timingpoint.infra.loggingserver.LoggingServerTest
+[INFO] Running io.github.brainboxemb.eventtiming.timingpoint.infra.logging.LoggingTest
+18:58:36.076 - [INFO] - rotation-0-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx - [logging.LoggingTest.rotatesWithinConfiguredRetention]
+18:58:36.076 - [INFO] - rotation-1-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx - [logging.LoggingTest.rotatesWithinConfiguredRetention]
+18:58:36.076 - [INFO] - rotation-2-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx - [logging.LoggingTest.rotatesWithinConfiguredRetention]
+18:58:36.076 - [INFO] - rotation-3-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx - [logging.LoggingTest.rotatesWithinConfiguredRetention]
+18:58:36.076 - [INFO] - rotation-4-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx - [logging.LoggingTest.rotatesWithinConfiguredRetention]
+18:58:36.077 - [INFO] - rotation-5-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx - [logging.LoggingTest.rotatesWithinConfiguredRetention]
+18:58:36.077 - [INFO] - rotation-6-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx - [logging.LoggingTest.rotatesWithinConfiguredRetention]
+18:58:36.077 - [INFO] - rotation-7-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx - [logging.LoggingTest.rotatesWithinConfiguredRetention]
+18:58:36.077 - [INFO] - rotation-8-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx - [logging.LoggingTest.rotatesWithinConfiguredRetention]
+18:58:36.077 - [INFO] - rotation-9-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx - [logging.LoggingTest.rotatesWithinConfiguredRetention]
+18:58:36.078 - [INFO] - rotation-10-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx - [logging.LoggingTest.rotatesWithinConfiguredRetention]
+18:58:36.078 - [INFO] - rotation-11-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx - [logging.LoggingTest.rotatesWithinConfiguredRetention]
+18:58:36.078 - [INFO] - rotation-12-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx - [logging.LoggingTest.rotatesWithinConfiguredRetention]
+18:58:36.079 - [INFO] - rotation-13-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx - [logging.LoggingTest.rotatesWithinConfiguredRetention]
+18:58:36.079 - [INFO] - rotation-14-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx - [logging.LoggingTest.rotatesWithinConfiguredRetention]
+18:58:36.079 - [INFO] - rotation-15-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx - [logging.LoggingTest.rotatesWithinConfiguredRetention]
+18:58:36.080 - [INFO] - rotation-16-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx - [logging.LoggingTest.rotatesWithinConfiguredRetention]
+18:58:36.080 - [INFO] - rotation-17-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx - [logging.LoggingTest.rotatesWithinConfiguredRetention]
+18:58:36.080 - [INFO] - rotation-18-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx - [logging.LoggingTest.rotatesWithinConfiguredRetention]
+18:58:36.080 - [INFO] - rotation-19-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx - [logging.LoggingTest.rotatesWithinConfiguredRetention]
+18:58:36.081 - [INFO] - rotation-20-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx - [logging.LoggingTest.rotatesWithinConfiguredRetention]
+18:58:36.081 - [INFO] - rotation-21-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx - [logging.LoggingTest.rotatesWithinConfiguredRetention]
+18:58:36.081 - [INFO] - rotation-22-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx - [logging.LoggingTest.rotatesWithinConfiguredRetention]
+18:58:36.082 - [INFO] - rotation-23-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx - [logging.LoggingTest.rotatesWithinConfiguredRetention]
+18:58:36.082 - [INFO] - rotation-24-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx - [logging.LoggingTest.rotatesWithinConfiguredRetention]
+18:58:36.082 - [INFO] - rotation-25-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx - [logging.LoggingTest.rotatesWithinConfiguredRetention]
+18:58:36.082 - [INFO] - rotation-26-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx - [logging.LoggingTest.rotatesWithinConfiguredRetention]
+18:58:36.083 - [INFO] - rotation-27-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx - [logging.LoggingTest.rotatesWithinConfiguredRetention]
+18:58:36.083 - [INFO] - rotation-28-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx - [logging.LoggingTest.rotatesWithinConfiguredRetention]
+18:58:36.083 - [INFO] - rotation-29-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx - [logging.LoggingTest.rotatesWithinConfiguredRetention]
+18:58:36.083 - [INFO] - rotation-30-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx - [logging.LoggingTest.rotatesWithinConfiguredRetention]
+18:58:36.084 - [INFO] - rotation-31-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx - [logging.LoggingTest.rotatesWithinConfiguredRetention]
+18:58:36.084 - [INFO] - rotation-32-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx - [logging.LoggingTest.rotatesWithinConfiguredRetention]
+18:58:36.084 - [INFO] - rotation-33-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx - [logging.LoggingTest.rotatesWithinConfiguredRetention]
+18:58:36.085 - [INFO] - rotation-34-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx - [logging.LoggingTest.rotatesWithinConfiguredRetention]
+18:58:36.085 - [INFO] - rotation-35-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx - [logging.LoggingTest.rotatesWithinConfiguredRetention]
+18:58:36.085 - [INFO] - rotation-36-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx - [logging.LoggingTest.rotatesWithinConfiguredRetention]
+18:58:36.086 - [INFO] - rotation-37-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx - [logging.LoggingTest.rotatesWithinConfiguredRetention]
+18:58:36.086 - [INFO] - rotation-38-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx - [logging.LoggingTest.rotatesWithinConfiguredRetention]
+18:58:36.086 - [INFO] - rotation-39-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx - [logging.LoggingTest.rotatesWithinConfiguredRetention]
+18:58:36.087 - [INFO] - rotation-40-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx - [logging.LoggingTest.rotatesWithinConfiguredRetention]
+18:58:36.087 - [INFO] - rotation-41-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx - [logging.LoggingTest.rotatesWithinConfiguredRetention]
+18:58:36.087 - [INFO] - rotation-42-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx - [logging.LoggingTest.rotatesWithinConfiguredRetention]
+18:58:36.087 - [INFO] - rotation-43-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx - [logging.LoggingTest.rotatesWithinConfiguredRetention]
+18:58:36.087 - [INFO] - rotation-44-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx - [logging.LoggingTest.rotatesWithinConfiguredRetention]
+18:58:36.088 - [INFO] - rotation-45-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx - [logging.LoggingTest.rotatesWithinConfiguredRetention]
+18:58:36.088 - [INFO] - rotation-46-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx - [logging.LoggingTest.rotatesWithinConfiguredRetention]
+18:58:36.088 - [INFO] - rotation-47-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx - [logging.LoggingTest.rotatesWithinConfiguredRetention]
+18:58:36.088 - [INFO] - rotation-48-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx - [logging.LoggingTest.rotatesWithinConfiguredRetention]
+18:58:36.089 - [INFO] - rotation-49-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx - [logging.LoggingTest.rotatesWithinConfiguredRetention]
+18:58:36.089 - [INFO] - rotation-50-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx - [logging.LoggingTest.rotatesWithinConfiguredRetention]
+18:58:36.089 - [INFO] - rotation-51-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx - [logging.LoggingTest.rotatesWithinConfiguredRetention]
+18:58:36.090 - [INFO] - rotation-52-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx - [logging.LoggingTest.rotatesWithinConfiguredRetention]
+18:58:36.090 - [INFO] - rotation-53-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx - [logging.LoggingTest.rotatesWithinConfiguredRetention]
+18:58:36.090 - [INFO] - rotation-54-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx - [logging.LoggingTest.rotatesWithinConfiguredRetention]
+18:58:36.090 - [INFO] - rotation-55-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx - [logging.LoggingTest.rotatesWithinConfiguredRetention]
+18:58:36.090 - [INFO] - rotation-56-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx - [logging.LoggingTest.rotatesWithinConfiguredRetention]
+18:58:36.091 - [INFO] - rotation-57-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx - [logging.LoggingTest.rotatesWithinConfiguredRetention]
+18:58:36.091 - [INFO] - rotation-58-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx - [logging.LoggingTest.rotatesWithinConfiguredRetention]
+18:58:36.091 - [INFO] - rotation-59-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx - [logging.LoggingTest.rotatesWithinConfiguredRetention]
+18:58:36.091 - [INFO] - rotation-60-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx - [logging.LoggingTest.rotatesWithinConfiguredRetention]
+18:58:36.092 - [INFO] - rotation-61-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx - [logging.LoggingTest.rotatesWithinConfiguredRetention]
+18:58:36.092 - [INFO] - rotation-62-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx - [logging.LoggingTest.rotatesWithinConfiguredRetention]
+18:58:36.092 - [INFO] - rotation-63-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx - [logging.LoggingTest.rotatesWithinConfiguredRetention]
+18:58:36.092 - [INFO] - rotation-64-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx - [logging.LoggingTest.rotatesWithinConfiguredRetention]
+18:58:36.093 - [INFO] - rotation-65-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx - [logging.LoggingTest.rotatesWithinConfiguredRetention]
+18:58:36.093 - [INFO] - rotation-66-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx - [logging.LoggingTest.rotatesWithinConfiguredRetention]
+18:58:36.093 - [INFO] - rotation-67-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx - [logging.LoggingTest.rotatesWithinConfiguredRetention]
+18:58:36.093 - [INFO] - rotation-68-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx - [logging.LoggingTest.rotatesWithinConfiguredRetention]
+18:58:36.093 - [INFO] - rotation-69-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx - [logging.LoggingTest.rotatesWithinConfiguredRetention]
+18:58:36.094 - [INFO] - rotation-70-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx - [logging.LoggingTest.rotatesWithinConfiguredRetention]
+18:58:36.094 - [INFO] - rotation-71-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx - [logging.LoggingTest.rotatesWithinConfiguredRetention]
+18:58:36.094 - [INFO] - rotation-72-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx - [logging.LoggingTest.rotatesWithinConfiguredRetention]
+18:58:36.095 - [INFO] - rotation-73-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx - [logging.LoggingTest.rotatesWithinConfiguredRetention]
+18:58:36.095 - [INFO] - rotation-74-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx - [logging.LoggingTest.rotatesWithinConfiguredRetention]
+18:58:36.095 - [INFO] - rotation-75-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx - [logging.LoggingTest.rotatesWithinConfiguredRetention]
+18:58:36.096 - [INFO] - rotation-76-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx - [logging.LoggingTest.rotatesWithinConfiguredRetention]
+18:58:36.096 - [INFO] - rotation-77-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx - [logging.LoggingTest.rotatesWithinConfiguredRetention]
+18:58:36.096 - [INFO] - rotation-78-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx - [logging.LoggingTest.rotatesWithinConfiguredRetention]
+18:58:36.096 - [INFO] - rotation-79-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx - [logging.LoggingTest.rotatesWithinConfiguredRetention]
+18:58:36.096 - [INFO] - rotation-80-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx - [logging.LoggingTest.rotatesWithinConfiguredRetention]
+18:58:36.096 - [INFO] - rotation-81-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx - [logging.LoggingTest.rotatesWithinConfiguredRetention]
+18:58:36.097 - [INFO] - rotation-82-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx - [logging.LoggingTest.rotatesWithinConfiguredRetention]
+18:58:36.097 - [INFO] - rotation-83-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx - [logging.LoggingTest.rotatesWithinConfiguredRetention]
+18:58:36.097 - [INFO] - rotation-84-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx - [logging.LoggingTest.rotatesWithinConfiguredRetention]
+18:58:36.098 - [INFO] - rotation-85-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx - [logging.LoggingTest.rotatesWithinConfiguredRetention]
+18:58:36.098 - [INFO] - rotation-86-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx - [logging.LoggingTest.rotatesWithinConfiguredRetention]
+18:58:36.098 - [INFO] - rotation-87-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx - [logging.LoggingTest.rotatesWithinConfiguredRetention]
+18:58:36.098 - [INFO] - rotation-88-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx - [logging.LoggingTest.rotatesWithinConfiguredRetention]
+18:58:36.098 - [INFO] - rotation-89-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx - [logging.LoggingTest.rotatesWithinConfiguredRetention]
+18:58:36.098 - [INFO] - rotation-90-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx - [logging.LoggingTest.rotatesWithinConfiguredRetention]
+18:58:36.099 - [INFO] - rotation-91-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx - [logging.LoggingTest.rotatesWithinConfiguredRetention]
+18:58:36.099 - [INFO] - rotation-92-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx - [logging.LoggingTest.rotatesWithinConfiguredRetention]
+18:58:36.099 - [INFO] - rotation-93-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx - [logging.LoggingTest.rotatesWithinConfiguredRetention]
+18:58:36.100 - [INFO] - rotation-94-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx - [logging.LoggingTest.rotatesWithinConfiguredRetention]
+18:58:36.100 - [INFO] - rotation-95-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx - [logging.LoggingTest.rotatesWithinConfiguredRetention]
+18:58:36.100 - [INFO] - rotation-96-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx - [logging.LoggingTest.rotatesWithinConfiguredRetention]
+18:58:36.101 - [INFO] - rotation-97-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx - [logging.LoggingTest.rotatesWithinConfiguredRetention]
+18:58:36.101 - [INFO] - rotation-98-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx - [logging.LoggingTest.rotatesWithinConfiguredRetention]
+18:58:36.101 - [INFO] - rotation-99-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx - [logging.LoggingTest.rotatesWithinConfiguredRetention]
+[INFO] Tests run: 7, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.037 s -- in io.github.brainboxemb.eventtiming.timingpoint.infra.logging.LoggingTest
+[INFO] Running io.github.brainboxemb.eventtiming.timingpoint.infra.BuildIdentityTest
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0 s -- in io.github.brainboxemb.eventtiming.timingpoint.infra.BuildIdentityTest
+[INFO] Running io.github.brainboxemb.eventtiming.timingpoint.presentation.interfaces.console.LocalConsoleTest
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.103 s -- in io.github.brainboxemb.eventtiming.timingpoint.presentation.interfaces.console.LocalConsoleTest
+[INFO] Running io.github.brainboxemb.eventtiming.timingpoint.presentation.interfaces.shell.RemoteShellServerTest
+[INFO] Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.104 s -- in io.github.brainboxemb.eventtiming.timingpoint.presentation.interfaces.shell.RemoteShellServerTest
+[INFO] Running io.github.brainboxemb.eventtiming.timingpoint.presentation.interfaces.api.HttpRequestReaderTest
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.023 s -- in io.github.brainboxemb.eventtiming.timingpoint.presentation.interfaces.api.HttpRequestReaderTest
+[INFO] Running io.github.brainboxemb.eventtiming.timingpoint.presentation.interfaces.api.WebSocketEndpointTest
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.715 s -- in io.github.brainboxemb.eventtiming.timingpoint.presentation.interfaces.api.WebSocketEndpointTest
+[INFO] Running io.github.brainboxemb.eventtiming.timingpoint.presentation.interfaces.api.HttpEndpointTest
+[INFO] Tests run: 4, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.974 s -- in io.github.brainboxemb.eventtiming.timingpoint.presentation.interfaces.api.HttpEndpointTest
+[INFO] Running io.github.brainboxemb.eventtiming.timingpoint.runtime.LifecycleTest
+[INFO] Tests run: 6, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.051 s -- in io.github.brainboxemb.eventtiming.timingpoint.runtime.LifecycleTest
+[INFO] Running io.github.brainboxemb.eventtiming.timingpoint.runtime.config.YamlLoaderTest
+[INFO] Tests run: 13, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.124 s -- in io.github.brainboxemb.eventtiming.timingpoint.runtime.config.YamlLoaderTest
+[INFO] Running io.github.brainboxemb.eventtiming.timingpoint.runtime.CompositionTest
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.103 s -- in io.github.brainboxemb.eventtiming.timingpoint.runtime.CompositionTest
+[INFO] Running io.github.brainboxemb.eventtiming.timingpoint.runtime.ApplicationTest
+[INFO] Tests run: 4, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.051 s -- in io.github.brainboxemb.eventtiming.timingpoint.runtime.ApplicationTest
+[INFO] Running io.github.brainboxemb.eventtiming.timingpoint.domain.timingdata.DefaultTimingDataPersistenceTest
+[INFO] Tests run: 8, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.008 s -- in io.github.brainboxemb.eventtiming.timingpoint.domain.timingdata.DefaultTimingDataPersistenceTest
+[INFO] Running io.github.brainboxemb.eventtiming.timingpoint.domain.logbook.LogBookTest
+[INFO] Tests run: 4, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0 s -- in io.github.brainboxemb.eventtiming.timingpoint.domain.logbook.LogBookTest
+[INFO] Running io.github.brainboxemb.eventtiming.timingpoint.domain.timing.TimingNodeTest
+[INFO] Tests run: 10, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.384 s -- in io.github.brainboxemb.eventtiming.timingpoint.domain.timing.TimingNodeTest
+[INFO] Running io.github.brainboxemb.eventtiming.timingpoint.domain.timing.TimingNodeRegistrationTest
+[INFO] Tests run: 13, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.663 s -- in io.github.brainboxemb.eventtiming.timingpoint.domain.timing.TimingNodeRegistrationTest
+[INFO] Running io.github.brainboxemb.eventtiming.timingpoint.platform.events.EventTest
+[INFO] Tests run: 6, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.002 s -- in io.github.brainboxemb.eventtiming.timingpoint.platform.events.EventTest
+[INFO] Running io.github.brainboxemb.eventtiming.timingpoint.platform.execution.SerialWorkerTest
+[INFO] Tests run: 6, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.155 s -- in io.github.brainboxemb.eventtiming.timingpoint.platform.execution.SerialWorkerTest
+[INFO] 
+[INFO] Results:
+[INFO] 
+[INFO] Tests run: 114, Failures: 0, Errors: 0, Skipped: 0
+[INFO] 
+[INFO] 
+[INFO] --- jar:3.5.0:jar (default-jar) @ timing-point-core ---
+[INFO] Building jar: /home/runner/work/2026-010-02.java.timing-point-application/2026-010-02.java.timing-point-application/core/target/timing-point-core-0.2.3-SNAPSHOT.jar
+[INFO] 
+[INFO] ---------< io.github.brainboxemb.eventtiming:timing-point-app >---------
+[INFO] Building Timing Point Application 0.2.3-SNAPSHOT                   [4/4]
+[INFO]   from app/pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- git-commit-id:4.9.10:revision (capture-git-build-provenance) @ timing-point-app ---
+[INFO] 
+[INFO] --- resources:3.4.0:resources (default-resources) @ timing-point-app ---
+[INFO] Copying 1 resource from src/main/resources to target/classes
+[INFO] The encoding used to copy filtered properties files has not been set. This means that the same encoding will be used to copy filtered properties files as when copying other filtered resources. This might not be what you want! Run your build with --debug to see which files might be affected. Read more at https://maven.apache.org/plugins/maven-resources-plugin/examples/filtering-properties-files.html
+[INFO] 
+[INFO] --- compiler:3.13.0:compile (default-compile) @ timing-point-app ---
+[INFO] Recompiling the module because of changed dependency.
+[INFO] Compiling 1 source file with javac [debug target 1.8] to target/classes
+[INFO] 
+[INFO] --- resources:3.4.0:testResources (default-testResources) @ timing-point-app ---
+[INFO] skip non existing resourceDirectory /home/runner/work/2026-010-02.java.timing-point-application/2026-010-02.java.timing-point-application/app/src/test/resources
+[INFO] 
+[INFO] --- compiler:3.13.0:testCompile (default-testCompile) @ timing-point-app ---
+[INFO] Recompiling the module because of changed dependency.
+[INFO] Compiling 1 source file with javac [debug target 1.8] to target/test-classes
+[INFO] 
+[INFO] --- surefire:3.2.5:test (default-test) @ timing-point-app ---
+[INFO] Using auto detected provider org.apache.maven.surefire.junit4.JUnit4Provider
+[INFO] 
+[INFO] -------------------------------------------------------
+[INFO]  T E S T S
+[INFO] -------------------------------------------------------
+[INFO] Running io.github.brainboxemb.eventtiming.timingpoint.app.bootstrap.EmbeddedBuildIdentityLoaderTest
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.033 s -- in io.github.brainboxemb.eventtiming.timingpoint.app.bootstrap.EmbeddedBuildIdentityLoaderTest
+[INFO] 
+[INFO] Results:
+[INFO] 
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0
+[INFO] 
+[INFO] 
+[INFO] --- jar:3.5.0:jar (default-jar) @ timing-point-app ---
+[INFO] Building jar: /home/runner/work/2026-010-02.java.timing-point-application/2026-010-02.java.timing-point-application/app/target/timing-point-app-0.2.3-SNAPSHOT.jar
+[INFO] 
+[INFO] --- shade:3.6.0:shade (default) @ timing-point-app ---
+[INFO] Including io.github.brainboxemb.eventtiming:timing-point-core:jar:0.2.3-SNAPSHOT in the shaded jar.
+[INFO] Including io.github.brainboxemb.eventtiming:event-timing-data:jar:0.2.3-SNAPSHOT in the shaded jar.
+[INFO] Including org.yaml:snakeyaml:jar:2.7 in the shaded jar.
+[INFO] Including org.java-websocket:Java-WebSocket:jar:1.6.0 in the shaded jar.
+[INFO] Including com.fasterxml.jackson.core:jackson-core:jar:2.21.5 in the shaded jar.
+[INFO] Including org.slf4j:slf4j-api:jar:2.0.17 in the shaded jar.
+[INFO] Including org.slf4j:slf4j-jdk14:jar:2.0.17 in the shaded jar.
+[WARNING] Java-WebSocket-1.6.0.jar, jackson-core-2.21.5.jar, slf4j-api-2.0.17.jar, slf4j-jdk14-2.0.17.jar, snakeyaml-2.7.jar define 1 overlapping classes: 
+[WARNING]   - META-INF.versions.9.module-info
+[WARNING] slf4j-api-2.0.17.jar, slf4j-jdk14-2.0.17.jar define 1 overlapping resource: 
+[WARNING]   - META-INF/LICENSE.txt
+[WARNING] Java-WebSocket-1.6.0.jar, event-timing-data-0.2.3-SNAPSHOT.jar, jackson-core-2.21.5.jar, slf4j-api-2.0.17.jar, slf4j-jdk14-2.0.17.jar, snakeyaml-2.7.jar, timing-point-app-0.2.3-SNAPSHOT.jar, timing-point-core-0.2.3-SNAPSHOT.jar define 1 overlapping resource: 
+[WARNING]   - META-INF/MANIFEST.MF
+[WARNING] maven-shade-plugin has detected that some files are
+[WARNING] present in two or more JARs. When this happens, only one
+[WARNING] single version of the file is copied to the uber jar.
+[WARNING] Usually this is not harmful and you can skip these warnings,
+[WARNING] otherwise try to manually exclude artifacts based on
+[WARNING] mvn dependency:tree -Ddetail=true and the above output.
+[WARNING] See https://maven.apache.org/plugins/maven-shade-plugin/
+[INFO] Replacing original artifact with shaded artifact.
+[INFO] Replacing /home/runner/work/2026-010-02.java.timing-point-application/2026-010-02.java.timing-point-application/app/target/timing-point-app-0.2.3-SNAPSHOT.jar with /home/runner/work/2026-010-02.java.timing-point-application/2026-010-02.java.timing-point-application/app/target/timing-point-app-0.2.3-SNAPSHOT-shaded.jar
+[INFO] ------------------------------------------------------------------------
+[INFO] Reactor Summary for Timing Point Parent 0.2.3-SNAPSHOT:
+[INFO] 
+[INFO] Timing Point Parent ................................ SUCCESS [  0.002 s]
+[INFO] Event Timing Data .................................. SUCCESS [  4.731 s]
+[INFO] Timing Point Application Core ...................... SUCCESS [  5.023 s]
+[INFO] Timing Point Application ........................... SUCCESS [  4.905 s]
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  14.748 s
+[INFO] Finished at: 2026-10-03T18:58:44Z
+[INFO] ------------------------------------------------------------------------

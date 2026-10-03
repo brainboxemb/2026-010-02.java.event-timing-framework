@@ -1,0 +1,29 @@
+{
+  "files": [
+    "core/src/test/java/io/github/brainboxemb/eventtiming/timingpoint/application/PresentationGatewayTest.java",
+    "core/src/main/java/io/github/brainboxemb/eventtiming/timingpoint/application/PresentationGateway.java",
+    "system-test/src/test/java/io/github/brainboxemb/eventtiming/systemtest/VcSt1_004Test.java",
+    "core/src/test/java/io/github/brainboxemb/eventtiming/timingpoint/presentation/interfaces/api/WebSocketEndpointTest.java",
+    "core/src/main/java/io/github/brainboxemb/eventtiming/timingpoint/domain/timing/TimingNodeLogic.java",
+    "core/src/main/java/io/github/brainboxemb/eventtiming/timingpoint/domain/timing/TimingNode.java",
+    "README.md",
+    "core/src/main/java/io/github/brainboxemb/eventtiming/timingpoint/application/ApplicationStatus.java",
+    "system-test/src/test/java/io/github/brainboxemb/eventtiming/systemtest/framework/RemoteShellClient.java",
+    "core/src/main/java/io/github/brainboxemb/eventtiming/timingpoint/presentation/interfaces/api/MessageWriter.java",
+    "core/src/main/java/io/github/brainboxemb/eventtiming/timingpoint/domain/timing/TimingNodeTypes.java",
+    "core/src/main/java/io/github/brainboxemb/eventtiming/timingpoint/presentation/common/terminal/TerminalSession.java",
+    "CHANGELOG.md",
+    "core/src/test/java/io/github/brainboxemb/eventtiming/timingpoint/presentation/interfaces/api/HttpEndpointTest.java",
+    "core/src/test/java/io/github/brainboxemb/eventtiming/timingpoint/domain/timing/TimingNodeRegistrationTest.java",
+    "core/src/test/java/io/github/brainboxemb/eventtiming/timingpoint/runtime/CompositionTest.java"
+  ],
+  "options": {
+    "base": "0ebc35f935dbb849dc260681fabade204da8314c",
+    "defaultBranch": true,
+    "head": "4651ffbc168f78ef1a3416d5c1480c7f8712e23e",
+    "local": false,
+    "status": [],
+    "stdin": false
+  },
+  "shallow": false
+}
