@@ -68,8 +68,9 @@ config/engineering-client.properties
 
 The default file configures HTTP :8081, Events :8082, Remote Shell :8023 and
 LoggingServer :8030 on `127.0.0.1`, plus the Engineering Client's own log path/level
-and initial registration prefix. Use `--config=<path>` to select another client
-configuration file.
+and initial registration prefix. The resolver accepts both the repository root and
+`test-client` as the working directory, so root-level Maven and NetBeans launches use
+the same file. Use `--config=<path>` to select another client configuration file.
 
 The window title includes the Engineering Client software version. **Help → About** shows
 the client's own build identity and selected client-config path.

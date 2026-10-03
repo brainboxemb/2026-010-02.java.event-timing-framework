@@ -43,6 +43,28 @@ class ClientConfigTest {
     }
 
     @Test
+    void resolvesDefaultConfigFromRepositoryWorkingDirectory() throws Exception {
+        Path repository = temp.resolve("repository");
+        Path config = repository.resolve("config").resolve("engineering-client.properties");
+        Files.createDirectories(config.getParent());
+        Files.writeString(config, "# marker");
+
+        assertEquals(config, ClientConfig.defaultPath(repository));
+    }
+
+    @Test
+    void resolvesDefaultConfigFromTestClientWorkingDirectory() throws Exception {
+        Path repository = temp.resolve("repository");
+        Path client = repository.resolve("test-client");
+        Path config = repository.resolve("config").resolve("engineering-client.properties");
+        Files.createDirectories(client);
+        Files.createDirectories(config.getParent());
+        Files.writeString(config, "# marker");
+
+        assertEquals(config, ClientConfig.defaultPath(client));
+    }
+
+    @Test
     void rejectsInvalidBoundaryPorts() throws Exception {
         Path file = temp.resolve("engineering-client.properties");
         Files.writeString(file, String.join(System.lineSeparator(),
