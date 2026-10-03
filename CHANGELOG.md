@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+- Align SI-01 naming with the Timing Point Application boundary: rename the parent/core/app/system-test Maven artifacts to `timing-point-*`, keep shared `event-timing-data` under the Event Timing family namespace, use the stable IF-03 application identity `timing-application`, and rename SI-01-owned runtime threads with the `tp-<owner>-<role>[-<identity>]` diagnostic convention.
+
+- Rename the standalone test-client Maven artifact and IDE labels to **Event Timing Engineering Client** while keeping its existing source directory/package boundary.
+
 - Strengthen Step-4 VC-ST1-002 with a real second SI-01 process run against the same TimingData file, proving persisted LogBook recovery separately from WebSocket reconnect and confirming recovered history is not emitted as a new live commit.
 
 

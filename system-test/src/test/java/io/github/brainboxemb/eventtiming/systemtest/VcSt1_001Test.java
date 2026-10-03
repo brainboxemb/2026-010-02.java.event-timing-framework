@@ -43,7 +43,7 @@ public class VcSt1_001Test {
             // 3. Query build/version identity.
             Response version = http.get("/api/v1/version");
             assertEquals("Unexpected /version HTTP status", 200, version.status());
-            assertContains(version.body(), "\"application\":\"event-timing-app\"");
+            assertContains(version.body(), "\"application\":\"timing-application\"");
             assertContains(
                     version.body(),
                     "\"version\":\""

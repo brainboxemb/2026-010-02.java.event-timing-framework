@@ -5,15 +5,15 @@
   <modelVersion>4.0.0</modelVersion>
   <parent>
     <groupId>io.github.brainboxemb.eventtiming</groupId>
-    <artifactId>event-timing-parent</artifactId>
+    <artifactId>timing-point-parent</artifactId>
     <version>0.2.3-SNAPSHOT</version>
   </parent>
-  <artifactId>event-timing-app</artifactId>
+  <artifactId>timing-point-app</artifactId>
   <name>Timing Point Application</name>
   <dependencies>
     <dependency>
       <groupId>${project.groupId}</groupId>
-      <artifactId>event-timing-core</artifactId>
+      <artifactId>timing-point-core</artifactId>
       <version>${project.version}</version>
     </dependency>
     <dependency>

@@ -47,7 +47,7 @@ the demo.
 From a terminal using Java 8:
 
 ```powershell
-java -jar app\target\event-timing-app-0.2.3-SNAPSHOT.jar config\step4-demo.yml
+java -jar app\target\timing-point-app-0.2.3-SNAPSHOT.jar config\step4-demo.yml
 ```
 
 Expected development endpoints:

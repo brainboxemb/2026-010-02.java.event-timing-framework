@@ -36,7 +36,7 @@ public final class Composition {
         Application application = create(buildIdentity, config);
 
         Runtime runtime = Runtime.getRuntime();
-        Thread shutdownHook = new Thread(application::close, "event-timing-shutdown");
+        Thread shutdownHook = new Thread(application::close, "tp-run-shutdown");
         runtime.addShutdownHook(shutdownHook);
 
         HttpEndpoint http = null;
@@ -149,7 +149,7 @@ public final class Composition {
                 application::close,
                 new InputStreamReader(System.in),
                 new OutputStreamWriter(System.out));
-        Thread consoleThread = new Thread(console, "event-timing-console");
+        Thread consoleThread = new Thread(console, "tp-prl-console");
         consoleThread.setDaemon(true);
         consoleThread.start();
     }

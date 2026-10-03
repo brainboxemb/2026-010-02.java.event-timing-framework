@@ -75,7 +75,7 @@ public final class HttpEndpoint implements AutoCloseable {
         HttpServer httpServer = HttpServer.create(
                 new InetSocketAddress(InetAddress.getByName(bindAddress), port), 0);
         ExecutorService httpExecutor = Executors.newSingleThreadExecutor(runnable -> {
-            Thread thread = new Thread(runnable, "event-timing-http");
+            Thread thread = new Thread(runnable, "tp-prl-api-http");
             thread.setDaemon(true);
             return thread;
         });

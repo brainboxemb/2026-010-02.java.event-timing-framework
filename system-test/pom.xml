@@ -5,12 +5,12 @@
   <modelVersion>4.0.0</modelVersion>
   <parent>
     <groupId>io.github.brainboxemb.eventtiming</groupId>
-    <artifactId>event-timing-parent</artifactId>
+    <artifactId>timing-point-parent</artifactId>
     <version>0.2.3-SNAPSHOT</version>
   </parent>
 
-  <artifactId>event-timing-system-test</artifactId>
-  <name>Event Timing System Test</name>
+  <artifactId>timing-point-system-test</artifactId>
+  <name>Timing Point System Test</name>
   <description>Verification-only black-box process tests for the packaged SI-01 application.</description>
 
   <dependencies>
@@ -33,7 +33,7 @@
         <artifactId>maven-surefire-plugin</artifactId>
         <configuration>
           <systemPropertyVariables>
-            <eventTiming.appJar>${maven.multiModuleProjectDirectory}/app/target/event-timing-app-${project.version}.jar</eventTiming.appJar>
+            <eventTiming.appJar>${maven.multiModuleProjectDirectory}/app/target/timing-point-app-${project.version}.jar</eventTiming.appJar>
             <eventTiming.expectedProjectVersion>${project.version}</eventTiming.expectedProjectVersion>
             <eventTiming.evidenceDir>${project.build.directory}/evidence</eventTiming.evidenceDir>
           </systemPropertyVariables>
