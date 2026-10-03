@@ -43,7 +43,7 @@ public class WebSocketEndpointTest {
 
         // Commit history before the WebSocket endpoint/client exists.
         fixture.handler.setLocation(new LocationId(24));
-        fixture.handler.open();
+        fixture.handler.open(new LocationId(24));
         fixture.handler.commitAutomaticRegistration(
                 new RegistrationId("N0000"),
                 OBSERVATION_TIME);
@@ -105,7 +105,7 @@ public class WebSocketEndpointTest {
             assertTrue(located.contains("\"locationId\":24"));
             assertTrue(located.contains("\"state\":\"CLOSED\""));
 
-            fixture.handler.open();
+            fixture.handler.open(new LocationId(24));
             String opened = client.awaitMessage();
             assertTrue(opened.contains("\"eventType\":\"STATUS_CHANGED\""));
             assertTrue(opened.contains("\"state\":\"OPEN\""));

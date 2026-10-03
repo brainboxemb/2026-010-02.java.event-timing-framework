@@ -37,7 +37,7 @@ public class HttpRequestReaderTest {
     public void parsesSupportedJsonRequestBodies() {
         assertEquals(
                 24,
-                reader.parseLocationBody(bytes("{\"locationId\":24}")));
+                reader.parseLocationIdBody(bytes("{\"locationId\":24}")));
 
         HttpRequestReader.AutoRegistrationRequest request =
                 reader.parseAutoRegistrationBody(bytes(
@@ -62,7 +62,7 @@ public class HttpRequestReaderTest {
         assertFailure(
                 "INVALID_VALUE",
                 "Unsupported request field",
-                () -> reader.parseLocationBody(bytes(
+                () -> reader.parseLocationIdBody(bytes(
                         "{\"locationId\":24,\"extra\":1}")));
         assertFailure(
                 "MALFORMED_REQUEST",

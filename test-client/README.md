@@ -96,7 +96,9 @@ raw response/selected-record pane.
 The Engineering Client deliberately does not predict SI-01 domain acceptance from cached
 TimingNode state. Once a TimingNode is known, supported Set Location/Open/Close requests
 remain available so negative-path results such as domain conflicts can be exercised and
-inspected. SI-01 remains authoritative.
+inspected. **Open** sends the LocationId currently entered in the same request; **Set
+location** remains the separate closed-state engineering/configuration operation. SI-01
+remains authoritative.
 
 Registration input uses a separate prefix and numeric field plus readable local date and
 whole-second clock time. The client converts that structured value to the canonical API
@@ -132,8 +134,9 @@ the API workbench:
 
 - reads the 1..N `nodes[]` status model and addresses one selected TimingNode;
 - shows current node state and LocationId;
-- sends Location/Open/Close through node-addressed IF-03 commands without local
-  lifecycle-state permission rules;
+- sends node-addressed IF-03 controls without local lifecycle-state permission rules;
+  OPEN carries the entered LocationId as one request, while Set Location remains a
+  separate closed-state engineering/configuration command;
 - discovers `DIRECT_REGISTRATION_SIMULATION` before enabling dev `auto-reg`;
 - composes RegistrationId from the presentation prefix + numeric field and converts
   readable date/time to the canonical API timestamp at send time;
@@ -163,8 +166,8 @@ GET  /api/v1/version
 GET  /api/v1/status
 GET  /api/v1/capabilities
 
-PUT  /api/v1/node/{id}/location
-POST /api/v1/node/{id}/open
+PUT  /api/v1/node/{id}/location        {"locationId": <positive integer>}
+POST /api/v1/node/{id}/open             {"locationId": <positive integer>}
 POST /api/v1/node/{id}/close
 
 GET  /api/v1/node/{id}/logbook

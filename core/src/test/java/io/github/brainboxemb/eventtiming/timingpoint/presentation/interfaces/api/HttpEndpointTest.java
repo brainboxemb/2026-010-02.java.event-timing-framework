@@ -77,25 +77,48 @@ public class HttpEndpointTest {
 
             Response openWithoutLocation =
                     request(server.boundPort(), "POST", "/api/v1/node/timing-node-01/open", null);
-            assertEquals(409, openWithoutLocation.status);
-            assertTrue(openWithoutLocation.body.contains("\"code\":\"NO_LOCATION\""));
+            assertEquals(400, openWithoutLocation.status);
+            assertTrue(openWithoutLocation.body.contains("\"code\":\"MALFORMED_REQUEST\""));
 
             Response setLocation = request(
                     server.boundPort(),
                     "PUT",
                     "/api/v1/node/timing-node-01/location",
-                    "{\"locationId\":24}");
+                    "{\"locationId\":23}");
             assertEquals(200, setLocation.status);
             assertTrue(setLocation.body.contains("\"result\":\"UPDATED\""));
 
             Response locatedStatus =
                     request(server.boundPort(), "GET", "/api/v1/status", null);
-            assertTrue(locatedStatus.body.contains("\"locationId\":24"));
+            assertTrue(locatedStatus.body.contains("\"locationId\":23"));
+            assertTrue(locatedStatus.body.contains("\"state\":\"CLOSED\""));
 
             Response opened =
-                    request(server.boundPort(), "POST", "/api/v1/node/timing-node-01/open", null);
+                    request(
+                            server.boundPort(),
+                            "POST",
+                            "/api/v1/node/timing-node-01/open",
+                            "{\"locationId\":24}");
             assertEquals(200, opened.status);
             assertTrue(opened.body.contains("\"result\":\"OPENED\""));
+
+            Response openedStatus =
+                    request(server.boundPort(), "GET", "/api/v1/status", null);
+            assertTrue(openedStatus.body.contains("\"locationId\":24"));
+            assertTrue(openedStatus.body.contains("\"state\":\"OPEN\""));
+
+            Response repeatedOpen =
+                    request(
+                            server.boundPort(),
+                            "POST",
+                            "/api/v1/node/timing-node-01/open",
+                            "{\"locationId\":25}");
+            assertEquals(200, repeatedOpen.status);
+            assertTrue(repeatedOpen.body.contains("\"result\":\"ALREADY_OPEN\""));
+
+            Response stillOpenStatus =
+                    request(server.boundPort(), "GET", "/api/v1/status", null);
+            assertTrue(stillOpenStatus.body.contains("\"locationId\":24"));
 
             Response changeWhileOpen = request(
                     server.boundPort(),

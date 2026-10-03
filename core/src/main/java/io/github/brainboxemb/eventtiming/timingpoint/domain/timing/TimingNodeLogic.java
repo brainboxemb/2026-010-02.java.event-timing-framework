@@ -69,13 +69,14 @@ final class TimingNodeLogic {
         return timingNodeId;
     }
 
-    OpenResult open() {
+    OpenResult open(LocationId newLocationId) {
+        if (newLocationId == null) {
+            throw new IllegalArgumentException("locationId must not be null");
+        }
         if (lifecycle == Lifecycle.OPEN) {
             return OpenResult.ALREADY_OPEN;
         }
-        if (locationId == null) {
-            return OpenResult.NO_LOCATION;
-        }
+        locationId = newLocationId;
         lifecycle = Lifecycle.OPEN;
         return OpenResult.OPENED;
     }

@@ -162,7 +162,6 @@ public final class HttpEndpoint implements AutoCloseable {
         }
         if ("/open".equals(route.resource)) {
             requireMethod(exchange, "POST");
-            requestReader.requireEmptyBody(exchange);
             handleOpen(exchange);
             return;
         }
@@ -225,13 +224,7 @@ public final class HttpEndpoint implements AutoCloseable {
     }
 
     private void handleSetLocation(HttpExchange exchange) throws IOException {
-        int value = requestReader.readLocationRequest(exchange);
-        final LocationId locationId;
-        try {
-            locationId = new LocationId(value);
-        } catch (IllegalArgumentException ex) {
-            throw HttpRequestReader.invalidValue(ex.getMessage());
-        }
+        LocationId locationId = readLocationId(exchange);
 
         SetLocationResult result = presentationGateway.setLocation(locationId);
         if (result == SetLocationResult.NODE_NOT_CLOSED) {
@@ -250,20 +243,21 @@ public final class HttpEndpoint implements AutoCloseable {
     }
 
     private void handleOpen(HttpExchange exchange) throws IOException {
-        OpenResult result = presentationGateway.open();
-        if (result == OpenResult.NO_LOCATION) {
-            sendJson(
-                    exchange,
-                    409,
-                    MessageWriter.error(
-                            "NO_LOCATION",
-                            "A current LocationId is required before OPEN"));
-            return;
-        }
+        LocationId locationId = readLocationId(exchange);
+        OpenResult result = presentationGateway.open(locationId);
         sendJson(
                 exchange,
                 200,
                 MessageWriter.result(result.name()));
+    }
+
+    private LocationId readLocationId(HttpExchange exchange) throws IOException {
+        int value = requestReader.readLocationIdRequest(exchange);
+        try {
+            return new LocationId(value);
+        } catch (IllegalArgumentException ex) {
+            throw HttpRequestReader.invalidValue(ex.getMessage());
+        }
     }
 
     private void handleAutoRegistration(HttpExchange exchange) throws IOException {

@@ -40,11 +40,11 @@ final class HttpRequestReader {
         }
     }
 
-    int readLocationRequest(HttpExchange exchange) throws IOException {
-        return parseLocationBody(readBody(exchange));
+    int readLocationIdRequest(HttpExchange exchange) throws IOException {
+        return parseLocationIdBody(readBody(exchange));
     }
 
-    int parseLocationBody(byte[] body) {
+    int parseLocationIdBody(byte[] body) {
         try (JsonParser parser = jsonFactory.createParser(body)) {
             if (parser.nextToken() != JsonToken.START_OBJECT) {
                 throw malformed("Request must be one JSON object");

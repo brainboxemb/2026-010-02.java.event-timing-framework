@@ -32,8 +32,7 @@ public final class TimingNodeTypes {
 
     public enum OpenResult {
         OPENED,
-        ALREADY_OPEN,
-        NO_LOCATION
+        ALREADY_OPEN
     }
 
     public enum CloseResult {
