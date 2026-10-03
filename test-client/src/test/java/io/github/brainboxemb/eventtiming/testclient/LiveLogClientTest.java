@@ -54,7 +54,7 @@ class LiveLogClientTest {
         assertEquals("example.Logger.run", entry.get().source());
         assertEquals("hello", entry.get().message());
         assertEquals(
-                "16:00:00.000 - [INFO] - hello - [example.Logger.run]" + System.lineSeparator(),
+                "16:00:00.000 - [INFO] - hello - [example.Logger.run]\n",
                 entry.get().formatted());
         assertNull(entry.get().thrown());
         assertEquals("DEBUG", level.get());
