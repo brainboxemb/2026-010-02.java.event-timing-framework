@@ -25,7 +25,7 @@ public final class PresentationGatewayFixture implements AutoCloseable {
 
     public PresentationGatewayFixture(BuildIdentity identity) {
         node = new TimingNode(
-                new NodeId("timing-node-01"),
+                new NodeId("TN-01"),
                 new MemoryPersistence(),
                 new DefaultTimingDataFactory(),
                 () -> RECORDED_AT);

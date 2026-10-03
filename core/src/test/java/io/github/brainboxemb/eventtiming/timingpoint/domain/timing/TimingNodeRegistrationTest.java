@@ -51,7 +51,7 @@ public class TimingNodeRegistrationTest {
             assertTrue(result.timingData() instanceof AutomaticRegistration);
             AutomaticRegistration data =
                     (AutomaticRegistration) result.timingData();
-            assertEquals(new NodeId("timing-node-01"), data.timingNodeId());
+            assertEquals(new NodeId("TN-01"), data.timingNodeId());
             assertEquals(1L, data.sequenceNumber());
             assertEquals(new LocationId(24), data.locationId());
             assertEquals(EFFECTIVE_TIME, data.effectiveTime());
@@ -131,7 +131,7 @@ public class TimingNodeRegistrationTest {
 
             ManualRegistration data =
                     (ManualRegistration) result.timingData();
-            assertEquals(new NodeId("timing-node-01"), data.timingNodeId());
+            assertEquals(new NodeId("TN-01"), data.timingNodeId());
             assertEquals(1L, data.sequenceNumber());
             assertEquals(new LocationId(24), data.locationId());
             assertEquals(EFFECTIVE_TIME, data.effectiveTime());
@@ -449,7 +449,7 @@ public class TimingNodeRegistrationTest {
     private static TimingData recoveredData(long sequence, int locationId) {
         return new DefaultTimingDataFactory().createManualRegistration(
                 new Context(
-                        new NodeId("timing-node-01"),
+                        new NodeId("TN-01"),
                         sequence,
                         new LocationId(locationId),
                         EFFECTIVE_TIME,
@@ -461,7 +461,7 @@ public class TimingNodeRegistrationTest {
     private static TimingNode node(RecordingStore store) {
         TimeSource timeSource = () -> RECORDED_AT;
         return new TimingNode(
-                new NodeId("timing-node-01"),
+                new NodeId("TN-01"),
                 store,
                 new DefaultTimingDataFactory(),
                 timeSource);

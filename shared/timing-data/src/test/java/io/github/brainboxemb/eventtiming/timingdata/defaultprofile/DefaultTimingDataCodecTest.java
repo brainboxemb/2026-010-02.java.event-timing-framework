@@ -37,7 +37,7 @@ public class DefaultTimingDataCodecTest {
 
         assertEquals(
                 "{\"v\":1,"
-                        + "\"nodeId\":\"timing-node-01\","
+                        + "\"nodeId\":\"TN-01\","
                         + "\"seqNr\":1,"
                         + "\"locId\":7,"
                         + "\"recType\":\"AUTO_REG\","
@@ -94,7 +94,7 @@ public class DefaultTimingDataCodecTest {
         TimingData decoded = codec.decode(json(
                 "{"
                         + "\"v\":1,"
-                        + "\"nodeId\":\"timing-node-01\","
+                        + "\"nodeId\":\"TN-01\","
                         + "\"seqNr\":1,"
                         + "\"locId\":7,"
                         + "\"recType\":\"AUTO_REG\","
@@ -126,7 +126,7 @@ public class DefaultTimingDataCodecTest {
                         + "\"code\":[\"AUTO\",\"ADD\"],"
                         + "\"recType\":\"MAN_REG\","
                         + "\"time\":\"2026-09-30T20:01:39.123Z\","
-                        + "\"nodeId\":\"timing-node-01\""
+                        + "\"nodeId\":\"TN-01\""
                         + "}"));
 
         assertTrue(decoded instanceof TimingData.ManualRegistration);
@@ -154,7 +154,7 @@ public class DefaultTimingDataCodecTest {
             codec.decode(json(
                     "{"
                             + "\"v\":1,"
-                            + "\"nodeId\":\"timing-node-01\","
+                            + "\"nodeId\":\"TN-01\","
                             + "\"seqNr\":9,"
                             + "\"locId\":7,"
                             + "\"recType\":\"FUTURE_RECORD\","
@@ -167,7 +167,7 @@ public class DefaultTimingDataCodecTest {
                     TimingDataCodec.CodecException.Reason.UNSUPPORTED_RECORD_TYPE,
                     expected.reason());
             assertEquals(
-                    new TimingData.RecordKey(new NodeId("timing-node-01"), 9L),
+                    new TimingData.RecordKey(new NodeId("TN-01"), 9L),
                     expected.key());
             assertEquals(new LocationId(7), expected.locationId());
             assertEquals("FUTURE_RECORD", expected.recordType());
@@ -182,7 +182,7 @@ public class DefaultTimingDataCodecTest {
         assertInvalid(json(
                 "{"
                         + "\"v\":1,"
-                        + "\"nodeId\":\"timing-node-01\","
+                        + "\"nodeId\":\"TN-01\","
                         + "\"seqNr\":1,"
                         + "\"locId\":7,"
                         + "\"recType\":\"AUTO_REG\","
@@ -195,12 +195,12 @@ public class DefaultTimingDataCodecTest {
                 "{"
                         + "\"v\":1,"
                         + "\"v\":1,"
-                        + "\"nodeId\":\"timing-node-01\""
+                        + "\"nodeId\":\"TN-01\""
                         + "}"));
         assertInvalid(json(
                 "{"
                         + "\"v\":1,"
-                        + "\"nodeId\":\"timing-node-01\","
+                        + "\"nodeId\":\"TN-01\","
                         + "\"seqNr\":1,"
                         + "\"locId\":7,"
                         + "\"recType\":\"MAN_REG\","
@@ -216,7 +216,7 @@ public class DefaultTimingDataCodecTest {
         assertInvalid(json(
                 "{"
                         + "\"v\":1,"
-                        + "\"nodeId\":\"timing-node-01\","
+                        + "\"nodeId\":\"TN-01\","
                         + "\"seqNr\":1,"
                         + "\"locId\":7,"
                         + "\"recType\":\"MAN_REG\","
@@ -241,7 +241,7 @@ public class DefaultTimingDataCodecTest {
 
     private static TimingDataFactory.Context context(long sequence) {
         return new TimingDataFactory.Context(
-                new NodeId("timing-node-01"),
+                new NodeId("TN-01"),
                 sequence,
                 new LocationId(7),
                 EFFECTIVE,
@@ -253,7 +253,7 @@ public class DefaultTimingDataCodecTest {
     }
 
     private static void assertCommon(TimingData data, long sequence) {
-        assertEquals(new NodeId("timing-node-01"), data.timingNodeId());
+        assertEquals(new NodeId("TN-01"), data.timingNodeId());
         assertEquals(sequence, data.sequenceNumber());
         assertEquals(new LocationId(7), data.locationId());
         assertEquals(EFFECTIVE, data.effectiveTime());

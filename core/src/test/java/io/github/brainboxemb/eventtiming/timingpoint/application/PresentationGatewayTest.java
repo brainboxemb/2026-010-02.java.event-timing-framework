@@ -45,7 +45,7 @@ public class PresentationGatewayTest {
         node.start();
         try {
             ApplicationStatus status = handler.status();
-            assertEquals(new NodeId("timing-node-01"), status.timingNodeId());
+            assertEquals(new NodeId("TN-01"), status.timingNodeId());
             assertEquals(
                     TimingNodeTypes.Lifecycle.CLOSED,
                     status.timingNodeLifecycle());
@@ -146,7 +146,7 @@ public class PresentationGatewayTest {
 
     private static TimingNode node(RecordingStore store) {
         return new TimingNode(
-                new NodeId("timing-node-01"),
+                new NodeId("TN-01"),
                 store,
                 new DefaultTimingDataFactory(),
                 () -> RECORDED_AT);

@@ -11,10 +11,10 @@ public class ApplicationStatusTest {
     @Test
     public void exposesCurrentTimingNodeStatus() {
         ApplicationStatus status = new ApplicationStatus(
-                new NodeId("timing-node-01"),
+                new NodeId("TN-01"),
                 TimingNodeTypes.Lifecycle.CLOSED);
 
-        assertEquals("timing-node-01", status.timingNodeId().value());
+        assertEquals("TN-01", status.timingNodeId().value());
         assertEquals(TimingNodeTypes.Lifecycle.CLOSED, status.timingNodeLifecycle());
     }
 

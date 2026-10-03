@@ -17,7 +17,7 @@ class ApiEventClientTest {
                 + "\"occurredAt\":\"2026-10-01T12:00:02Z\","
                 + "\"payload\":{"
                 + "\"nodes\":[{"
-                + "\"id\":\"timing-node-01\","
+                + "\"id\":\"TN-01\","
                 + "\"locationId\":24,"
                 + "\"state\":\"OPEN\""
                 + "}],"
@@ -30,7 +30,7 @@ class ApiEventClientTest {
 
         assertEquals("STATUS_SNAPSHOT", event.eventType());
         assertEquals(Instant.parse("2026-10-01T12:00:02Z"), event.occurredAt());
-        assertEquals("timing-node-01", event.status().nodes().get(0).id());
+        assertEquals("TN-01", event.status().nodes().get(0).id());
         assertEquals(24, event.status().nodes().get(0).locationId());
         assertEquals("OPEN", event.status().nodes().get(0).state());
         assertEquals(json, event.rawJson());
@@ -43,7 +43,7 @@ class ApiEventClientTest {
                 + "\"occurredAt\":\"2026-10-01T12:00:02Z\","
                 + "\"payload\":{"
                 + "\"v\":1,"
-                + "\"nodeId\":\"timing-node-01\","
+                + "\"nodeId\":\"TN-01\","
                 + "\"seqNr\":3,"
                 + "\"locId\":24,"
                 + "\"recType\":\"AUTO_REG\","
@@ -58,13 +58,13 @@ class ApiEventClientTest {
         var event = assertInstanceOf(ApiEventClient.TimingDataEvent.class, parsed);
 
         assertEquals("TIMING_DATA_COMMITTED", event.eventType());
-        assertEquals("timing-node-01", event.timingData().timingNodeId());
+        assertEquals("TN-01", event.timingData().timingNodeId());
         assertEquals(3L, event.timingData().sequenceNumber());
         assertEquals("N0003", event.timingData().registrationId());
         assertEquals("AUTO_REG", event.timingData().recordType());
         assertEquals(List.of("ADD"), event.timingData().codes());
         assertEquals(
-                new ApiClient.TimingDataKey("timing-node-01", 3L),
+                new ApiClient.TimingDataKey("TN-01", 3L),
                 event.timingData().key());
     }
 

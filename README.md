@@ -153,7 +153,7 @@ The executable uses one external YAML file for the single TimingNode currently c
 application. Step 3 now configures the implemented presentation listeners explicitly:
 
 ```yaml
-timingNodeId: timing-node-01
+timingNodeId: TN-01
 
 presentation:
   remoteShell:

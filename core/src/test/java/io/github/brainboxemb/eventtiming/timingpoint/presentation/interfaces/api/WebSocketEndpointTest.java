@@ -59,7 +59,7 @@ public class WebSocketEndpointTest {
             TestClient first = connect(server.boundPort());
             try {
                 String snapshot = first.awaitMessage();
-                assertSnapshot(snapshot, "timing-node-01", "OPEN", "24");
+                assertSnapshot(snapshot, "TN-01", "OPEN", "24");
                 assertNull(first.pollMessage(250));
             } finally {
                 first.closeBlocking();
@@ -68,7 +68,7 @@ public class WebSocketEndpointTest {
             TestClient second = connect(server.boundPort());
             try {
                 String snapshot = second.awaitMessage();
-                assertSnapshot(snapshot, "timing-node-01", "OPEN", "24");
+                assertSnapshot(snapshot, "TN-01", "OPEN", "24");
                 assertNull(second.pollMessage(250));
             } finally {
                 second.closeBlocking();
@@ -95,7 +95,7 @@ public class WebSocketEndpointTest {
         try {
             assertSnapshot(
                     client.awaitMessage(),
-                    "timing-node-01",
+                    "TN-01",
                     "CLOSED",
                     "null");
 
@@ -168,7 +168,7 @@ public class WebSocketEndpointTest {
 
         private Fixture() {
             node = new TimingNode(
-                    new NodeId("timing-node-01"),
+                    new NodeId("TN-01"),
                     new MemoryStore(),
                     new DefaultTimingDataFactory(),
                     () -> RECORDED_AT);
