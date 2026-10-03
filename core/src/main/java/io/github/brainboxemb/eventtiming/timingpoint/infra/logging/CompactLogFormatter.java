@@ -10,6 +10,8 @@ import java.util.logging.LogRecord;
 
 /** Compact operator-facing formatter shared by console, retained file and live logging. */
 final class CompactLogFormatter extends Formatter {
+    private static final String PROJECT_PACKAGE_PREFIX =
+            "io.github.brainboxemb.eventtiming.timingpoint.";
     private static final DateTimeFormatter TIME_FORMAT =
             DateTimeFormatter.ofPattern("HH:mm:ss.SSS");
 
@@ -64,9 +66,17 @@ final class CompactLogFormatter extends Formatter {
         if (className == null || className.trim().isEmpty()) {
             className = "unknown";
         }
+        String displayClass = className.startsWith(PROJECT_PACKAGE_PREFIX)
+                ? shortClassName(className)
+                : className;
         if (methodName == null || methodName.trim().isEmpty()) {
-            return className;
+            return displayClass;
         }
-        return className + "." + methodName;
+        return displayClass + "." + methodName;
+    }
+
+    private static String shortClassName(String className) {
+        int separator = className.lastIndexOf('.');
+        return separator < 0 ? className : className.substring(separator + 1);
     }
 }
