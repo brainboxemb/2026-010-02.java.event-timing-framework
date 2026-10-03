@@ -52,7 +52,7 @@ the architecture diagram.
 Current real application-core behaviour is deliberately small and follows the package boundaries directly:
 
 ```text
-io.github.brainboxemb.eventtiming.timingpoint.application.CommandHandler
+io.github.brainboxemb.eventtiming.timingpoint.application.PresentationGateway
 io.github.brainboxemb.eventtiming.timingpoint.application.ApplicationStatus
 io.github.brainboxemb.eventtiming.timingpoint.domain.timing.TimingNode
 io.github.brainboxemb.eventtiming.timingpoint.domain.timing.TimingNodeLogic   # package-private

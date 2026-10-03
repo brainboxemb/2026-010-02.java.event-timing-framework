@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Rename the transport-independent Application-layer presentation entry point from `CommandHandler` to `PresentationGateway`; the gateway continues to expose the same commands, queries, application metadata/capabilities and events without changing IF-03 behaviour or TimingNode execution semantics.
+
 - Align SI-01 naming with the Timing Point Application boundary: rename the parent/core/app/system-test Maven artifacts to `timing-point-*`, keep shared `event-timing-data` under the Event Timing family namespace, use the stable IF-03 application identity `timing-application`, and rename SI-01-owned runtime threads with the `tp-<owner>-<role>[-<identity>]` diagnostic convention.
 
 - Rename the standalone test-client Maven artifact and IDE labels to **Event Timing Engineering Client** while keeping its existing source directory/package boundary.
