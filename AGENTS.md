@@ -36,7 +36,7 @@ Keep product implementation detail here and project-family coordination in the
 companion meta repository.
 
 The current implementation intentionally keeps one reusable
-`event-timing-core` application-core library and one runnable `event-timing-app` consumer.
+`timing-point-core` application-core library and one runnable `timing-point-app` consumer.
 Architecture packages/layers are not automatically Maven artifact boundaries;
 introduce another artifact only when a concrete reuse, dependency, deployment,
 ownership, public/private or release boundary justifies it.
