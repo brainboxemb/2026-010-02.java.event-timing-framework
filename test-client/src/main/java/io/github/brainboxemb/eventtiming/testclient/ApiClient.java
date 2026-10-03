@@ -36,9 +36,7 @@ public final class ApiClient {
             throw new IllegalArgumentException("endpoint scheme must be http or https");
         }
         this.endpoint = endpoint;
-        this.httpClient = HttpClient.newBuilder()
-                .connectTimeout(Duration.ofSeconds(3))
-                .build();
+        this.httpClient = EngineeringHttpTransport.shared();
     }
 
     public VersionResult getVersion() throws IOException, InterruptedException {

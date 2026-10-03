@@ -130,7 +130,8 @@ IF-03 contract:
   `TimingNodeId + sequenceNumber` key;
 - marks cached data stale during disconnect/reconnect and disables mutating controls
   until status/LogBook recovery is complete;
-- buffers live status/TimingData events that arrive during a rebuild, applies them
+- exposes **Sync view** as the manual resynchronisation action; it refreshes the client-side status/capabilities/LogBook baseline and does not rebuild SI-01 domain data;
+- buffers live status/TimingData events that arrive during resynchronisation, applies them
   after the HTTP status/LogBook baseline in delivery order, and only then marks
   the Timing view LIVE.
 

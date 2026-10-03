@@ -58,9 +58,7 @@ public final class ApiEventClient implements AutoCloseable {
 
     private static final ObjectMapper JSON = new ObjectMapper();
 
-    private final HttpClient httpClient = HttpClient.newBuilder()
-            .connectTimeout(Duration.ofSeconds(3))
-            .build();
+    private final HttpClient httpClient = EngineeringHttpTransport.shared();
 
     private WebSocket webSocket;
     private boolean connecting;

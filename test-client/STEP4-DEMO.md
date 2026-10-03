@@ -1,7 +1,7 @@
 # Step-4 V04 / VC-ST1-003 Engineering Client demo
 
 This checklist is the executable/manual procedure for `VC-ST1-003 — Engineering
-Client reconnect/rebuild integration`, the Step-4 V04 running-system evidence,
+Client reconnect/resynchronisation integration`, the Step-4 V04 running-system evidence,
 after `VC-ST1-002` is green. It uses only public interfaces and the
 JavaFX Engineering Client.
 
@@ -11,14 +11,14 @@ repeat that proof. V04 verifies the client integration that the server-only
 black-box test cannot prove:
 
 - controls follow the current TimingNode lifecycle;
-- reconnect enters a rebuild/sync state before LIVE;
+- reconnect enters a resynchronisation/sync state before LIVE;
 - current status and bounded LogBook history are rebuilt before LIVE;
 - later live events are buffered while that baseline is rebuilt;
 - history/live overlap is merged by the stable TimingData record key;
 - recovered history is not presented as a new live commit.
 
 The restart remains in the demo because it gives a repeatable non-empty-history
-rebuild scenario.
+resynchronisation scenario.
 
 ## Prepare
 
@@ -72,7 +72,7 @@ Open the **Timing** tab and choose **Connect live**.
 ## V04 flow
 
 1. Verify the Timing view first shows **CONNECTED / syncing** or
-   **RECONNECTING**, keeps state-changing controls disabled during rebuild, and
+   **SYNCING**, keeps state-changing controls disabled during synchronisation, and
    only then becomes **LIVE**. Verify it shows:
    - TimingNode `timing-node-01`;
    - state `CLOSED`;
@@ -108,7 +108,7 @@ The GUI deliberately prevents a LocationId change while OPEN. The server-side
 `NODE_NOT_CLOSED` rejection for a direct invalid request is already covered by
 VC-ST1-002.
 
-## Reconnect / rebuild scenario
+## Reconnect / resynchronisation scenario
 
 1. Open the **Terminal** tab, connect to `127.0.0.1:8023` and enter `quit`.
 2. Verify the application exits cleanly and the Timing view becomes stale or
@@ -118,9 +118,9 @@ VC-ST1-002.
 4. Reconnect the Engineering Client.
 5. Verify the **client**:
    - enters syncing/reconnecting before becoming LIVE;
-   - keeps state-changing controls disabled while rebuilding;
-   - rebuilds current status to `CLOSED` with no operational LocationId;
-   - rebuilds LogBook count `1` with sequence 1 / `N0001`;
+   - keeps state-changing controls disabled while synchronising;
+   - resynchronises current status to `CLOSED` with no operational LocationId;
+   - resynchronises LogBook count `1` with sequence 1 / `N0001`;
    - does not add the recovered sequence-1 row again as a new live event;
    - merges any history/live overlap by stable TimingData record key;
    - reaches LIVE only after the baseline and buffered events are reconciled.
@@ -128,7 +128,7 @@ VC-ST1-002.
 
 The fact that the server can recover the persisted row across the process restart
 is already automated in `VC-ST1-002`; here it is the stimulus used to verify the
-Engineering Client rebuild behaviour.
+Engineering Client resynchronisation behaviour.
 
 ## Record VC-ST1-003 evidence
 
@@ -148,7 +148,7 @@ Auto-reg N0001 -> seq 1        PASS / FAIL
 Live committed event           PASS / FAIL
 LogBook count/row              PASS / FAIL
 Close + LocationId 25          PASS / FAIL
-Reconnect/rebuild before LIVE PASS / FAIL
+Reconnect/resynchronisation before LIVE PASS / FAIL
 History/live deduplication     PASS / FAIL
 Clean shutdown                 PASS / FAIL
 ```
