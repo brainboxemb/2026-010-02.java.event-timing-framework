@@ -151,6 +151,7 @@ public class ApiClientTest {
         assertEquals("N0001", page.records().get(0).registrationId());
         assertEquals("AUTO_REG", page.records().get(0).recordType());
         assertEquals(List.of("ADD"), page.records().get(0).codes());
+        assertTrue(page.records().get(0).rawJson().contains("\"seqNr\":1"));
         assertEquals(
                 new ApiClient.TimingDataKey("timing-node-01", 2L),
                 page.records().get(1).key());

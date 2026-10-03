@@ -1,6 +1,9 @@
 package io.github.brainboxemb.eventtiming.testclient;
 
 import java.time.Instant;
+import java.time.LocalDate;
+import java.time.LocalTime;
+import java.time.ZoneOffset;
 import java.util.List;
 
 import org.junit.jupiter.api.Test;
@@ -12,38 +15,28 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class TimingViewModelTest {
     @Test
-    void derivesControlsFromAuthoritativeState() {
+    void keepsSupportedCommandsAvailableForNegativePathTesting() {
         TimingViewModel model = new TimingViewModel();
         model.applyStatus(status(
                 node("node-01", null, "CLOSED")));
         model.applyCapabilities(capabilities(true));
 
         assertEquals("node-01", model.selectedNodeId());
-        assertFalse(model.controls().setLocation());
-
-        model.viewState(TimingViewModel.ViewState.LIVE);
-        assertTrue(model.controls().setLocation());
-        assertFalse(model.controls().open());
-        assertFalse(model.controls().close());
-        assertFalse(model.controls().autoReg());
-
-        model.applyStatus(status(
-                node("node-01", 24, "CLOSED")));
         assertTrue(model.controls().setLocation());
         assertTrue(model.controls().open());
-        assertFalse(model.controls().close());
-
-        model.applyStatus(status(
-                node("node-01", 24, "OPEN")));
-        assertFalse(model.controls().setLocation());
-        assertFalse(model.controls().open());
         assertTrue(model.controls().close());
         assertTrue(model.controls().autoReg());
 
+        model.applyStatus(status(
+                node("node-01", 24, "OPEN")));
         model.viewState(TimingViewModel.ViewState.STALE);
-        assertFalse(model.controls().setLocation());
-        assertFalse(model.controls().open());
-        assertFalse(model.controls().close());
+
+        assertTrue(model.controls().setLocation());
+        assertTrue(model.controls().open());
+        assertTrue(model.controls().close());
+        assertTrue(model.controls().autoReg());
+
+        model.applyCapabilities(capabilities(false));
         assertFalse(model.controls().autoReg());
     }
 
@@ -110,6 +103,16 @@ class TimingViewModelTest {
                         Instant.parse("2026-10-01T12:00:00.123Z")));
     }
 
+    @Test
+    void convertsReadableDateAndWholeSecondTimeToCanonicalUtc() {
+        assertEquals(
+                "2026-10-03T15:33:00.000000000Z",
+                TimingViewModel.canonicalTime(
+                        LocalDate.parse("2026-10-03"),
+                        LocalTime.parse("15:33:00"),
+                        ZoneOffset.UTC));
+    }
+
     private static ApiClient.StatusResult status(ApiClient.TimingNodeInfo... nodes) {
         return new ApiClient.StatusResult(List.of(nodes), List.of(), "{}");
     }
@@ -142,6 +145,7 @@ class TimingViewModelTest {
                 "2026-10-01T12:00:00Z",
                 registrationId,
                 List.of("ADD"),
-                "2026-10-01T12:00:00.125Z");
+                "2026-10-01T12:00:00.125Z",
+                "{}");
     }
 }
