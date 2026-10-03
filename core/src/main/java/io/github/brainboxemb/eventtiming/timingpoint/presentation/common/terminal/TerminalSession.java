@@ -3,6 +3,7 @@ package io.github.brainboxemb.eventtiming.timingpoint.presentation.common.termin
 import io.github.brainboxemb.eventtiming.timingpoint.application.ApplicationStatus;
 import io.github.brainboxemb.eventtiming.timingpoint.application.PresentationGateway;
 import io.github.brainboxemb.eventtiming.timingpoint.infra.BuildIdentity;
+import io.github.brainboxemb.eventtiming.timingpoint.domain.timing.TimingNodeTypes.Problem;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -109,5 +110,13 @@ public final class TerminalSession {
         output.println("Timing node");
         output.println("  Id        : " + status.timingNodeId().value());
         output.println("  Lifecycle : " + status.timingNodeLifecycle().name());
+        for (Problem problem : status.problems()) {
+            output.println(
+                    "  Problem   : "
+                            + problem.severity().name()
+                            + " "
+                            + problem.code().name());
+            output.println("  Detail    : " + problem.message());
+        }
     }
 }

@@ -55,6 +55,30 @@ public class PresentationGatewayTest {
     }
 
     @Test
+    public void statusMapsContainedRecoveryProblemFromTimingNode() {
+        RecordingStore store = new RecordingStore();
+        store.failLoad = true;
+        TimingNode node = node(store);
+        PresentationGateway handler = new PresentationGateway(identity(), node);
+
+        node.start();
+        try {
+            ApplicationStatus status = handler.status();
+            assertEquals(
+                    TimingNodeTypes.Lifecycle.ERROR,
+                    status.timingNodeLifecycle());
+            assertEquals(1, status.problems().size());
+            assertEquals(
+                    TimingNodeTypes.ProblemCode.TIMING_DATA_RECOVERY_FAILED,
+                    status.problems().get(0).code());
+            assertTrue(status.problems().get(0).message().contains(
+                    "expected recovery failure"));
+        } finally {
+            node.stop();
+        }
+    }
+
+    @Test
     public void fullHandlerOwnsFirstRegistrationApplicationBoundary() {
         RecordingStore store = new RecordingStore();
         TimingNode node = node(store);
@@ -164,9 +188,13 @@ public class PresentationGatewayTest {
 
     private static final class RecordingStore implements TimingDataPersistence {
         private final List<TimingData> appended = new ArrayList<>();
+        private boolean failLoad;
 
         @Override
-        public LoadResult load() {
+        public LoadResult load() throws PersistenceException {
+            if (failLoad) {
+                throw new PersistenceException("expected recovery failure");
+            }
             return new LoadResult(Collections.<TimingData>emptyList(), false);
         }
 

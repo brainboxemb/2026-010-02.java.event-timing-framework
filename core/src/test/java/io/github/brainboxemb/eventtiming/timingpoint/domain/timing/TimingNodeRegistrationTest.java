@@ -417,32 +417,54 @@ public class TimingNodeRegistrationTest {
     }
 
     @Test
-    public void recoveryFailureLeavesWorkerUnavailableAndNodeCannotRetryStart() {
+    public void recoveryFailureLeavesWorkerQueryableInErrorAndRejectsNormalOperations() {
         RecordingStore store = new RecordingStore();
         store.failLoad = true;
         TimingNode node = node(store);
 
+        node.start();
         try {
-            node.start();
-            fail("expected startup recovery failure");
-        } catch (TimingNodeTypes.StartupException expected) {
-            assertTrue(expected.getCause() instanceof TimingDataPersistence.PersistenceException);
-        }
-
-        try {
-            node.query(TimingNodeQueries.status());
-            fail("expected worker to remain unavailable");
-        } catch (TimingNodeTypes.OperationException expected) {
+            TimingNodeTypes.Status status = node.query(TimingNodeQueries.status());
+            assertEquals(TimingNodeTypes.Lifecycle.ERROR, status.lifecycle());
+            assertFalse(status.hasLocation());
+            assertEquals(1, status.problems().size());
             assertEquals(
-                    TimingNodeTypes.OperationException.Reason.UNAVAILABLE,
-                    expected.reason());
-        }
+                    TimingNodeTypes.ProblemCode.TIMING_DATA_RECOVERY_FAILED,
+                    status.problems().get(0).code());
+            assertEquals(
+                    TimingNodeTypes.ProblemSeverity.ERROR,
+                    status.problems().get(0).severity());
+            assertTrue(status.problems().get(0).message().contains(
+                    "expected recovery failure"));
 
-        try {
-            node.start();
-            fail("expected failed node not to restart");
-        } catch (TimingNodeTypes.StartupException expected) {
-            assertTrue(expected.getCause() instanceof TimingDataPersistence.PersistenceException);
+            try {
+                node.invoke(TimingNodeCommands.open(new LocationId(24)));
+                fail("expected ERROR node to reject OPEN");
+            } catch (TimingNodeTypes.OperationException expected) {
+                assertEquals(
+                        TimingNodeTypes.OperationException.Reason.FAILED,
+                        expected.reason());
+                assertTrue(expected.getMessage().contains(
+                        "expected recovery failure"));
+            }
+
+            try {
+                node.query(TimingNodeQueries.timingDataCount());
+                fail("expected ERROR node to reject LogBook query");
+            } catch (TimingNodeTypes.OperationException expected) {
+                assertEquals(
+                        TimingNodeTypes.OperationException.Reason.FAILED,
+                        expected.reason());
+            }
+
+            try {
+                node.start();
+                fail("expected running node not to restart");
+            } catch (IllegalStateException expected) {
+                assertTrue(expected.getMessage().contains("only start once"));
+            }
+        } finally {
+            node.stop();
         }
     }
 
