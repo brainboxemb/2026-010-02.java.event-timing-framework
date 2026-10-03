@@ -10,8 +10,7 @@ import java.util.Properties;
 
 /** Engineering Client-local endpoint and presentation configuration. */
 final class ClientConfig {
-    private static final Path DEFAULT_PATH =
-            Path.of("config", "engineering-client.properties");
+    private static final String CONFIG_FILE = "engineering-client.properties";
 
     private final String host;
     private final int apiHttpPort;
@@ -42,7 +41,32 @@ final class ClientConfig {
     }
 
     static Path defaultPath() {
-        return DEFAULT_PATH;
+        return defaultPath(Path.of("").toAbsolutePath());
+    }
+
+    static Path defaultPath(Path workingDirectory) {
+        if (workingDirectory == null) {
+            throw new IllegalArgumentException("workingDirectory must not be null");
+        }
+
+        Path repositoryLaunch = workingDirectory
+                .resolve("config")
+                .resolve(CONFIG_FILE)
+                .normalize();
+        if (Files.isRegularFile(repositoryLaunch)) {
+            return repositoryLaunch;
+        }
+
+        Path moduleLaunch = workingDirectory
+                .resolve("..")
+                .resolve("config")
+                .resolve(CONFIG_FILE)
+                .normalize();
+        if (Files.isRegularFile(moduleLaunch)) {
+            return moduleLaunch;
+        }
+
+        return repositoryLaunch;
     }
 
     static ClientConfig load(Path path) throws IOException {
