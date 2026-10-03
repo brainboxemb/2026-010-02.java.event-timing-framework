@@ -150,7 +150,7 @@ final class TimingPane extends VBox {
         VBox.setVgrow(historyPane, Priority.ALWAYS);
 
         connect.setOnAction(event -> {
-            model.viewState(TimingViewModel.ViewState.RECONNECTING);
+            model.viewState(TimingViewModel.ViewState.SYNCING);
             refresh();
             connectLive.run();
         });
@@ -185,7 +185,7 @@ final class TimingPane extends VBox {
 
     void connected() {
         bufferedEvents.clear();
-        model.viewState(TimingViewModel.ViewState.RECONNECTING);
+        model.viewState(TimingViewModel.ViewState.SYNCING);
         connection.setText("CONNECTED / syncing");
         connect.setDisable(true);
         disconnect.setDisable(false);
@@ -216,7 +216,7 @@ final class TimingPane extends VBox {
             return;
         }
 
-        if (model.viewState() == TimingViewModel.ViewState.RECONNECTING) {
+        if (model.viewState() == TimingViewModel.ViewState.SYNCING) {
             bufferedEvents.add(event);
             return;
         }
@@ -228,7 +228,7 @@ final class TimingPane extends VBox {
     }
 
     void applyTimingDataEvent(ApiEventClient.TimingDataEvent event) {
-        if (model.viewState() == TimingViewModel.ViewState.RECONNECTING) {
+        if (model.viewState() == TimingViewModel.ViewState.SYNCING) {
             bufferedEvents.add(event);
             return;
         }
@@ -242,7 +242,7 @@ final class TimingPane extends VBox {
 
     void syncView() {
         bufferedEvents.clear();
-        model.viewState(TimingViewModel.ViewState.RECONNECTING);
+        model.viewState(TimingViewModel.ViewState.SYNCING);
         connection.setText("SYNCING");
         refresh();
 
@@ -341,7 +341,7 @@ final class TimingPane extends VBox {
      * Applies live events received after the synchronisation baseline in delivery order.
      *
      * <p>This method runs on the JavaFX application thread. Events are buffered
-     * only while the Timing view is RECONNECTING; raw Events-tab diagnostics are
+     * only while the Timing view is SYNCING; raw Events-tab diagnostics are
      * still shown immediately by the outer application.</p>
      */
     private void applyBufferedEvents() {
@@ -364,7 +364,7 @@ final class TimingPane extends VBox {
         }
 
         bufferedEvents.clear();
-        model.viewState(TimingViewModel.ViewState.RECONNECTING);
+        model.viewState(TimingViewModel.ViewState.SYNCING);
         connection.setText("SYNCING");
         refresh();
 
@@ -531,7 +531,7 @@ final class TimingPane extends VBox {
         registrationTime.setDisable(!controls.autoReg());
         now.setDisable(!controls.autoReg());
         autoReg.setDisable(!controls.autoReg());
-        syncViewButton.setDisable(model.viewState() == TimingViewModel.ViewState.RECONNECTING);
+        syncViewButton.setDisable(model.viewState() == TimingViewModel.ViewState.SYNCING);
     }
 
     private void refreshLogBook() {

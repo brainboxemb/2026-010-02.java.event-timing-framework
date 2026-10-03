@@ -185,7 +185,7 @@ snapshot can wait until the scene is rendered and does not depend on window-mana
 coordinates.
 
 The first screenshot proof should stay small; useful candidates are Status and the
-CLOSED, OPEN and RECONNECTING/STALE Step-4 Timing states. Screenshot generation remains
+CLOSED, OPEN and SYNCING/STALE Step-4 Timing states. Screenshot generation remains
 presentation evidence and is separate from the V04 behavioural pass/fail check.
 
 ## Verify
