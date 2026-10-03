@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Correct the Development Client Logs tab: show Device Log first and Client Log last, and give both sources independent current/set-level controls while keeping the local client log usable when SI-01 is offline.
 - Rename the standalone JavaFX tool to **Development Client** and align the API-first workbench: remove the prominent Set Location button, split TimingData Type/Code columns, retain node-scoped IF-03 problems, and give client log lines real source context while keeping Client and SI-01/Device logs separate.
 - Contain TimingData startup-recovery failures to the affected TimingNode: keep SI-01 and diagnostic interfaces running, expose node state `ERROR` with `TIMING_DATA_RECOVERY_FAILED`, reject normal operations on the errored node, and add black-box `VC-ST1-004` for a persisted NodeId mismatch.
 - Make IF-03 OPEN carry the requested LocationId as one ordered TimingNode operation; the HTTP `/open` request now requires `locationId`, while the separate closed-state Set Location operation remains available for engineering/configuration work. Update the Engineering Client and VC-ST1-002 to use the combined OPEN operation.

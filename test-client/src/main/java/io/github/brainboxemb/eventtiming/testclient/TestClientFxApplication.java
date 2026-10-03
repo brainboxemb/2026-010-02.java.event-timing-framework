@@ -60,9 +60,12 @@ public final class TestClientFxApplication extends Application {
     private final Button terminalSend = new Button("Send");
 
     private final LiveLogClient liveLogClient = new LiveLogClient();
-    private final ComboBox<String> logLevel = new ComboBox<>();
-    private final Button applyLogLevel = new Button("Apply level");
-    private final Label currentLogLevel = valueLabel();
+    private final ComboBox<String> deviceLogLevel = new ComboBox<>();
+    private final Button applyDeviceLogLevel = new Button("Apply level");
+    private final Label currentDeviceLogLevel = valueLabel();
+    private final ComboBox<String> clientLogLevel = new ComboBox<>();
+    private final Button applyClientLogLevel = new Button("Apply level");
+    private final Label currentClientLogLevel = valueLabel();
     private final TextArea liveLogs = new TextArea();
     private final TextArea clientLogs = new TextArea();
 
@@ -215,18 +218,29 @@ public final class TestClientFxApplication extends Application {
     }
 
     private VBox logsPane() {
-        logLevel.setDisable(true);
-        applyLogLevel.setDisable(true);
-        logLevel.getItems().setAll("TRACE", "DEBUG", "INFO", "WARN", "ERROR");
-        logLevel.setValue("INFO");
+        deviceLogLevel.setDisable(true);
+        applyDeviceLogLevel.setDisable(true);
+        deviceLogLevel.getItems().setAll("TRACE", "DEBUG", "INFO", "WARN", "ERROR");
+        deviceLogLevel.setValue("INFO");
 
-        HBox level = new HBox(
+        HBox deviceLevel = new HBox(
                 8,
                 new Label("SI-01 current level"),
-                currentLogLevel,
+                currentDeviceLogLevel,
                 new Label("Set level"),
-                logLevel,
-                applyLogLevel);
+                deviceLogLevel,
+                applyDeviceLogLevel);
+
+        clientLogLevel.getItems().setAll("TRACE", "DEBUG", "INFO", "WARN", "ERROR");
+        clientLogLevel.setValue(clientLog.level());
+        currentClientLogLevel.setText(clientLog.level());
+        HBox clientLevel = new HBox(
+                8,
+                new Label("Client current level"),
+                currentClientLogLevel,
+                new Label("Set level"),
+                clientLogLevel,
+                applyClientLogLevel);
 
         clientLogs.setEditable(false);
         clientLogs.setWrapText(false);
@@ -249,14 +263,17 @@ public final class TestClientFxApplication extends Application {
                         + "-fx-font-family: 'Consolas';"
                         + "-fx-font-size: 12px;");
 
-        applyLogLevel.setOnAction(event -> applyLogLevel());
+        applyDeviceLogLevel.setOnAction(event -> applyDeviceLogLevel());
+        applyClientLogLevel.setOnAction(event -> applyClientLogLevel());
 
-        VBox device = new VBox(8, level, liveLogs);
+        VBox device = new VBox(8, deviceLevel, liveLogs);
         VBox.setVgrow(liveLogs, Priority.ALWAYS);
+        VBox client = new VBox(8, clientLevel, clientLogs);
+        VBox.setVgrow(clientLogs, Priority.ALWAYS);
 
-        Tab clientTab = tab("Client", clientLogs);
-        Tab deviceTab = tab("SI-01 / Device", device);
-        TabPane sources = new TabPane(clientTab, deviceTab);
+        Tab deviceTab = tab("Device Log", device);
+        Tab clientTab = tab("Client Log", client);
+        TabPane sources = new TabPane(deviceTab, clientTab);
 
         VBox pane = new VBox(sources);
         pane.setPadding(new Insets(12));
@@ -392,8 +409,8 @@ public final class TestClientFxApplication extends Application {
                                     @Override
                                     public void onLevel(String level) {
                                         Platform.runLater(() -> {
-                                            currentLogLevel.setText(level);
-                                            logLevel.setValue(level);
+                                            currentDeviceLogLevel.setText(level);
+                                            deviceLogLevel.setValue(level);
                                         });
                                     }
 
@@ -429,13 +446,25 @@ public final class TestClientFxApplication extends Application {
                 }));
     }
 
-    private void applyLogLevel() {
+    private void applyDeviceLogLevel() {
         try {
-            liveLogClient.setLevel(logLevel.getValue());
-            clientLog.info("Requested SI-01 log level " + logLevel.getValue());
+            liveLogClient.setLevel(deviceLogLevel.getValue());
+            clientLog.info("Requested SI-01 log level " + deviceLogLevel.getValue());
         } catch (Exception ex) {
             clientLog.error("SI-01 log level request failed: " + ex.getMessage());
             feedback.setText("Device log error: " + ex.getMessage());
+        }
+    }
+
+    private void applyClientLogLevel() {
+        try {
+            clientLog.setLevel(clientLogLevel.getValue());
+            currentClientLogLevel.setText(clientLog.level());
+            clientLogLevel.setValue(clientLog.level());
+            feedback.setText("Client log level " + clientLog.level());
+            clientLog.info("Development Client log level changed to " + clientLog.level());
+        } catch (RuntimeException ex) {
+            feedback.setText("Client log error: " + ex.getMessage());
         }
     }
 
@@ -540,10 +569,10 @@ public final class TestClientFxApplication extends Application {
         deviceLogBoundary.setDisable(false);
         deviceLogBoundary.setText(
                 "Device log :" + config.loggingServerPort() + "\n" + state);
-        logLevel.setDisable(!connected);
-        applyLogLevel.setDisable(!connected);
+        deviceLogLevel.setDisable(!connected);
+        applyDeviceLogLevel.setDisable(!connected);
         if (!connected) {
-            currentLogLevel.setText("-");
+            currentDeviceLogLevel.setText("-");
         }
     }
 
