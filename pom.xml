@@ -5,12 +5,12 @@
   <modelVersion>4.0.0</modelVersion>
 
   <groupId>io.github.brainboxemb.eventtiming</groupId>
-  <artifactId>event-timing-parent</artifactId>
+  <artifactId>timing-point-parent</artifactId>
   <version>0.2.3-SNAPSHOT</version>
   <packaging>pom</packaging>
 
-  <name>Event Timing Parent</name>
-  <description>Build parent and reactor for the event-timing application core and applications.</description>
+  <name>Timing Point Parent</name>
+  <description>Build parent and reactor for the Timing Point Application and shared Event Timing libraries.</description>
 
   <modules>
     <module>shared/timing-data</module>

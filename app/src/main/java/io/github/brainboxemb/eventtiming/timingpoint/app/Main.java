@@ -27,7 +27,7 @@ public final class Main {
         }
         if (args.length != 1) {
             throw new IllegalArgumentException(
-                    "Usage: java -jar event-timing-app-<version>.jar <application.yml>");
+                    "Usage: java -jar timing-point-app-<version>.jar <application.yml>");
         }
 
         try {

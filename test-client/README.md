@@ -10,8 +10,8 @@ baseline are defined in the meta-repository SDE:
 - [50-SDE-03 — Engineering Client development and UI baseline](https://github.com/brainboxemb/2026-010-01.meta.event-timing-software/blob/main/docs/50-SDE-03-engineering-client.md)
 
 This application is **not SI-02** and is not part of the Java-8/Pi SI-01 runtime. It is a
-standalone desktop Maven project with no dependency on `event-timing-core` or
-`event-timing-app`. Repository co-location is intentional while SI-01 public interfaces
+standalone desktop Maven project with no dependency on `timing-point-core` or
+`timing-point-app`. Repository co-location is intentional while SI-01 public interfaces
 and the Engineering Client evolve together.
 
 ## Baseline

@@ -84,8 +84,8 @@ def inspect(repo_root, git_ref, github_output=None):
         "version": version,
         "is_release": "true" if is_release else "false",
         "release_tag": expected_tag,
-        "app_jar": "event-timing-app-{}.jar".format(version),
-        "core_jar": "event-timing-core-{}.jar".format(version),
+        "app_jar": "timing-point-app-{}.jar".format(version),
+        "core_jar": "timing-point-core-{}.jar".format(version),
         "timing_data_jar": "event-timing-data-{}.jar".format(version),
     }
 

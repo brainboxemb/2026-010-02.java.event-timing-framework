@@ -67,7 +67,7 @@ public final class LoggingServer implements AutoCloseable {
         serverSocket = socket;
         rootLogger.addHandler(liveHandler);
 
-        Thread thread = new Thread(this::acceptLoop, "event-timing-live-log");
+        Thread thread = new Thread(this::acceptLoop, "tp-inf-live-log");
         thread.setDaemon(true);
         acceptThread = thread;
         thread.start();
@@ -130,7 +130,7 @@ public final class LoggingServer implements AutoCloseable {
 
         Thread writerThread = new Thread(
                 () -> writeLoop(client, writer),
-                "event-timing-live-log-writer");
+                "tp-inf-live-log-writer");
         writerThread.setDaemon(true);
         writerThread.start();
 

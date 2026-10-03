@@ -2,7 +2,7 @@
 <actions>
     <action>
         <actionName>run</actionName>
-        <displayName>Run Event Timing Test Client</displayName>
+        <displayName>Run Event Timing Engineering Client</displayName>
         <packagings>
             <packaging>jar</packaging>
         </packagings>
@@ -16,7 +16,7 @@
     </action>
     <action>
         <actionName>debug</actionName>
-        <displayName>Debug Event Timing Test Client</displayName>
+        <displayName>Debug Event Timing Engineering Client</displayName>
         <packagings>
             <packaging>jar</packaging>
         </packagings>

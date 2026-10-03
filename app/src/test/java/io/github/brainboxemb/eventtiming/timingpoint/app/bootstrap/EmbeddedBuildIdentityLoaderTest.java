@@ -17,7 +17,7 @@ public class EmbeddedBuildIdentityLoaderTest {
         String expectedProjectVersion = System.getProperty("eventTiming.expectedProjectVersion");
 
         assertNotNull("Maven must expose the project version to the test JVM", expectedProjectVersion);
-        assertEquals("event-timing-app", identity.application());
+        assertEquals("timing-application", identity.application());
         assertEquals(expectedProjectVersion, identity.version());
         assertEquals("1", identity.apiVersion());
         assertTrue(identity.revision().matches("[0-9a-f]{40}"));

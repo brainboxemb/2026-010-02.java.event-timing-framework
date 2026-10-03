@@ -65,7 +65,7 @@ public class ApplicationTest {
     @Test
     public void formatsStableSmokeOutput() {
         assertEquals(
-                "event-timing-app lifecycle OK version=test-version state=STOPPED",
+                "timing-application lifecycle OK version=test-version state=STOPPED",
                 Application.smokeOutput(identity(), Lifecycle.State.STOPPED));
     }
 
@@ -94,7 +94,7 @@ public class ApplicationTest {
 
     private static BuildIdentity identity() {
         return BuildIdentity.firstApiVersion(
-                "event-timing-app",
+                "timing-application",
                 "test-version",
                 "abc123def456",
                 "feature/test",

@@ -23,14 +23,14 @@ profile is selected:
 ```text
 shared/
   timing-data/    event-timing-data        shared Java-8 IF-05 TimingData library
-core/             event-timing-core        reusable SI-01 application core
-app/              event-timing-app         runnable/default application
-system-test/      event-timing-system-test  black-box verification only (profile-only)
+core/             timing-point-core        reusable SI-01 application core
+app/              timing-point-app         runnable/default application
+system-test/      timing-point-system-test  black-box verification only (profile-only)
 ```
 
 `system-test` has no Java dependency on the product artifacts. It starts the built app JAR as
 a separate JVM process and verifies only external interfaces. It is not a release/publication
-artifact. The root `event-timing-parent` POM is build/aggregation metadata rather than a deployed
+artifact. The root `timing-point-parent` POM is build/aggregation metadata rather than a deployed
 product component.
 
 The shared TimingData library models committed registrations with a small common
@@ -45,7 +45,7 @@ source-only `TimingDataTypes` holder as `NodeId`, `LocationId` and
 
 The `io.github.brainboxemb.eventtiming` namespace denotes the software-system/product family; reusable SI-01 code is rooted under `io.github.brainboxemb.eventtiming.timingpoint` because SI-01 is the software running locally at a timing observation point. `TimingNode` remains a logical domain aggregate inside that application and is not the package root.
 
-The reusable `event-timing-core` JAR is organised by logical responsibility, but a
+The reusable `timing-point-core` JAR is organised by logical responsibility, but a
 layer/package is not represented by a runtime marker object merely to make the source tree mirror
 the architecture diagram.
 
@@ -220,7 +220,7 @@ A synthetic development example is kept at `config/application.yml`. After build
 configured application with:
 
 ```bash
-java -jar app/target/event-timing-app-<version>.jar config/application.yml
+java -jar app/target/timing-point-app-<version>.jar config/application.yml
 ```
 
 The configured process stays running until the JVM receives a normal shutdown request. On a
@@ -249,7 +249,7 @@ added only when their SIP activities provide a real consumer.
 
 `test-client/` is the standalone Java 17 / JavaFX **Engineering Client** used for manual integration, diagnostics and public-interface inspection. It remains engineering tooling rather than SI-02 and deliberately has no dependency on SI-01 implementation classes.
 It is deliberately not part of the Java-8 SI-01 Maven reactor and has no dependency on
-`event-timing-core` or `event-timing-app`.
+`timing-point-core` or `timing-point-app`.
 
 With JDK 17 selected:
 
@@ -369,7 +369,7 @@ The command-line split is:
 # Deliberate VC-ST1 black-box verification (VC-ST1-001 + VC-ST1-002)
 .\mvnw.cmd verify -Psystem-test
 
-java -jar app\target\event-timing-app-0.2.3-SNAPSHOT.jar config\application.yml
+java -jar app\target\timing-point-app-0.2.3-SNAPSHOT.jar config\application.yml
 ```
 
 ## Toolchain baseline
@@ -389,13 +389,13 @@ The Java-specific baseline is recorded in `project.java.yml`. Maven remains the 
 After a reactor build, run the executable application using the version from the root `pom.xml`:
 
 ```bash
-java -jar app/target/event-timing-app-<version>.jar
+java -jar app/target/timing-point-app-<version>.jar
 ```
 
 The executable loads its application/build identity from a Maven-filtered resource, starts its minimal lifecycle, reaches `RUNNING`, and then shuts down to `STOPPED`. The embedded identity deliberately separates software identity from deterministic source/build provenance:
 
 ```text
-application    event-timing-app
+application    timing-application
 version        Maven ${project.version}
 revision       exact Git commit
 sourceRef      branch, tag or CI ref
@@ -413,14 +413,14 @@ A Git tag does **not** silently determine or override the application version. I
 Lifecycle diagnostics use the selected logging composition:
 
 ```text
-event-timing-core       -> SLF4J API + reusable JUL logging infrastructure; no SLF4J provider selected
-event-timing-app        -> selects slf4j-jdk14 -> java.util.logging
+timing-point-core       -> SLF4J API + reusable JUL logging infrastructure; no SLF4J provider selected
+timing-point-app        -> selects slf4j-jdk14 -> java.util.logging
 ```
 
 `java.util.logging` writes the lifecycle INFO records through the runtime logging backend. Startup logging includes the concrete Git revision, source ref, build origin and dirty-state. The stable stdout smoke line used by CI intentionally remains independent of build-specific provenance:
 
 ```text
-event-timing-app lifecycle OK version=<version> state=STOPPED
+timing-application lifecycle OK version=<version> state=STOPPED
 ```
 
 This short-lived process is intentional for Step 2. Long-running service behaviour and public version/status transports belong to later SIP steps.
@@ -472,8 +472,8 @@ The canonical Linux producer stages all three product JARs:
 ```text
 artifacts/
   event-timing-data-<version>.jar
-  event-timing-core-<version>.jar
-  event-timing-app-<version>.jar
+  timing-point-core-<version>.jar
+  timing-point-app-<version>.jar
 ```
 
 Producer evidence remains under:
@@ -554,8 +554,8 @@ BuildIdentity       revision=<tagged commit SHA>
 Release assets contain:
 
 - `event-timing-data-X.Y.Z.jar`;
-- `event-timing-core-X.Y.Z.jar`;
-- `event-timing-app-X.Y.Z.jar`;
+- `timing-point-core-X.Y.Z.jar`;
+- `timing-point-app-X.Y.Z.jar`;
 - SHA-256 checksums;
 - a compressed evidence bundle containing build provenance, tests and orchestration evidence.
 

@@ -77,8 +77,8 @@ jobs:
           set -euo pipefail
           test -f system-test/pom.xml
           ! grep -F '<artifactId>event-timing-data</artifactId>' system-test/pom.xml
-          ! grep -F '<artifactId>event-timing-core</artifactId>' system-test/pom.xml
-          ! grep -F '<artifactId>event-timing-app</artifactId>' system-test/pom.xml
+          ! grep -F '<artifactId>timing-point-core</artifactId>' system-test/pom.xml
+          ! grep -F '<artifactId>timing-point-app</artifactId>' system-test/pom.xml
 
   # Normal development lifecycle. Pull requests use affected auto-selection;
   # protected main publication deliberately does not allocate Windows again.
@@ -98,10 +98,10 @@ jobs:
       java-version: '8.0.504+1'
       maven-version: '3.9.16'
       maven-wrapper-version: '3.3.4'
-      artifact-name: event-timing-core-canonical
+      artifact-name: timing-point-canonical
       artifact-path: app/target/${{ needs.release-metadata.outputs.app_jar }}
       runnable-jar-name: ${{ needs.release-metadata.outputs.app_jar }}
-      smoke-expected-output: 'event-timing-app lifecycle OK version=${{ needs.release-metadata.outputs.version }} state=STOPPED'
+      smoke-expected-output: 'timing-application lifecycle OK version=${{ needs.release-metadata.outputs.version }} state=STOPPED'
       test-report-path: '**/target/surefire-reports/**'
       publication-artifact-paths: |
         shared/timing-data/target/${{ needs.release-metadata.outputs.timing_data_jar }}
@@ -145,7 +145,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
-          name: event-timing-system-test-main-evidence
+          name: timing-point-system-test-main-evidence
           path: |
             system-test/target/surefire-reports/**
             system-test/target/evidence/**
@@ -162,8 +162,8 @@ jobs:
       actions: read
     uses: brainboxemb/tool.java-project/.github/workflows/reusable-java-publish.yml@c0ca2e1365a64bc626ca331a8170d13340ae0b36
     with:
-      publication-artifact-name: event-timing-core-canonical-publication
-      preflight-artifact-name: event-timing-core-canonical-preflight
+      publication-artifact-name: timing-point-canonical-publication
+      preflight-artifact-name: timing-point-canonical-preflight
       source-revision: ${{ github.event.pull_request.head.sha || github.sha }}
 
   publish-main-system-test-evidence:
@@ -192,7 +192,7 @@ jobs:
       - name: Download main system-test evidence
         uses: actions/download-artifact@634f93cb2916e3fdff6788551b99b062d0335ce0 # v5
         with:
-          name: event-timing-system-test-main-evidence
+          name: timing-point-system-test-main-evidence
           path: system-test-evidence
 
       - name: Stage black-box evidence in the central build tree
@@ -362,7 +362,7 @@ jobs:
       java-version: '8.0.504+1'
       maven-version: '3.9.16'
       maven-wrapper-version: '3.3.4'
-      artifact-name: event-timing-core-canonical
+      artifact-name: timing-point-canonical
       artifact-path: app/target/${{ needs.release-metadata.outputs.app_jar }}
       runnable-jar-name: ''
       smoke-expected-output: ''
@@ -386,7 +386,7 @@ jobs:
       java-version: '8.0.504+1'
       maven-version: '3.9.16'
       maven-wrapper-version: '3.3.4'
-      artifact-name: event-timing-core-canonical
+      artifact-name: timing-point-canonical
       runnable-jar-name: ''
       smoke-expected-output: ''
       test-report-path: '**/target/surefire-reports/**'
@@ -407,9 +407,9 @@ jobs:
       java-version: '8.0.504+1'
       maven-version: '3.9.16'
       maven-wrapper-version: '3.3.4'
-      artifact-name: event-timing-core-canonical
+      artifact-name: timing-point-canonical
       runnable-jar-name: ${{ needs.release-metadata.outputs.app_jar }}
-      smoke-expected-output: 'event-timing-app lifecycle OK version=${{ needs.release-metadata.outputs.version }} state=STOPPED'
+      smoke-expected-output: 'timing-application lifecycle OK version=${{ needs.release-metadata.outputs.version }} state=STOPPED'
       test-report-path: '**/target/surefire-reports/**'
       windows-mode: smoke
 
@@ -449,7 +449,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
-          name: event-timing-system-test-release-linux-evidence
+          name: timing-point-system-test-release-linux-evidence
           path: |
             system-test/target/surefire-reports/**
             system-test/target/evidence/**
@@ -492,7 +492,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
-          name: event-timing-system-test-release-windows-evidence
+          name: timing-point-system-test-release-windows-evidence
           path: |
             system-test/target/surefire-reports/**
             system-test/target/evidence/**
@@ -516,7 +516,7 @@ jobs:
       actions: read
     uses: brainboxemb/tool.java-project/.github/workflows/reusable-java-publish.yml@c0ca2e1365a64bc626ca331a8170d13340ae0b36
     with:
-      publication-artifact-name: event-timing-core-canonical-publication
+      publication-artifact-name: timing-point-canonical-publication
       source-revision: ${{ github.sha }}
 
   publish-release:
@@ -552,13 +552,13 @@ jobs:
       - name: Download Linux system-test evidence
         uses: actions/download-artifact@634f93cb2916e3fdff6788551b99b062d0335ce0 # v5
         with:
-          name: event-timing-system-test-release-linux-evidence
+          name: timing-point-system-test-release-linux-evidence
           path: system-test-evidence/linux
 
       - name: Download Windows system-test evidence
         uses: actions/download-artifact@634f93cb2916e3fdff6788551b99b062d0335ce0 # v5
         with:
-          name: event-timing-system-test-release-windows-evidence
+          name: timing-point-system-test-release-windows-evidence
           path: system-test-evidence/windows
 
       - name: Verify release artifact identity and prepare assets
