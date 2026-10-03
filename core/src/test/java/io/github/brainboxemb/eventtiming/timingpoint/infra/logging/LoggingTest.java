@@ -50,8 +50,7 @@ public class LoggingTest {
                 assertTrue(line.matches(
                         "\\d{2}:\\d{2}:\\d{2}\\.\\d{3} - \\[INFO\\] - "
                                 + "Application lifecycle state=RUNNING - "
-                                + "\\[io\\.github\\.brainboxemb\\.eventtiming\\.timingpoint\\.runtime"
-                                + "\\.TimingApplicationLifecycle\\.start\\]\\R"));
+                                + "\\[TimingApplicationLifecycle\\.start\\]\\R"));
             }
 
             assertSame(previousFormatter, console.getFormatter());
@@ -59,6 +58,17 @@ public class LoggingTest {
             root.removeHandler(console);
             console.close();
         }
+    }
+
+    @Test
+    public void keepsNonProjectSourceQualified() {
+        LogRecord record = new LogRecord(Level.INFO, "External component");
+        record.setSourceClassName("com.example.transport.ExternalAdapter");
+        record.setSourceMethodName("start");
+
+        assertEquals(
+                "com.example.transport.ExternalAdapter.start",
+                CompactLogFormatter.source(record));
     }
 
     @Test
