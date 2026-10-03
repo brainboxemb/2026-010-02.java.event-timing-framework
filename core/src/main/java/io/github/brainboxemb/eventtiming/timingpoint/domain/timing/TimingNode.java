@@ -324,7 +324,7 @@ public final class TimingNode {
         NodeId id = requireId(timingNodeId);
         return new SerialWorker(
                 DEFAULT_QUEUE_CAPACITY,
-                "tp-dml-node-" + id.value());
+                "tp-dml-" + id.value());
     }
 
     private static NodeId requireId(NodeId timingNodeId) {
