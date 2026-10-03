@@ -32,7 +32,7 @@ import java.util.concurrent.Executors;
 public final class TestClientFxApplication extends Application {
     private final TestClientBuildIdentity clientBuild = TestClientBuildIdentity.embedded();
     private final ExecutorService requests = Executors.newSingleThreadExecutor(runnable -> {
-        Thread thread = new Thread(runnable, "event-timing-test-client-http");
+        Thread thread = new Thread(runnable, "ec-request");
         thread.setDaemon(true);
         return thread;
     });
