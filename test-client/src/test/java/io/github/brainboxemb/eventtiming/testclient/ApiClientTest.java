@@ -132,8 +132,8 @@ public class ApiClientTest {
         server.start();
 
         ApiClient client = client();
-        assertEquals("UPDATED", client.setLocation("timing-node-01", 24).result());
-        assertEquals("OPENED", client.open("timing-node-01").result());
+        assertEquals("UPDATED", client.setLocation("timing-node-01", 23).result());
+        assertEquals("OPENED", client.open("timing-node-01", 24).result());
         assertEquals(2L, client.autoReg(
                 "timing-node-01",
                 "N0002",
@@ -164,7 +164,11 @@ public class ApiClientTest {
 
         assertEquals("PUT", requests.get(0).method());
         assertEquals("/api/v1/node/timing-node-01/location", requests.get(0).uri());
-        assertTrue(requests.get(0).body().contains("\"locationId\":24"));
+        assertTrue(requests.get(0).body().contains("\"locationId\":23"));
+
+        assertEquals("POST", requests.get(1).method());
+        assertEquals("/api/v1/node/timing-node-01/open", requests.get(1).uri());
+        assertTrue(requests.get(1).body().contains("\"locationId\":24"));
 
         assertEquals("POST", requests.get(2).method());
         assertEquals(

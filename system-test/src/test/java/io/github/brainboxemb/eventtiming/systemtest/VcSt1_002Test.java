@@ -119,21 +119,23 @@ public class VcSt1_002Test {
                     initialStatus.status());
             assertNodeState(initialStatus.body(), null, "CLOSED");
 
-            // Assign Location ID while CLOSED.
+            // Exercise the separate closed-state location operation.
             Response location = http.put(
                     nodePath("/location"),
-                    "{\"locationId\":24}");
+                    "{\"locationId\":23}");
             assertEquals(
                     "Unexpected set-location status",
                     200,
                     location.status());
             assertContains(location.body(), "\"result\":\"UPDATED\"");
             String locatedEvent = events.awaitEvent("STATUS_CHANGED");
-            assertContains(locatedEvent, "\"locationId\":24");
+            assertContains(locatedEvent, "\"locationId\":23");
             assertContains(locatedEvent, "\"state\":\"CLOSED\"");
 
-            // OPEN and reject Location ID mutation while OPEN.
-            Response open = http.post(nodePath("/open"), "");
+            // Normal OPEN carries and atomically applies its own LocationId.
+            Response open = http.post(
+                    nodePath("/open"),
+                    "{\"locationId\":24}");
             assertEquals("Unexpected open status", 200, open.status());
             assertContains(open.body(), "\"result\":\"OPENED\"");
             String openedEvent = events.awaitEvent("STATUS_CHANGED");

@@ -75,22 +75,27 @@ public class PresentationGatewayTest {
 
             assertEquals(
                     TimingNodeTypes.SetLocationResult.UPDATED,
-                    handler.setLocation(new LocationId(24)));
+                    handler.setLocation(new LocationId(23)));
             assertEquals(1, statusChanges.size());
-            assertEquals(new LocationId(24), statusChanges.get(0).locationId());
+            assertEquals(new LocationId(23), statusChanges.get(0).locationId());
 
             // The domain returns UPDATED again, but the authoritative state did
             // not change, so no duplicate STATUS_CHANGED event is manufactured.
             assertEquals(
                     TimingNodeTypes.SetLocationResult.UPDATED,
-                    handler.setLocation(new LocationId(24)));
+                    handler.setLocation(new LocationId(23)));
             assertEquals(1, statusChanges.size());
 
-            assertEquals(TimingNodeTypes.OpenResult.OPENED, handler.open());
+            assertEquals(
+                    TimingNodeTypes.OpenResult.OPENED,
+                    handler.open(new LocationId(24)));
             assertEquals(2, statusChanges.size());
             assertEquals(
                     TimingNodeTypes.Lifecycle.OPEN,
                     statusChanges.get(1).timingNodeLifecycle());
+            assertEquals(
+                    new LocationId(24),
+                    statusChanges.get(1).locationId());
 
             TimingNodeTypes.RegistrationResult registration = handler.commitAutomaticRegistration(
                     new RegistrationId("N0001"),

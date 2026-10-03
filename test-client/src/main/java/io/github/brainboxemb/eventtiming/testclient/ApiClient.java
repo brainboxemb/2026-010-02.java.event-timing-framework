@@ -63,8 +63,14 @@ public final class ApiClient {
                 JSON.writeValueAsString(body)));
     }
 
-    public OperationResult open(String nodeId) throws IOException, InterruptedException {
-        return parseOperation(request("POST", nodePath(nodeId, "/open"), ""));
+    public OperationResult open(String nodeId, int locationId)
+            throws IOException, InterruptedException {
+        ObjectNode body = JSON.createObjectNode();
+        body.put("locationId", locationId);
+        return parseOperation(request(
+                "POST",
+                nodePath(nodeId, "/open"),
+                JSON.writeValueAsString(body)));
     }
 
     public OperationResult close(String nodeId) throws IOException, InterruptedException {

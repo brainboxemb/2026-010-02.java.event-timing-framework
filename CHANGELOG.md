@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Make IF-03 OPEN carry the requested LocationId as one ordered TimingNode operation; the HTTP `/open` request now requires `locationId`, while the separate closed-state Set Location operation remains available for engineering/configuration work. Update the Engineering Client and VC-ST1-002 to use the combined OPEN operation.
 - Implement the reviewed API-first Engineering Client workbench: one client configuration file for target/per-boundary ports and presentation defaults, API as the primary Status/Timing surface, top-level Events/Terminal/Device-log connection controls, separate Client versus SI-01 log sources, low local domain intelligence, split registration prefix/number plus readable date/time entry, and retained raw API results/errors/TimingData records for engineering inspection. Keep this change separate from the still-open Step-4 VC-ST1-003 evidence.
 
 - Rename the transport-independent Application-layer presentation entry point from `CommandHandler` to `PresentationGateway`; the gateway continues to expose the same commands, queries, application metadata/capabilities and events without changing IF-03 behaviour or TimingNode execution semantics.

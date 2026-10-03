@@ -260,7 +260,8 @@ With JDK 17 selected:
 The **Status** tab defaults to `http://127.0.0.1:8081` and provides **Get Version** and
 **Get Status** with parsed fields plus raw JSON. The **Events** tab defaults to
 `ws://127.0.0.1:8082/api/v1/events` and shows status plus committed TimingData events.
-The Step-4 **Timing** tab addresses a selected TimingNode, controls LocationId/open/close,
+The Step-4 **Timing** tab addresses a selected TimingNode, uses one OPEN request carrying
+the entered LocationId while retaining separate closed-state Set Location control,
 provides capability-gated dev `auto-reg`, and rebuilds bounded LogBook state across
 reconnect. The **Terminal** tab connects directly to the development shell on
 `127.0.0.1:8023`, so manual shell verification does not require a separate PuTTY session.
@@ -316,9 +317,9 @@ verification-case IDs are preserved in the Java class names:
 `VC-ST1-001 -> VcSt1_001Test` and `VC-ST1-002 -> VcSt1_002Test`. VC-ST1-001
 launches the JAR as a child JVM with temporary loopback ports and verifies version, compact
 status, WebSocket snapshot/reconnect and controlled shutdown. VC-ST1-002 drives the Step-4
-public registration flow through IF-03: capabilities, LocationId/open/close, invalid
-OPEN-state location change, dev `auto-reg`, live committed TimingData and bounded
-LogBook history. It then verifies a WebSocket reconnect and a full SI-01 process restart
+public registration flow through IF-03: capabilities, OPEN-with-LocationId plus separate
+closed-state location control, invalid OPEN-state location change, dev `auto-reg`,
+live committed TimingData and bounded LogBook history. It then verifies a WebSocket reconnect and a full SI-01 process restart
 against the same TimingData file: the committed record remains queryable while the node
 starts CLOSED with no operational location, and recovered history is not emitted as a
 new `TIMING_DATA_COMMITTED` event. The verifier imports no

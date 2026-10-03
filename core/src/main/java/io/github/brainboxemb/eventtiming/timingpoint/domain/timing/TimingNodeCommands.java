@@ -17,16 +17,19 @@ import io.github.brainboxemb.eventtiming.timingpoint.domain.timing.TimingNodeTyp
  * package-private logic on the serial lane.</p>
  */
 public final class TimingNodeCommands {
-    private static final TimingNodeCommand<OpenResult> OPEN =
-            simple("open", TimingNodeLogic::open);
     private static final TimingNodeCommand<CloseResult> CLOSE =
             simple("close", TimingNodeLogic::close);
 
     private TimingNodeCommands() {
     }
 
-    public static TimingNodeCommand<OpenResult> open() {
-        return OPEN;
+    public static TimingNodeCommand<OpenResult> open(LocationId locationId) {
+        if (locationId == null) {
+            throw new IllegalArgumentException("locationId must not be null");
+        }
+        return simple(
+                "open",
+                logic -> logic.open(locationId));
     }
 
     public static TimingNodeCommand<CloseResult> close() {

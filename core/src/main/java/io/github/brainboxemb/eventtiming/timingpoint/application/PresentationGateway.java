@@ -98,9 +98,9 @@ public final class PresentationGateway {
         return timingNode.invoke(TimingNodeCommands.setLocation(locationId));
     }
 
-    /** Opens registration through the TimingNode serial owner. */
-    public OpenResult open() {
-        return timingNode.invoke(TimingNodeCommands.open());
+    /** Opens registration at the requested location through the TimingNode serial owner. */
+    public OpenResult open(LocationId locationId) {
+        return timingNode.invoke(TimingNodeCommands.open(locationId));
     }
 
     /** Closes registration through the TimingNode serial owner. */

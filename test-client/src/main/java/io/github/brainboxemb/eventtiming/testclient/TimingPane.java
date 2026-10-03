@@ -181,8 +181,7 @@ final class TimingPane extends VBox {
         });
 
         setLocation.setOnAction(event -> setLocation());
-        open.setOnAction(event -> runStateCommand(
-                api -> api.open(requireSelectedNode())));
+        open.setOnAction(event -> open());
         close.setOnAction(event -> runStateCommand(
                 api -> api.close(requireSelectedNode())));
         now.setOnAction(event -> updateNow());
@@ -409,14 +408,28 @@ final class TimingPane extends VBox {
     }
 
     private void setLocation() {
-        final int value;
-        try {
-            value = Integer.parseInt(locationInput.getText().trim());
-        } catch (NumberFormatException ex) {
-            lastOperation.setText("LocationId must be an integer");
+        Integer value = locationInputValue();
+        if (value == null) {
             return;
         }
-        runStateCommand(api -> api.setLocation(requireSelectedNode(), value));
+        runStateCommand(api -> api.setLocation(requireSelectedNode(), value.intValue()));
+    }
+
+    private void open() {
+        Integer value = locationInputValue();
+        if (value == null) {
+            return;
+        }
+        runStateCommand(api -> api.open(requireSelectedNode(), value.intValue()));
+    }
+
+    private Integer locationInputValue() {
+        try {
+            return Integer.valueOf(locationInput.getText().trim());
+        } catch (NumberFormatException ex) {
+            lastOperation.setText("LocationId must be an integer");
+            return null;
+        }
     }
 
     private void autoReg() {
