@@ -1,8 +1,5 @@
 package io.github.brainboxemb.eventtiming.timingpoint.presentation.interfaces.api;
 
-import com.fasterxml.jackson.core.JsonFactory;
-import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.core.JsonToken;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpServer;
 
@@ -18,9 +15,7 @@ import io.github.brainboxemb.eventtiming.timingpoint.domain.timing.TimingNodeTyp
 import io.github.brainboxemb.eventtiming.timingpoint.domain.timing.TimingNodeTypes.RegistrationResult;
 import io.github.brainboxemb.eventtiming.timingpoint.domain.timing.TimingNodeTypes.SetLocationResult;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
@@ -34,19 +29,17 @@ import org.slf4j.LoggerFactory;
 /**
  * HTTP/JSON transport for IF-03.
  *
- * <p>This adapter owns only HTTP and JSON mapping. All state-dependent decisions
- * are delegated to {@link PresentationGateway}; it never calls TimingNode directly.</p>
+ * <p>This adapter owns HTTP lifecycle, routing and response mapping. Inbound request
+ * decoding is delegated to {@link HttpRequestReader}. All state-dependent decisions are
+ * delegated to {@link PresentationGateway}; it never calls TimingNode directly.</p>
  */
 public final class HttpEndpoint implements AutoCloseable {
     private static final Logger LOG = LoggerFactory.getLogger(HttpEndpoint.class);
-    private static final int MAX_REQUEST_BODY_BYTES = 64 * 1024;
-    private static final int MAX_LOGBOOK_LIMIT = 1000;
-
     private final String bindAddress;
     private final int port;
     private final PresentationGateway presentationGateway;
     private final TimingDataCodec timingDataCodec;
-    private final JsonFactory jsonFactory = new JsonFactory();
+    private final HttpRequestReader requestReader = new HttpRequestReader();
 
     private HttpServer server;
     private ExecutorService executor;
@@ -100,8 +93,8 @@ public final class HttpEndpoint implements AutoCloseable {
             route(exchange);
         } catch (ResponseAlreadySent ignored) {
             // Method validation already wrote and closed the HTTP response.
-        } catch (RequestException ex) {
-            sendJson(exchange, 400, MessageWriter.error(ex.code, ex.getMessage()));
+        } catch (HttpRequestReader.RequestException ex) {
+            sendJson(exchange, 400, MessageWriter.error(ex.code(), ex.getMessage()));
         } catch (OperationException ex) {
             sendOperationFailure(exchange, ex);
         } catch (RuntimeException ex) {
@@ -152,7 +145,7 @@ public final class HttpEndpoint implements AutoCloseable {
     }
 
     private void routeNode(HttpExchange exchange, String remainder) throws IOException {
-        NodeRoute route = nodeRoute(remainder);
+        HttpRequestReader.NodeRoute route = requestReader.nodeRoute(remainder);
         if (route == null) {
             sendJson(
                     exchange,
@@ -169,13 +162,13 @@ public final class HttpEndpoint implements AutoCloseable {
         }
         if ("/open".equals(route.resource)) {
             requireMethod(exchange, "POST");
-            requireEmptyBody(exchange);
+            requestReader.requireEmptyBody(exchange);
             handleOpen(exchange);
             return;
         }
         if ("/close".equals(route.resource)) {
             requireMethod(exchange, "POST");
-            requireEmptyBody(exchange);
+            requestReader.requireEmptyBody(exchange);
             sendJson(
                     exchange,
                     200,
@@ -195,7 +188,7 @@ public final class HttpEndpoint implements AutoCloseable {
     }
 
     private void routeDevNode(HttpExchange exchange, String remainder) throws IOException {
-        NodeRoute route = nodeRoute(remainder);
+        HttpRequestReader.NodeRoute route = requestReader.nodeRoute(remainder);
         if (route == null) {
             sendJson(
                     exchange,
@@ -217,16 +210,6 @@ public final class HttpEndpoint implements AutoCloseable {
                 MessageWriter.error("NOT_FOUND", "Unknown IF-03 dev resource"));
     }
 
-    private static NodeRoute nodeRoute(String remainder) {
-        int slash = remainder.indexOf('/');
-        if (slash <= 0 || slash == remainder.length() - 1) {
-            return null;
-        }
-        return new NodeRoute(
-                remainder.substring(0, slash),
-                remainder.substring(slash));
-    }
-
     private void requireCurrentNode(HttpExchange exchange, String nodeId)
             throws IOException {
         if (presentationGateway.status().timingNodeId().value().equals(nodeId)) {
@@ -242,12 +225,12 @@ public final class HttpEndpoint implements AutoCloseable {
     }
 
     private void handleSetLocation(HttpExchange exchange) throws IOException {
-        int value = readLocationRequest(exchange);
+        int value = requestReader.readLocationRequest(exchange);
         final LocationId locationId;
         try {
             locationId = new LocationId(value);
         } catch (IllegalArgumentException ex) {
-            throw invalidValue(ex.getMessage());
+            throw HttpRequestReader.invalidValue(ex.getMessage());
         }
 
         SetLocationResult result = presentationGateway.setLocation(locationId);
@@ -284,7 +267,8 @@ public final class HttpEndpoint implements AutoCloseable {
     }
 
     private void handleAutoRegistration(HttpExchange exchange) throws IOException {
-        AutoRegistrationRequest request = readAutoRegistrationRequest(exchange);
+        HttpRequestReader.AutoRegistrationRequest request =
+                requestReader.readAutoRegistrationRequest(exchange);
 
         final RegistrationId registrationId;
         final TimingTimestamp observationTime;
@@ -292,7 +276,7 @@ public final class HttpEndpoint implements AutoCloseable {
             registrationId = new RegistrationId(request.id);
             observationTime = TimingTimestamp.parse(request.time);
         } catch (IllegalArgumentException ex) {
-            throw invalidValue(ex.getMessage());
+            throw HttpRequestReader.invalidValue(ex.getMessage());
         }
 
         if (!presentationGateway.capabilities().directRegistrationSimulationEnabled()) {
@@ -333,7 +317,7 @@ public final class HttpEndpoint implements AutoCloseable {
             return;
         }
 
-        LogBookQuery request = readLogBookQuery(query);
+        HttpRequestReader.LogBookQuery request = requestReader.readLogBookQuery(query);
         StringBuilder records = new StringBuilder();
         int count;
         if (request.last != null) {
@@ -373,72 +357,6 @@ public final class HttpEndpoint implements AutoCloseable {
                         count,
                         next,
                         records));
-    }
-
-    private LogBookQuery readLogBookQuery(String query) {
-        Long from = null;
-        Integer limit = null;
-        Integer last = null;
-
-        String[] pairs = query.split("&");
-        for (String pair : pairs) {
-            int equals = pair.indexOf('=');
-            if (equals <= 0 || equals == pair.length() - 1) {
-                throw invalidValue("LogBook query parameters require a value");
-            }
-            String name = pair.substring(0, equals);
-            String value = pair.substring(equals + 1);
-
-            if ("from".equals(name)) {
-                if (from != null) {
-                    throw invalidValue("Duplicate LogBook query field: from");
-                }
-                from = Long.valueOf(parsePositiveLong("from", value));
-            } else if ("limit".equals(name)) {
-                if (limit != null) {
-                    throw invalidValue("Duplicate LogBook query field: limit");
-                }
-                limit = Integer.valueOf(parseLogBookLimit("limit", value));
-            } else if ("last".equals(name)) {
-                if (last != null) {
-                    throw invalidValue("Duplicate LogBook query field: last");
-                }
-                last = Integer.valueOf(parseLogBookLimit("last", value));
-            } else {
-                throw invalidValue("Unsupported LogBook query field: " + name);
-            }
-        }
-
-        if (last != null) {
-            if (from != null || limit != null) {
-                throw invalidValue("last cannot be combined with from or limit");
-            }
-            return new LogBookQuery(null, null, last);
-        }
-        if (from == null || limit == null) {
-            throw invalidValue("LogBook range requires both from and limit");
-        }
-        return new LogBookQuery(from, limit, null);
-    }
-
-    private static long parsePositiveLong(String name, String value) {
-        try {
-            long parsed = Long.parseLong(value);
-            if (parsed < 1L) {
-                throw invalidValue(name + " must be >= 1");
-            }
-            return parsed;
-        } catch (NumberFormatException ex) {
-            throw invalidValue(name + " must be a positive integer");
-        }
-    }
-
-    private static int parseLogBookLimit(String name, String value) {
-        long parsed = parsePositiveLong(name, value);
-        if (parsed > MAX_LOGBOOK_LIMIT) {
-            throw invalidValue(name + " must be <= " + MAX_LOGBOOK_LIMIT);
-        }
-        return (int) parsed;
     }
 
     private void sendOperationFailure(
@@ -484,127 +402,6 @@ public final class HttpEndpoint implements AutoCloseable {
         throw ResponseAlreadySent.INSTANCE;
     }
 
-    private static void requireEmptyBody(HttpExchange exchange) throws IOException {
-        byte[] body = readBody(exchange);
-        for (byte value : body) {
-            if (!Character.isWhitespace((char) (value & 0xff))) {
-                throw malformed("This operation does not accept a request body");
-            }
-        }
-    }
-
-    private int readLocationRequest(HttpExchange exchange) throws IOException {
-        byte[] body = readBody(exchange);
-        try (JsonParser parser = jsonFactory.createParser(body)) {
-            if (parser.nextToken() != JsonToken.START_OBJECT) {
-                throw malformed("Request must be one JSON object");
-            }
-            Integer locationId = null;
-            while (parser.nextToken() != JsonToken.END_OBJECT) {
-                if (parser.currentToken() != JsonToken.FIELD_NAME) {
-                    throw malformed("Expected JSON member name");
-                }
-                String name = parser.currentName();
-                JsonToken value = parser.nextToken();
-                if ("locationId".equals(name)) {
-                    if (locationId != null || value != JsonToken.VALUE_NUMBER_INT) {
-                        throw invalidValue("locationId must be one JSON integer");
-                    }
-                    locationId = parser.getIntValue();
-                } else {
-                    throw invalidValue("Unsupported request field: " + name);
-                }
-            }
-            if (parser.nextToken() != null) {
-                throw malformed("Unexpected data after request object");
-            }
-            if (locationId == null) {
-                throw invalidValue("Missing required field: locationId");
-            }
-            return locationId.intValue();
-        } catch (RequestException ex) {
-            throw ex;
-        } catch (IOException | RuntimeException ex) {
-            throw malformed("Malformed JSON request", ex);
-        }
-    }
-
-    private AutoRegistrationRequest readAutoRegistrationRequest(
-            HttpExchange exchange)
-            throws IOException {
-        byte[] body = readBody(exchange);
-        try (JsonParser parser = jsonFactory.createParser(body)) {
-            if (parser.nextToken() != JsonToken.START_OBJECT) {
-                throw malformed("Request must be one JSON object");
-            }
-            String id = null;
-            String time = null;
-            while (parser.nextToken() != JsonToken.END_OBJECT) {
-                if (parser.currentToken() != JsonToken.FIELD_NAME) {
-                    throw malformed("Expected JSON member name");
-                }
-                String name = parser.currentName();
-                JsonToken value = parser.nextToken();
-                if ("id".equals(name)) {
-                    if (id != null || value != JsonToken.VALUE_STRING) {
-                        throw invalidValue("id must be one JSON string");
-                    }
-                    id = parser.getText();
-                } else if ("time".equals(name)) {
-                    if (time != null || value != JsonToken.VALUE_STRING) {
-                        throw invalidValue("time must be one JSON string");
-                    }
-                    time = parser.getText();
-                } else {
-                    throw invalidValue("Unsupported request field: " + name);
-                }
-            }
-            if (parser.nextToken() != null) {
-                throw malformed("Unexpected data after request object");
-            }
-            if (id == null) {
-                throw invalidValue("Missing required field: id");
-            }
-            if (time == null) {
-                throw invalidValue("Missing required field: time");
-            }
-            return new AutoRegistrationRequest(id, time);
-        } catch (RequestException ex) {
-            throw ex;
-        } catch (IOException | RuntimeException ex) {
-            throw malformed("Malformed JSON request", ex);
-        }
-    }
-
-    private static byte[] readBody(HttpExchange exchange) throws IOException {
-        ByteArrayOutputStream output = new ByteArrayOutputStream();
-        byte[] buffer = new byte[4096];
-        int read;
-        int total = 0;
-        try (InputStream input = exchange.getRequestBody()) {
-            while ((read = input.read(buffer)) >= 0) {
-                total += read;
-                if (total > MAX_REQUEST_BODY_BYTES) {
-                    throw malformed("Request body exceeds 64 KiB");
-                }
-                output.write(buffer, 0, read);
-            }
-        }
-        return output.toByteArray();
-    }
-
-    private static RequestException malformed(String message) {
-        return new RequestException("MALFORMED_REQUEST", message, null);
-    }
-
-    private static RequestException malformed(String message, Throwable cause) {
-        return new RequestException("MALFORMED_REQUEST", message, cause);
-    }
-
-    private static RequestException invalidValue(String message) {
-        return new RequestException("INVALID_VALUE", message, null);
-    }
-
     private static void sendJson(HttpExchange exchange, int status, String json)
             throws IOException {
         byte[] bytes = json.getBytes(StandardCharsets.UTF_8);
@@ -628,49 +425,6 @@ public final class HttpEndpoint implements AutoCloseable {
         if (executor != null) {
             executor.shutdownNow();
             executor = null;
-        }
-    }
-
-    private static final class NodeRoute {
-        private final String nodeId;
-        private final String resource;
-
-        private NodeRoute(String nodeId, String resource) {
-            this.nodeId = nodeId;
-            this.resource = resource;
-        }
-    }
-
-    private static final class LogBookQuery {
-        private final Long from;
-        private final Integer limit;
-        private final Integer last;
-
-        private LogBookQuery(Long from, Integer limit, Integer last) {
-            this.from = from;
-            this.limit = limit;
-            this.last = last;
-        }
-    }
-
-    private static final class AutoRegistrationRequest {
-        private final String id;
-        private final String time;
-
-        private AutoRegistrationRequest(
-                String id,
-                String time) {
-            this.id = id;
-            this.time = time;
-        }
-    }
-
-    private static class RequestException extends RuntimeException {
-        private final String code;
-
-        private RequestException(String code, String message, Throwable cause) {
-            super(message, cause);
-            this.code = code;
         }
     }
 
