@@ -10,3 +10,7 @@ logs/
 .classpath
 .project
 .settings/
+
+# Local runtime TimingData persistence
+/data/timing-data.jsonl
+/app/data/timing-data.jsonl
