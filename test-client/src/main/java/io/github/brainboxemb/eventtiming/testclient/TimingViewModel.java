@@ -17,7 +17,7 @@ import java.util.Map;
 public final class TimingViewModel {
     public enum ViewState {
         DISCONNECTED,
-        RECONNECTING,
+        SYNCING,
         STALE,
         LIVE
     }
