@@ -11,7 +11,6 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
-import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -36,9 +35,7 @@ public final class ApiClient {
             throw new IllegalArgumentException("endpoint scheme must be http or https");
         }
         this.endpoint = endpoint;
-        this.httpClient = HttpClient.newBuilder()
-                .connectTimeout(Duration.ofSeconds(3))
-                .build();
+        this.httpClient = EngineeringHttpTransport.shared();
     }
 
     public VersionResult getVersion() throws IOException, InterruptedException {

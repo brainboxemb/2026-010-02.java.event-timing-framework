@@ -11,6 +11,7 @@ import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
 import javafx.scene.control.TitledPane;
+import javafx.scene.control.Tooltip;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
@@ -37,7 +38,7 @@ final class TimingPane extends VBox {
     private final Label connection = new Label("DISCONNECTED");
     private final Button connect = new Button("Connect live");
     private final Button disconnect = new Button("Disconnect");
-    private final Button rebuild = new Button("Rebuild");
+    private final Button syncView = new Button("Sync view");
 
     private final ComboBox<String> node = new ComboBox<>();
     private final Label state = new Label("-");
@@ -85,7 +86,7 @@ final class TimingPane extends VBox {
                 connection,
                 connect,
                 disconnect,
-                rebuild);
+                syncView);
 
         node.setPrefWidth(230);
         locationInput.setPrefColumnCount(8);
@@ -154,7 +155,10 @@ final class TimingPane extends VBox {
             connectLive.run();
         });
         disconnect.setOnAction(event -> disconnectLive.run());
-        rebuild.setOnAction(event -> rebuild());
+        syncView.setTooltip(new Tooltip(
+                "Reload current status, capabilities and LogBook history, "
+                        + "then reconcile buffered live events."));
+        syncView.setOnAction(event -> syncView());
 
         node.setOnAction(event -> {
             if (updatingNodeSelection) {
@@ -208,7 +212,7 @@ final class TimingPane extends VBox {
     void applyStatusEvent(ApiEventClient.StatusEvent event) {
         if ("STATUS_SNAPSHOT".equals(event.eventType())) {
             applyStatus(event.status());
-            rebuild();
+            syncView();
             return;
         }
 
@@ -236,10 +240,10 @@ final class TimingPane extends VBox {
         refreshLogBook();
     }
 
-    void rebuild() {
+    void syncView() {
         bufferedEvents.clear();
         model.viewState(TimingViewModel.ViewState.RECONNECTING);
-        connection.setText("RECONNECTING");
+        connection.setText("SYNCING");
         refresh();
 
         final String preferredNode = model.selectedNodeId();
@@ -253,7 +257,7 @@ final class TimingPane extends VBox {
                         ApiClient.CapabilitiesResult capabilities = api.getCapabilities();
                         String target = chooseNode(status, preferredNode);
                         if (target == null) {
-                            return new RebuildResult(
+                            return new SyncResult(
                                     status,
                                     capabilities,
                                     null,
@@ -295,7 +299,7 @@ final class TimingPane extends VBox {
                             }
                         }
 
-                        return new RebuildResult(
+                        return new SyncResult(
                                 status,
                                 capabilities,
                                 info,
@@ -309,7 +313,7 @@ final class TimingPane extends VBox {
                     if (error != null) {
                         model.viewState(TimingViewModel.ViewState.STALE);
                         connection.setText("STALE");
-                        lastOperation.setText("Rebuild failed: " + rootMessage(error));
+                        lastOperation.setText("Sync failed: " + rootMessage(error));
                         refresh();
                         return;
                     }
@@ -334,7 +338,7 @@ final class TimingPane extends VBox {
     }
 
     /**
-     * Applies live events received after the rebuild baseline in delivery order.
+     * Applies live events received after the syncView baseline in delivery order.
      *
      * <p>This method runs on the JavaFX application thread. Events are buffered
      * only while the Timing view is RECONNECTING; raw Events-tab diagnostics are
@@ -477,7 +481,7 @@ final class TimingPane extends VBox {
             if ("OUTCOME_UNKNOWN".equals(apiError.code())) {
                 model.viewState(TimingViewModel.ViewState.STALE);
                 connection.setText("STALE");
-                rebuild();
+                syncView();
             }
         } else {
             lastOperation.setText("Error: " + rootMessage(error));
@@ -527,7 +531,7 @@ final class TimingPane extends VBox {
         registrationTime.setDisable(!controls.autoReg());
         now.setDisable(!controls.autoReg());
         autoReg.setDisable(!controls.autoReg());
-        rebuild.setDisable(model.viewState() == TimingViewModel.ViewState.RECONNECTING);
+        syncView.setDisable(model.viewState() == TimingViewModel.ViewState.RECONNECTING);
     }
 
     private void refreshLogBook() {
@@ -629,7 +633,7 @@ final class TimingPane extends VBox {
         return value == null || value.isBlank() ? root.toString() : value;
     }
 
-    private record RebuildResult(
+    private record SyncResult(
             ApiClient.StatusResult status,
             ApiClient.CapabilitiesResult capabilities,
             ApiClient.LogBookInfo info,
