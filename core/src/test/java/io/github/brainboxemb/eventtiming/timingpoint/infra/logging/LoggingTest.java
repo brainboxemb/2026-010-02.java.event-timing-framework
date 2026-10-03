@@ -50,7 +50,7 @@ public class LoggingTest {
                 assertTrue(line.matches(
                         "\\d{2}:\\d{2}:\\d{2}\\.\\d{3} - \\[INFO\\] - "
                                 + "Application lifecycle state=RUNNING - "
-                                + "\\[TimingApplicationLifecycle\\.start\\]\\R"));
+                                + "\\[runtime\\.TimingApplicationLifecycle\\.start\\]\\R"));
             }
 
             assertSame(previousFormatter, console.getFormatter());
@@ -58,6 +58,18 @@ public class LoggingTest {
             root.removeHandler(console);
             console.close();
         }
+    }
+
+    @Test
+    public void keepsLastProjectPackageSegmentForSourceContext() {
+        LogRecord record = new LogRecord(Level.INFO, "Remote terminal listening");
+        record.setSourceClassName(
+                "io.github.brainboxemb.eventtiming.timingpoint.presentation.interfaces.shell.RemoteShellServer");
+        record.setSourceMethodName("start");
+
+        assertEquals(
+                "shell.RemoteShellServer.start",
+                CompactLogFormatter.source(record));
     }
 
     @Test
