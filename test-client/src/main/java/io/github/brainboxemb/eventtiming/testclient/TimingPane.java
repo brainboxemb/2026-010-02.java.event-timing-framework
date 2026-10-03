@@ -49,8 +49,8 @@ final class TimingPane extends VBox {
     private final ComboBox<String> node = new ComboBox<>();
     private final Label state = new Label("-");
     private final Label location = new Label("-");
+    private final Label problem = new Label("-");
     private final TextField locationInput = new TextField();
-    private final Button setLocation = new Button("Set location");
     private final Button open = new Button("Open");
     private final Button close = new Button("Close");
 
@@ -105,19 +105,19 @@ final class TimingPane extends VBox {
         add(nodeGrid, 0, "TimingNode", node);
         add(nodeGrid, 1, "State", state);
         add(nodeGrid, 2, "LocationId", location);
+        add(nodeGrid, 3, "Problem", problem);
 
         HBox locationRow = new HBox(
                 8,
                 new Label("LocationId"),
                 locationInput,
-                setLocation,
                 open,
                 close);
-        nodeGrid.add(locationRow, 0, 3, 2, 1);
+        nodeGrid.add(locationRow, 0, 4, 2, 1);
         nodeGrid.add(
                 new HBox(8, new Label("Last API operation"), lastOperation),
                 0,
-                4,
+                5,
                 2,
                 1);
 
@@ -180,7 +180,6 @@ final class TimingPane extends VBox {
             }
         });
 
-        setLocation.setOnAction(event -> setLocation());
         open.setOnAction(event -> open());
         close.setOnAction(event -> runStateCommand(
                 api -> api.close(requireSelectedNode())));
@@ -407,14 +406,6 @@ final class TimingPane extends VBox {
                 }));
     }
 
-    private void setLocation() {
-        Integer value = locationInputValue();
-        if (value == null) {
-            return;
-        }
-        runStateCommand(api -> api.setLocation(requireSelectedNode(), value.intValue()));
-    }
-
     private void open() {
         Integer value = locationInputValue();
         if (value == null) {
@@ -559,7 +550,6 @@ final class TimingPane extends VBox {
 
     private void setOperationBusy(boolean busy) {
         if (busy) {
-            setLocation.setDisable(true);
             open.setDisable(true);
             close.setDisable(true);
             autoReg.setDisable(true);
@@ -575,6 +565,18 @@ final class TimingPane extends VBox {
         location.setText(selected == null || selected.locationId() == null
                 ? "-"
                 : Integer.toString(selected.locationId()));
+        List<ApiClient.ProblemInfo> selectedProblems = model.selectedProblems();
+        if (selectedProblems.isEmpty()) {
+            problem.setText("-");
+        } else {
+            ApiClient.ProblemInfo first = selectedProblems.get(0);
+            problem.setText(
+                    first.severity()
+                            + " "
+                            + first.code()
+                            + " — "
+                            + first.message());
+        }
         refreshControls();
         refreshLogBook();
     }
@@ -589,8 +591,7 @@ final class TimingPane extends VBox {
             autoRegCapability.setText("DIRECT_REGISTRATION_SIMULATION unavailable");
         }
         node.setDisable(model.nodes().size() <= 1);
-        locationInput.setDisable(!controls.setLocation());
-        setLocation.setDisable(!controls.setLocation());
+        locationInput.setDisable(!controls.open());
         open.setDisable(!controls.open());
         close.setDisable(!controls.close());
         registrationPrefix.setDisable(!controls.autoReg());
@@ -627,7 +628,10 @@ final class TimingPane extends VBox {
                 value -> Long.toString(value.sequenceNumber()));
         TableColumn<ApiClient.TimingDataInfo, String> type = column(
                 "Type",
-                value -> value.recordType() + " " + String.join("/", value.codes()));
+                ApiClient.TimingDataInfo::recordType);
+        TableColumn<ApiClient.TimingDataInfo, String> code = column(
+                "Code",
+                value -> String.join("/", value.codes()));
         TableColumn<ApiClient.TimingDataInfo, String> loc = column(
                 "Location",
                 value -> Integer.toString(value.locationId()));
@@ -642,12 +646,13 @@ final class TimingPane extends VBox {
                 ApiClient.TimingDataInfo::recordedAt);
 
         seq.setPrefWidth(65);
-        type.setPrefWidth(90);
+        type.setPrefWidth(95);
+        code.setPrefWidth(85);
         loc.setPrefWidth(80);
         reg.setPrefWidth(130);
         effective.setPrefWidth(235);
         recorded.setPrefWidth(235);
-        logBook.getColumns().setAll(seq, type, loc, reg, effective, recorded);
+        logBook.getColumns().setAll(seq, type, code, loc, reg, effective, recorded);
         logBook.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY_FLEX_LAST_COLUMN);
         logBook.setPlaceholder(new Label("No committed records"));
         logBook.getSelectionModel().selectedItemProperty().addListener(

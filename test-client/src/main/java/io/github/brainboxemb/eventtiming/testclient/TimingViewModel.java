@@ -26,7 +26,6 @@ public final class TimingViewModel {
     }
 
     public record Controls(
-            boolean setLocation,
             boolean open,
             boolean close,
             boolean autoReg) {
@@ -38,6 +37,7 @@ public final class TimingViewModel {
 
     private ViewState viewState = ViewState.DISCONNECTED;
     private List<ApiClient.TimingNodeInfo> nodes = List.of();
+    private List<ApiClient.ProblemInfo> problems = List.of();
     private String selectedNodeId;
     private boolean autoRegEnabled;
     private long logBookCount;
@@ -64,6 +64,7 @@ public final class TimingViewModel {
             throw new IllegalArgumentException("status must not be null");
         }
         nodes = status.nodes();
+        problems = status.problems();
 
         if (selectedNodeId != null && findNode(selectedNodeId) != null) {
             return;
@@ -101,17 +102,30 @@ public final class TimingViewModel {
         return autoRegEnabled;
     }
 
+    public List<ApiClient.ProblemInfo> selectedProblems() {
+        if (selectedNodeId == null) {
+            return List.of();
+        }
+        List<ApiClient.ProblemInfo> selected = new ArrayList<>();
+        for (ApiClient.ProblemInfo problem : problems) {
+            if (problem.nodeId() == null || selectedNodeId.equals(problem.nodeId())) {
+                selected.add(problem);
+            }
+        }
+        return List.copyOf(selected);
+    }
+
     public Controls controls() {
         if (selectedNode() == null) {
-            return new Controls(false, false, false, false);
+            return new Controls(false, false, false);
         }
 
         /*
-         * The Engineering Client deliberately does not reimplement TimingNode
-         * acceptance rules. Supported requests remain available so engineers
+         * The Development Client deliberately does not reimplement TimingNode
+         * acceptance rules. Supported requests remain available so developers
          * can exercise and inspect negative-path domain results from SI-01.
          */
-        return new Controls(true, true, true, autoRegEnabled);
+        return new Controls(true, true, autoRegEnabled);
     }
 
     public void applyLogBookInfo(ApiClient.LogBookInfo info) {

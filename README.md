@@ -6,14 +6,14 @@ Project-wide planning, requirements, architecture, interface design and verifica
 
 ## Current scope
 
-This repository is the public implementation repository for **SI-01 — Timing Point Application**. `v0.2.2` is the accepted SIP Step-3 application/API foundation baseline; development continues on `0.2.3-SNAPSHOT`. Step 4 now adds the first controlled registration slice: TimingNode location/open/close behaviour, committed TimingData + LogBook persistence, compact node-addressed IF-03 control/LogBook/live resources, the Engineering Client Timing view and separate-process VC-ST1-002 verification. RFID/antenna input, CAN/display behaviour and real upstream/backoffice integration remain later-step work.
+This repository is the public implementation repository for **SI-01 — Timing Point Application**. `v0.2.2` is the accepted SIP Step-3 application/API foundation baseline; development continues on `0.2.3-SNAPSHOT`. Step 4 now adds the first controlled registration slice: TimingNode location/open/close behaviour, committed TimingData + LogBook persistence, compact node-addressed IF-03 control/LogBook/live resources, the Development Client Timing view and separate-process VC-ST1-002 verification. RFID/antenna input, CAN/display behaviour and real upstream/backoffice integration remain later-step work.
 
 ## Artifact and package model
 
 Architectural responsibilities are not automatically Maven artifacts.
 
 The default reactor contains three product artifacts. TimingData is an independently
-reusable shared IF-05 library because both SI-01 and the standalone Engineering Client
+reusable shared IF-05 library because both SI-01 and the standalone Development Client
 are real consumers. It deliberately remains one artifact containing the semantic contracts,
 default/reference profile, codec and factory/provider; those responsibilities are not split
 into separate API/default JARs. The verification-only
@@ -245,9 +245,9 @@ The temporary no-argument startup remains only for the existing artifact smoke c
 TimingNodes, further presentation endpoints, platform/profile overlays and I/O configuration are
 added only when their SIP activities provide a real consumer.
 
-### Engineering Client
+### Development Client
 
-`test-client/` is the standalone Java 17 / JavaFX **Engineering Client** used for manual integration, diagnostics and public-interface inspection. It remains engineering tooling rather than SI-02 and deliberately has no dependency on SI-01 implementation classes.
+`test-client/` is the standalone Java 17 / JavaFX **Development Client** used for manual integration, diagnostics and public-interface inspection. It remains development tooling rather than SI-02 and deliberately has no dependency on SI-01 implementation classes.
 It is deliberately not part of the Java-8 SI-01 Maven reactor and has no dependency on
 `timing-point-core` or `timing-point-app`.
 
@@ -257,14 +257,13 @@ With JDK 17 selected:
 .\mvnw.cmd -f test-client\pom.xml javafx:run
 ```
 
-The **Status** tab defaults to `http://127.0.0.1:8081` and provides **Get Version** and
-**Get Status** with parsed fields plus raw JSON. The **Events** tab defaults to
-`ws://127.0.0.1:8082/api/v1/events` and shows status plus committed TimingData events.
-The Step-4 **Timing** tab addresses a selected TimingNode, uses one OPEN request carrying
-the entered LocationId while retaining separate closed-state Set Location control,
-provides capability-gated dev `auto-reg`, and rebuilds bounded LogBook state across
-reconnect. The **Terminal** tab connects directly to the development shell on
-`127.0.0.1:8023`, so manual shell verification does not require a separate PuTTY session.
+The **API** tab is the primary work surface for Version/Status, selected TimingNode
+inspection, OPEN-with-LocationId, Close, dev `auto-reg`, bounded LogBook history and
+raw API/selected-record inspection. The LogBook table shows TimingData **Type** and
+**Code** separately. **Events** uses
+`ws://127.0.0.1:8082/api/v1/events` for status/TimingData event inspection.
+**Logs** keeps Development Client and SI-01/Device records as distinct sources, and
+**Terminal** connects directly to the development shell on `127.0.0.1:8023`.
 
 See `test-client/README.md`; the formal Step-4 V04 manual flow is in
 `test-client/STEP4-DEMO.md`.

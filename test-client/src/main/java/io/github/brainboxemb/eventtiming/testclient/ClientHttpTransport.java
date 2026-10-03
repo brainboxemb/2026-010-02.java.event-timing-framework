@@ -4,18 +4,18 @@ import java.net.http.HttpClient;
 import java.time.Duration;
 
 /**
- * Shared JDK HTTP transport for the standalone Engineering Client.
+ * Shared JDK HTTP transport for the standalone Development Client.
  *
  * <p>The JDK HttpClient owns selector/worker threads. Reusing one process-wide
  * transport avoids creating another HttpClient thread group for every button
  * action while still allowing endpoint-bound ApiClient wrappers.</p>
  */
-final class EngineeringHttpTransport {
+final class ClientHttpTransport {
     private static final HttpClient SHARED = HttpClient.newBuilder()
             .connectTimeout(Duration.ofSeconds(3))
             .build();
 
-    private EngineeringHttpTransport() {
+    private ClientHttpTransport() {
     }
 
     static HttpClient shared() {

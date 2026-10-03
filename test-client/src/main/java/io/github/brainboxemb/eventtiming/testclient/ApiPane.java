@@ -17,7 +17,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
-/** Primary API-first Engineering Client work surface. */
+/** Primary API-first Development Client work surface. */
 final class ApiPane extends VBox {
     private final Supplier<ApiClient> clientSupplier;
     private final ExecutorService requests;

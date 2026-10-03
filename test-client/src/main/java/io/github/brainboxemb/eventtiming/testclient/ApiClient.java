@@ -36,7 +36,7 @@ public final class ApiClient {
             throw new IllegalArgumentException("endpoint scheme must be http or https");
         }
         this.endpoint = endpoint;
-        this.httpClient = EngineeringHttpTransport.shared();
+        this.httpClient = ClientHttpTransport.shared();
     }
 
     public VersionResult getVersion() throws IOException, InterruptedException {
@@ -152,6 +152,7 @@ public final class ApiClient {
             problems.add(new ProblemInfo(
                     requiredText(problem, "code"),
                     requiredText(problem, "severity"),
+                    optionalText(problem, "nodeId"),
                     requiredText(problem, "message")));
         }
 
@@ -355,6 +356,17 @@ public final class ApiClient {
         return Integer.valueOf(value.intValue());
     }
 
+    private static String optionalText(JsonNode root, String field) {
+        JsonNode value = root.get(field);
+        if (value == null || value.isNull()) {
+            return null;
+        }
+        if (!value.isTextual()) {
+            throw new IllegalArgumentException("IF-03 field is not text: " + field);
+        }
+        return value.asText();
+    }
+
     private static Long optionalLong(JsonNode root, String field) {
         JsonNode value = root.get(field);
         if (value == null || value.isNull()) {
@@ -382,7 +394,11 @@ public final class ApiClient {
     public record TimingNodeInfo(String id, Integer locationId, String state) {
     }
 
-    public record ProblemInfo(String code, String severity, String message) {
+    public record ProblemInfo(
+            String code,
+            String severity,
+            String nodeId,
+            String message) {
     }
 
     public record StatusResult(

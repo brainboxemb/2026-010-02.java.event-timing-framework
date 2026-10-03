@@ -1,18 +1,18 @@
-# Event Timing Engineering Client
+# Event Timing Development Client
 
-The `test-client/` Maven project is the project's standalone **Engineering Client** for
+The `test-client/` Maven project is the project's standalone **Development Client** for
 interactive development, integration and diagnostics against the public boundaries of the
 **Timing Point Application** (SI-01).
 
-The directory/module name remains `test-client` for now. The engineering role and UI
+The directory/module name remains `test-client` for now. The development role and UI
 baseline are defined in the meta-repository SDE:
 
-- [50-SDE-03 — Engineering Client development and UI baseline](https://github.com/brainboxemb/2026-010-01.meta.event-timing-software/blob/main/docs/50-SDE-03-engineering-client.md)
+- [50-SDE-03 — Development Client development and UI baseline](https://github.com/brainboxemb/2026-010-01.meta.event-timing-software/blob/main/docs/50-SDE-03-development-client.md)
 
 This application is **not SI-02** and is not part of the Java-8/Pi SI-01 runtime. It is a
 standalone desktop Maven project with no dependency on `timing-point-core` or
 `timing-point-app`. Repository co-location is intentional while SI-01 public interfaces
-and the Engineering Client evolve together.
+and the Development Client evolve together.
 
 ## Baseline
 
@@ -30,7 +30,7 @@ treating the selected main class as a special JavaFX launcher target.
 
 ## Engineering boundaries
 
-The Engineering Client communicates with SI-01 only through supported external
+The Development Client communicates with SI-01 only through supported external
 interfaces.
 
 Current client services are:
@@ -60,19 +60,19 @@ For the formal Step-4 V04 / `VC-ST1-003` running-system check, follow
 [STEP4-DEMO.md](STEP4-DEMO.md); it uses a dedicated demo storage file so normal
 development TimingData is not modified.
 
-The Engineering Client reads its target and presentation defaults from one file:
+The Development Client reads its target and presentation defaults from one file:
 
 ```text
-config/engineering-client.properties
+config/development-client.properties
 ```
 
 The default file configures HTTP :8081, Events :8082, Remote Shell :8023 and
-LoggingServer :8030 on `127.0.0.1`, plus the Engineering Client's own log path/level
+LoggingServer :8030 on `127.0.0.1`, plus the Development Client's own log path/level
 and initial registration prefix. The resolver accepts both the repository root and
 `test-client` as the working directory, so root-level Maven and NetBeans launches use
 the same file. Use `--config=<path>` to select another client configuration file.
 
-The window title includes the Engineering Client software version. **Help → About** shows
+The window title includes the Development Client software version. **Help → About** shows
 the client's own build identity and selected client-config path.
 
 ## Current API-first UI
@@ -93,12 +93,12 @@ Client-local logging is always available independently from SI-01.
 selected TimingNode controls, registration test input, LogBook/TimingData history and a
 raw response/selected-record pane.
 
-The Engineering Client deliberately does not predict SI-01 domain acceptance from cached
-TimingNode state. Once a TimingNode is known, supported Set Location/Open/Close requests
-remain available so negative-path results such as domain conflicts can be exercised and
-inspected. **Open** sends the LocationId currently entered in the same request; **Set
-location** remains the separate closed-state engineering/configuration operation. SI-01
-remains authoritative.
+The Development Client deliberately does not predict SI-01 domain acceptance from cached
+TimingNode state. Once a TimingNode is known, supported Open/Close requests remain available so processed
+results can be exercised and inspected. **Open** sends the LocationId currently entered
+in the same request. The separate IF-03 Set Location operation remains available to
+protocol/automated tests, but is not a normal workbench control. SI-01 remains
+authoritative.
 
 Registration input uses a separate prefix and numeric field plus readable local date and
 whole-second clock time. The client converts that structured value to the canonical API
@@ -115,12 +115,15 @@ future event types remain visible as raw diagnostics.
 
 The **Logs** tab has two explicit sources:
 
-- **Client** — retained local Engineering Client startup/configuration/connection/request
+- **Client** — retained local Development Client startup/configuration/connection/request
   diagnostics;
 - **SI-01 / Device** — live records from the connected LoggingServer plus temporary
   runtime log-level control.
 
 The sources remain independent: the Client log is available when SI-01 is offline.
+Both sources use the readable project log-line shape
+`HH:mm:ss.SSS - [LEVEL] - message - [sourceClass.sourceMethod]`; Development Client
+records use their actual caller source context rather than one generic client marker.
 
 ### Terminal
 
@@ -134,13 +137,13 @@ the API workbench:
 
 - reads the 1..N `nodes[]` status model and addresses one selected TimingNode;
 - shows current node state and LocationId;
-- sends node-addressed IF-03 controls without local lifecycle-state permission rules;
-  OPEN carries the entered LocationId as one request, while Set Location remains a
-  separate closed-state engineering/configuration command;
+- sends node-addressed IF-03 Open/Close controls without local lifecycle-state
+  permission rules; OPEN carries the entered LocationId as one request;
 - discovers `DIRECT_REGISTRATION_SIMULATION` before enabling dev `auto-reg`;
 - composes RegistrationId from the presentation prefix + numeric field and converts
   readable date/time to the canonical API timestamp at send time;
 - shows the returned source `seq` as the operation result;
+- shows committed TimingData **Type** and **Code** in separate LogBook columns;
 - queries LogBook metadata without downloading the full LogBook;
 - loads bounded LogBook pages and merges live committed TimingData by stable
   `TimingNodeId + sequenceNumber` key;
@@ -166,7 +169,7 @@ GET  /api/v1/version
 GET  /api/v1/status
 GET  /api/v1/capabilities
 
-PUT  /api/v1/node/{id}/location        {"locationId": <positive integer>}
+PUT  /api/v1/node/{id}/location        {"locationId": <positive integer>}  # protocol/test use
 POST /api/v1/node/{id}/open             {"locationId": <positive integer>}
 POST /api/v1/node/{id}/close
 
@@ -181,7 +184,7 @@ WS   /api/v1/events
 
 ## Documentation screenshots
 
-The planned documentation workflow uses a deterministic Engineering Client
+The planned documentation workflow uses a deterministic Development Client
 **documentation/demo mode** with public synthetic fixture data.
 
 The intended CI flow is:
@@ -206,11 +209,9 @@ Screenshot generation remains presentation evidence rather than behavioural proo
 
 ## VC-ST1-003 transition
 
-Issue #127 / `VC-ST1-003` still owns the manual Step-4 state-gated Engineering Client
-verification. The API-first implementation intentionally changes those gating rules, so
-the API-first PR must remain separate from that evidence and must not replace the
-revision being verified until #127 has recorded its result. `STEP4-DEMO.md` therefore
-remains the Step-4 procedure rather than being rewritten to match the new workbench.
+Issue #127 / `VC-ST1-003` owns the manual running-system Development Client
+verification against the current API-first workbench. `STEP4-DEMO.md` is the maintained
+procedure for that baseline.
 
 ## Verify
 
