@@ -34,6 +34,28 @@ class ClientLogTest {
         }
     }
 
+    @Test
+    void changesLocalThresholdAtRuntime() throws Exception {
+        try (ClientLog log = ClientLog.open(temp, "INFO")) {
+            assertEquals("INFO", log.level());
+
+            log.debug("hidden before change");
+            assertTrue(!log.snapshot().contains("hidden before change"));
+
+            log.setLevel("DEBUG");
+            assertEquals("DEBUG", log.level());
+            log.debug("visible after change");
+            assertTrue(log.snapshot().contains("[DEBUG] - visible after change"));
+
+            log.setLevel("ERROR");
+            assertEquals("ERROR", log.level());
+            log.info("hidden at error");
+            log.error("visible error");
+            assertTrue(!log.snapshot().contains("hidden at error"));
+            assertTrue(log.snapshot().contains("[ERROR] - visible error"));
+        }
+    }
+
     private static void writeInfo(ClientLog log) {
         log.info("client started");
     }
