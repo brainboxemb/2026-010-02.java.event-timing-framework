@@ -20,9 +20,11 @@ class ClientLogTest {
         try (ClientLog log = ClientLog.open(temp, "INFO")) {
             log.subscribe(observed::set);
             log.debug("hidden");
-            log.info("client started");
+            writeInfo(log);
 
             assertTrue(log.snapshot().contains("[INFO] - client started"));
+            assertTrue(log.snapshot().contains(
+                    "[testclient.ClientLogTest.writeInfo]"));
             assertEquals(log.snapshot(), observed.get());
         }
 
@@ -31,4 +33,9 @@ class ClientLogTest {
             assertTrue(Files.readString(file).contains("client started"));
         }
     }
+
+    private static void writeInfo(ClientLog log) {
+        log.info("client started");
+    }
+
 }

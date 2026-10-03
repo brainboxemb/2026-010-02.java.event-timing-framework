@@ -56,7 +56,12 @@ public class ApiClientTest {
                         + "\"state\":\"CLOSED\""
                         + "}"
                         + "],"
-                        + "\"problems\":[]"
+                        + "\"problems\":[{"
+                        + "\"code\":\"TIMING_DATA_RECOVERY_FAILED\","
+                        + "\"severity\":\"ERROR\","
+                        + "\"nodeId\":\"TN-01\","
+                        + "\"message\":\"recovery failed\""
+                        + "}]"
                         + "}"));
         server.createContext("/api/v1/capabilities", exchange -> respond(exchange, 200,
                 "{"
@@ -84,6 +89,13 @@ public class ApiClientTest {
         assertEquals("timing-node-02", status.nodes().get(1).id());
         assertNull(status.nodes().get(1).locationId());
         assertEquals("CLOSED", status.nodes().get(1).state());
+        assertEquals(1, status.problems().size());
+        assertEquals(
+                "TIMING_DATA_RECOVERY_FAILED",
+                status.problems().get(0).code());
+        assertEquals("ERROR", status.problems().get(0).severity());
+        assertEquals("TN-01", status.problems().get(0).nodeId());
+        assertEquals("recovery failed", status.problems().get(0).message());
 
         var capabilities = client.getCapabilities();
         assertTrue(capabilities.enabled("DIRECT_REGISTRATION_SIMULATION"));

@@ -14,12 +14,14 @@ import java.util.Locale;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.function.Consumer;
 
-/** Small local Engineering Client log, independent from SI-01 LoggingServer. */
+/** Small local Development Client log, independent from SI-01 LoggingServer. */
 final class ClientLog implements AutoCloseable {
     private static final DateTimeFormatter FILE_TIME =
             DateTimeFormatter.ofPattern("yyyyMMdd-HHmmss");
     private static final DateTimeFormatter LINE_TIME =
             DateTimeFormatter.ofPattern("HH:mm:ss.SSS");
+    private static final StackWalker STACK_WALKER =
+            StackWalker.getInstance(StackWalker.Option.RETAIN_CLASS_REFERENCE);
 
     private final BufferedWriter writer;
     private final int threshold;
@@ -88,18 +90,40 @@ final class ClientLog implements AutoCloseable {
         String line = LINE_TIME.format(LocalTime.now())
                 + " - [" + level + "] - "
                 + (message == null ? "" : message)
-                + " - [EngineeringClient]"
+                + " - [" + callerSource() + "]"
                 + System.lineSeparator();
         history.add(line);
         try {
             writer.write(line);
             writer.flush();
         } catch (IOException ex) {
-            System.err.println("Engineering Client log write failed: " + ex.getMessage());
+            System.err.println("Development Client log write failed: " + ex.getMessage());
         }
         for (Consumer<String> listener : listeners) {
             listener.accept(line);
         }
+    }
+
+    private static String callerSource() {
+        return STACK_WALKER.walk(frames -> frames
+                .filter(frame -> frame.getDeclaringClass() != ClientLog.class)
+                .findFirst()
+                .map(frame -> compactSource(
+                        frame.getClassName(),
+                        frame.getMethodName()))
+                .orElse("testclient.ClientLog.log"));
+    }
+
+    private static String compactSource(String className, String methodName) {
+        int classSeparator = className.lastIndexOf('.');
+        if (classSeparator < 0) {
+            return className + "." + methodName;
+        }
+        int packageSeparator = className.lastIndexOf('.', classSeparator - 1);
+        String displayClass = packageSeparator < 0
+                ? className
+                : className.substring(packageSeparator + 1);
+        return displayClass + "." + methodName;
     }
 
     private static int severity(String value) {

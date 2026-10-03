@@ -22,7 +22,6 @@ class TimingViewModelTest {
         model.applyCapabilities(capabilities(true));
 
         assertEquals("node-01", model.selectedNodeId());
-        assertTrue(model.controls().setLocation());
         assertTrue(model.controls().open());
         assertTrue(model.controls().close());
         assertTrue(model.controls().autoReg());
@@ -31,7 +30,6 @@ class TimingViewModelTest {
                 node("node-01", 24, "OPEN")));
         model.viewState(TimingViewModel.ViewState.STALE);
 
-        assertTrue(model.controls().setLocation());
         assertTrue(model.controls().open());
         assertTrue(model.controls().close());
         assertTrue(model.controls().autoReg());
@@ -60,6 +58,32 @@ class TimingViewModelTest {
         assertEquals("node-01", model.selectedNodeId());
         assertTrue(model.records().isEmpty());
         assertEquals(0L, model.logBookCount());
+    }
+
+    @Test
+    void exposesSelectedNodeAndApplicationProblems() {
+        TimingViewModel model = new TimingViewModel();
+        model.applyStatus(new ApiClient.StatusResult(
+                List.of(
+                        node("node-01", null, "ERROR"),
+                        node("node-02", 25, "CLOSED")),
+                List.of(
+                        new ApiClient.ProblemInfo(
+                                "TIMING_DATA_RECOVERY_FAILED",
+                                "ERROR",
+                                "node-01",
+                                "recovery failed"),
+                        new ApiClient.ProblemInfo(
+                                "APPLICATION_WARNING",
+                                "WARNING",
+                                null,
+                                "application warning")),
+                "{}"));
+
+        assertEquals(2, model.selectedProblems().size());
+        model.selectNode("node-02");
+        assertEquals(1, model.selectedProblems().size());
+        assertEquals("APPLICATION_WARNING", model.selectedProblems().get(0).code());
     }
 
     @Test

@@ -6,14 +6,14 @@ Project-wide planning, requirements, architecture, interface design and verifica
 
 ## Current scope
 
-This repository is the public implementation repository for **SI-01 — Timing Point Application**. `v0.2.2` is the accepted SIP Step-3 application/API foundation baseline; development continues on `0.2.3-SNAPSHOT`. Step 4 now adds the first controlled registration slice: TimingNode location/open/close behaviour, committed TimingData + LogBook persistence, compact node-addressed IF-03 control/LogBook/live resources, the Engineering Client Timing view and separate-process VC-ST1-002 verification. RFID/antenna input, CAN/display behaviour and real upstream/backoffice integration remain later-step work.
+This repository is the public implementation repository for **SI-01 — Timing Point Application**. `v0.2.2` is the accepted SIP Step-3 application/API foundation baseline; development continues on `0.2.3-SNAPSHOT`. Step 4 now adds the first controlled registration slice: TimingNode location/open/close behaviour, committed TimingData + LogBook persistence, compact node-addressed IF-03 control/LogBook/live resources, the Development Client Timing view and separate-process VC-ST1-002 verification. RFID/antenna input, CAN/display behaviour and real upstream/backoffice integration remain later-step work.
 
 ## Artifact and package model
 
 Architectural responsibilities are not automatically Maven artifacts.
 
 The default reactor contains three product artifacts. TimingData is an independently
-reusable shared IF-05 library because both SI-01 and the standalone Engineering Client
+reusable shared IF-05 library because both SI-01 and the standalone Development Client
 are real consumers. It deliberately remains one artifact containing the semantic contracts,
 default/reference profile, codec and factory/provider; those responsibilities are not split
 into separate API/default JARs. The verification-only
@@ -245,9 +245,9 @@ The temporary no-argument startup remains only for the existing artifact smoke c
 TimingNodes, further presentation endpoints, platform/profile overlays and I/O configuration are
 added only when their SIP activities provide a real consumer.
 
-### Engineering Client
+### Development Client
 
-`test-client/` is the standalone Java 17 / JavaFX **Engineering Client** used for manual integration, diagnostics and public-interface inspection. It remains engineering tooling rather than SI-02 and deliberately has no dependency on SI-01 implementation classes.
+`test-client/` is the standalone Java 17 / JavaFX **Development Client** used for manual integration, diagnostics and public-interface inspection. It remains development tooling rather than SI-02 and deliberately has no dependency on SI-01 implementation classes.
 It is deliberately not part of the Java-8 SI-01 Maven reactor and has no dependency on
 `timing-point-core` or `timing-point-app`.
 

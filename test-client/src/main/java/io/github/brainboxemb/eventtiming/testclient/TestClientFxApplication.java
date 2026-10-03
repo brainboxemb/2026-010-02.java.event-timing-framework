@@ -33,7 +33,7 @@ import java.util.concurrent.Executors;
 public final class TestClientFxApplication extends Application {
     private final TestClientBuildIdentity clientBuild = TestClientBuildIdentity.embedded();
     private final ExecutorService requests = Executors.newSingleThreadExecutor(runnable -> {
-        Thread thread = new Thread(runnable, "ec-request");
+        Thread thread = new Thread(runnable, "dc-request");
         thread.setDaemon(true);
         return thread;
     });
@@ -76,7 +76,7 @@ public final class TestClientFxApplication extends Application {
         configPath = resolveConfigPath();
         config = ClientConfig.load(configPath);
         clientLog = ClientLog.open(config.clientLogPath(), config.clientLogLevel());
-        clientLog.info("Engineering Client starting with config " + configPath);
+        clientLog.info("Development Client starting with config " + configPath);
 
         configureBoundaryButtons();
 
@@ -111,7 +111,7 @@ public final class TestClientFxApplication extends Application {
         stage.setTitle(clientBuild.application() + " — " + clientBuild.version());
         stage.setScene(new Scene(root, 1240, 820));
         stage.show();
-        clientLog.info("Engineering Client UI ready");
+        clientLog.info("Development Client UI ready");
     }
 
     private Path resolveConfigPath() {
@@ -610,7 +610,7 @@ public final class TestClientFxApplication extends Application {
         liveLogClient.close();
         requests.shutdownNow();
         if (clientLog != null) {
-            clientLog.info("Engineering Client stopped");
+            clientLog.info("Development Client stopped");
             clientLog.close();
         }
     }

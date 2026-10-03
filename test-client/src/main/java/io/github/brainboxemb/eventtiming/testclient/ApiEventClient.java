@@ -12,7 +12,7 @@ import java.time.Instant;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 
-/** Independent IF-03 API event client used by the JavaFX Engineering Client. */
+/** Independent IF-03 API event client used by the JavaFX Development Client. */
 public final class ApiEventClient implements AutoCloseable {
     public interface Listener {
         void onConnected();
@@ -58,7 +58,7 @@ public final class ApiEventClient implements AutoCloseable {
 
     private static final ObjectMapper JSON = new ObjectMapper();
 
-    private final HttpClient httpClient = EngineeringHttpTransport.shared();
+    private final HttpClient httpClient = ClientHttpTransport.shared();
 
     private WebSocket webSocket;
     private boolean connecting;
