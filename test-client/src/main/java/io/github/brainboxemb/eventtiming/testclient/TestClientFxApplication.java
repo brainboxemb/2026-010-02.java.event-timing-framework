@@ -11,11 +11,12 @@ import javafx.scene.control.Label;
 import javafx.scene.control.Menu;
 import javafx.scene.control.MenuBar;
 import javafx.scene.control.MenuItem;
+import javafx.scene.control.Tab;
+import javafx.scene.control.TabPane;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.scene.control.TitledPane;
-import javafx.scene.control.Tab;
-import javafx.scene.control.TabPane;
+import javafx.scene.control.Tooltip;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
@@ -23,7 +24,7 @@ import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 
-import java.net.URI;
+import java.nio.file.Path;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 import java.util.concurrent.ExecutorService;
@@ -37,30 +38,16 @@ public final class TestClientFxApplication extends Application {
         return thread;
     });
 
-    private final TextField endpoint = new TextField("http://127.0.0.1:8081");
-    private final Button getVersion = new Button("Get Version");
-    private final Button getStatus = new Button("Get Status");
     private final Label feedback = new Label("Ready");
 
-    private final Label application = valueLabel();
-    private final Label version = valueLabel();
-    private final Label revision = valueLabel();
-    private final Label sourceRef = valueLabel();
-    private final Label buildOrigin = valueLabel();
-    private final Label sourceState = valueLabel();
-    private final Label apiVersion = valueLabel();
-
-    private final Label timingNodeId = valueLabel();
-    private final Label timingNodeLifecycle = valueLabel();
-
-    private final TextArea rawJson = new TextArea();
+    private final Button apiBoundary = new Button();
+    private final Button eventBoundary = new Button();
+    private final Button terminalBoundary = new Button();
+    private final Button deviceLogBoundary = new Button();
+    private final Button clientLogBoundary = new Button();
+    private final Label target = new Label();
 
     private final ApiEventClient eventClient = new ApiEventClient();
-    private final TextField eventEndpoint =
-            new TextField("ws://127.0.0.1:8082/api/v1/events");
-    private final Button eventConnect = new Button("Connect");
-    private final Button eventDisconnect = new Button("Disconnect");
-    private final Label eventConnectionStatus = new Label("Disconnected");
     private final Label eventType = valueLabel();
     private final Label eventOccurredAt = valueLabel();
     private final Label eventTimingNodeId = valueLabel();
@@ -68,75 +55,44 @@ public final class TestClientFxApplication extends Application {
     private final TextArea eventLog = new TextArea();
 
     private final RemoteShellClient shellClient = new RemoteShellClient();
-
-    private final LiveLogClient liveLogClient = new LiveLogClient();
-    private final TextField logHost = new TextField("127.0.0.1");
-    private final TextField logPort = new TextField("8030");
-    private final Button logConnect = new Button("Connect");
-    private final Button logDisconnect = new Button("Disconnect");
-    private final ComboBox<String> logLevel = new ComboBox<>();
-    private final Button applyLogLevel = new Button("Apply level");
-    private final Label currentLogLevel = valueLabel();
-    private final Label logStatus = new Label("Disconnected");
-    private final TextArea liveLogs = new TextArea();
-    private final TextField shellHost = new TextField("127.0.0.1");
-    private final TextField shellPort = new TextField("8023");
-    private final Button shellConnect = new Button("Connect");
-    private final Button shellDisconnect = new Button("Disconnect");
     private final TextArea terminal = new TextArea();
     private final TextField terminalInput = new TextField();
     private final Button terminalSend = new Button("Send");
-    private final Label terminalStatus = new Label("Disconnected");
 
-    private TimingPane timingPane;
+    private final LiveLogClient liveLogClient = new LiveLogClient();
+    private final ComboBox<String> logLevel = new ComboBox<>();
+    private final Button applyLogLevel = new Button("Apply level");
+    private final Label currentLogLevel = valueLabel();
+    private final TextArea liveLogs = new TextArea();
+    private final TextArea clientLogs = new TextArea();
+
+    private ClientConfig config;
+    private Path configPath;
+    private ClientLog clientLog;
+    private ApiPane apiPane;
 
     @Override
-    public void start(Stage stage) {
-        endpoint.setPrefColumnCount(40);
-        HBox.setHgrow(endpoint, Priority.ALWAYS);
+    public void start(Stage stage) throws Exception {
+        configPath = resolveConfigPath();
+        config = ClientConfig.load(configPath);
+        clientLog = ClientLog.open(config.clientLogPath(), config.clientLogLevel());
+        clientLog.info("Engineering Client starting with config " + configPath);
 
-        HBox controls = new HBox(8,
-                new Label("SI-01 endpoint"),
-                endpoint,
-                getVersion,
-                getStatus);
-        controls.setPadding(new Insets(12));
+        configureBoundaryButtons();
 
-        getVersion.setOnAction(event -> loadVersion());
-        getStatus.setOnAction(event -> loadStatus());
-
-        TitledPane versionPane = new TitledPane("Build / version", versionGrid());
-        versionPane.setCollapsible(false);
-        TitledPane statusPane = new TitledPane("Status", statusGrid());
-        statusPane.setCollapsible(false);
-
-        rawJson.setEditable(false);
-        rawJson.setWrapText(false);
-        rawJson.setPrefRowCount(16);
-        TitledPane rawPane = new TitledPane("Raw JSON", rawJson);
-        rawPane.setCollapsible(false);
-        VBox.setVgrow(rawPane, Priority.ALWAYS);
-
-        VBox statusContent = new VBox(10, versionPane, statusPane, rawPane);
-        statusContent.setPadding(new Insets(0, 12, 12, 12));
-        VBox.setVgrow(rawPane, Priority.ALWAYS);
-
-        Tab statusTab = new Tab("Status", statusContent);
-        statusTab.setClosable(false);
-        Tab eventsTab = new Tab("Events", eventsPane());
-        eventsTab.setClosable(false);
-        timingPane = new TimingPane(
+        apiPane = new ApiPane(
                 this::client,
                 requests,
-                this::connectEvents,
-                this::disconnectEvents);
-        Tab timingTab = new Tab("Timing", timingPane);
-        timingTab.setClosable(false);
-        Tab terminalTab = new Tab("Terminal", terminalPane());
-        terminalTab.setClosable(false);
-        Tab logsTab = new Tab("Logs", logsPane());
-        logsTab.setClosable(false);
-        TabPane tabs = new TabPane(statusTab, eventsTab, timingTab, terminalTab, logsTab);
+                config.registrationPrefix(),
+                feedback::setText,
+                this::setApiState,
+                clientLog);
+
+        Tab apiTab = tab("API", apiPane);
+        Tab eventsTab = tab("Events", eventsPane());
+        Tab logsTab = tab("Logs", logsPane());
+        Tab terminalTab = tab("Terminal", terminalPane());
+        TabPane tabs = new TabPane(apiTab, eventsTab, logsTab, terminalTab);
 
         MenuItem about = new MenuItem("About");
         about.setOnAction(event -> showAbout(stage));
@@ -144,7 +100,7 @@ public final class TestClientFxApplication extends Application {
         help.getItems().add(about);
         MenuBar menuBar = new MenuBar(help);
 
-        VBox top = new VBox(menuBar, controls);
+        VBox top = new VBox(menuBar, targetBar());
 
         BorderPane root = new BorderPane();
         root.setTop(top);
@@ -153,55 +109,69 @@ public final class TestClientFxApplication extends Application {
         BorderPane.setMargin(feedback, new Insets(0, 12, 12, 12));
 
         stage.setTitle(clientBuild.application() + " — " + clientBuild.version());
-        stage.setScene(new Scene(root, 1180, 790));
+        stage.setScene(new Scene(root, 1240, 820));
         stage.show();
+        clientLog.info("Engineering Client UI ready");
     }
 
-    private void showAbout(Stage owner) {
-        Alert about = new Alert(Alert.AlertType.INFORMATION);
-        about.initOwner(owner);
-        about.setTitle("About " + clientBuild.application());
-        about.setHeaderText(clientBuild.application() + " — " + clientBuild.version());
-        about.setContentText(
-                "Version      : " + clientBuild.version() + System.lineSeparator()
-                        + "Revision     : " + clientBuild.revision() + System.lineSeparator()
-                        + "Source ref   : " + clientBuild.sourceRef() + System.lineSeparator()
-                        + "Build origin : " + clientBuild.buildOrigin() + System.lineSeparator()
-                        + "Source state : " + (clientBuild.dirty() ? "modified" : "clean"));
-        about.showAndWait();
+    private Path resolveConfigPath() {
+        String specified = getParameters().getNamed().get("config");
+        return specified == null || specified.isBlank()
+                ? ClientConfig.defaultPath()
+                : Path.of(specified);
     }
 
-    private GridPane versionGrid() {
-        GridPane grid = grid();
-        addRow(grid, 0, "Application", application);
-        addRow(grid, 1, "Version", version);
-        addRow(grid, 2, "Revision", revision);
-        addRow(grid, 3, "Source ref", sourceRef);
-        addRow(grid, 4, "Build origin", buildOrigin);
-        addRow(grid, 5, "Source state", sourceState);
-        addRow(grid, 6, "API version", apiVersion);
-        return grid;
+    private HBox targetBar() {
+        target.setText("Target\n" + config.host());
+        target.setTooltip(new Tooltip("Client config: " + configPath));
+        target.setMinWidth(190);
+
+        apiBoundary.setDisable(true);
+        clientLogBoundary.setDisable(true);
+
+        HBox bar = new HBox(
+                8,
+                target,
+                apiBoundary,
+                eventBoundary,
+                terminalBoundary,
+                deviceLogBoundary,
+                clientLogBoundary);
+        bar.setPadding(new Insets(10, 12, 10, 12));
+        return bar;
     }
 
-    private GridPane statusGrid() {
-        GridPane grid = grid();
-        addRow(grid, 0, "Timing node", timingNodeId);
-        addRow(grid, 1, "State", timingNodeLifecycle);
-        return grid;
+    private void configureBoundaryButtons() {
+        setApiState("UNKNOWN");
+        setEventConnected(false, "CONNECT");
+        setShellConnected(false, "CONNECT");
+        setLogConnected(false, "CONNECT");
+        clientLogBoundary.setText("Client log\nACTIVE");
+
+        eventBoundary.setOnAction(event -> {
+            if (eventClient.isConnected()) {
+                disconnectEvents();
+            } else {
+                connectEvents();
+            }
+        });
+        terminalBoundary.setOnAction(event -> {
+            if (shellClient.isConnected()) {
+                shellClient.disconnect();
+            } else {
+                connectShell();
+            }
+        });
+        deviceLogBoundary.setOnAction(event -> {
+            if (liveLogClient.isConnected()) {
+                liveLogClient.disconnect();
+            } else {
+                connectLogs();
+            }
+        });
     }
 
     private VBox eventsPane() {
-        eventEndpoint.setPrefColumnCount(42);
-        eventDisconnect.setDisable(true);
-        HBox.setHgrow(eventEndpoint, Priority.ALWAYS);
-
-        HBox connection = new HBox(8,
-                new Label("WebSocket"),
-                eventEndpoint,
-                eventConnect,
-                eventDisconnect,
-                eventConnectionStatus);
-
         GridPane values = grid();
         addRow(values, 0, "Event type", eventType);
         addRow(values, 1, "Occurred at", eventOccurredAt);
@@ -213,31 +183,14 @@ public final class TestClientFxApplication extends Application {
         eventLog.setPrefRowCount(18);
         TitledPane logPane = new TitledPane("Received events (raw JSON)", eventLog);
         logPane.setCollapsible(false);
-        VBox.setVgrow(logPane, Priority.ALWAYS);
 
-        eventConnect.setOnAction(event -> connectEvents());
-        eventDisconnect.setOnAction(event -> disconnectEvents());
-
-        VBox pane = new VBox(10, connection, values, logPane);
+        VBox pane = new VBox(10, values, logPane);
         pane.setPadding(new Insets(12));
         VBox.setVgrow(logPane, Priority.ALWAYS);
         return pane;
     }
 
     private VBox terminalPane() {
-        shellHost.setPrefColumnCount(18);
-        shellPort.setPrefColumnCount(6);
-        shellDisconnect.setDisable(true);
-
-        HBox connection = new HBox(8,
-                new Label("Host"),
-                shellHost,
-                new Label("Port"),
-                shellPort,
-                shellConnect,
-                shellDisconnect,
-                terminalStatus);
-
         terminal.setEditable(false);
         terminal.setWrapText(false);
         terminal.setStyle(
@@ -253,40 +206,40 @@ public final class TestClientFxApplication extends Application {
         HBox.setHgrow(terminalInput, Priority.ALWAYS);
         HBox input = new HBox(8, terminalInput, terminalSend);
 
-        shellConnect.setOnAction(event -> connectShell());
-        shellDisconnect.setOnAction(event -> shellClient.disconnect());
         terminalSend.setOnAction(event -> sendShellCommand());
         terminalInput.setOnAction(event -> sendShellCommand());
 
-        VBox pane = new VBox(8, connection, terminal, input);
+        VBox pane = new VBox(8, terminal, input);
         pane.setPadding(new Insets(12));
         return pane;
     }
 
     private VBox logsPane() {
-        logHost.setPrefColumnCount(18);
-        logPort.setPrefColumnCount(6);
-        logDisconnect.setDisable(true);
         logLevel.setDisable(true);
         applyLogLevel.setDisable(true);
         logLevel.getItems().setAll("TRACE", "DEBUG", "INFO", "WARN", "ERROR");
         logLevel.setValue("INFO");
 
-        HBox connection = new HBox(8,
-                new Label("Host"),
-                logHost,
-                new Label("Port"),
-                logPort,
-                logConnect,
-                logDisconnect,
-                logStatus);
-
-        HBox level = new HBox(8,
-                new Label("Current level"),
+        HBox level = new HBox(
+                8,
+                new Label("SI-01 current level"),
                 currentLogLevel,
                 new Label("Set level"),
                 logLevel,
                 applyLogLevel);
+
+        clientLogs.setEditable(false);
+        clientLogs.setWrapText(false);
+        clientLogs.setText(clientLog.snapshot());
+        clientLogs.setStyle(
+                "-fx-control-inner-background: black;"
+                        + "-fx-text-fill: #e8e8e8;"
+                        + "-fx-font-family: 'Consolas';"
+                        + "-fx-font-size: 12px;");
+        clientLog.subscribe(line -> Platform.runLater(() -> {
+            clientLogs.appendText(line);
+            clientLogs.positionCaret(clientLogs.getLength());
+        }));
 
         liveLogs.setEditable(false);
         liveLogs.setWrapText(false);
@@ -295,71 +248,35 @@ public final class TestClientFxApplication extends Application {
                         + "-fx-text-fill: #e8e8e8;"
                         + "-fx-font-family: 'Consolas';"
                         + "-fx-font-size: 12px;");
-        VBox.setVgrow(liveLogs, Priority.ALWAYS);
 
-        logConnect.setOnAction(event -> connectLogs());
-        logDisconnect.setOnAction(event -> liveLogClient.disconnect());
         applyLogLevel.setOnAction(event -> applyLogLevel());
 
-        VBox pane = new VBox(8, connection, level, liveLogs);
+        VBox device = new VBox(8, level, liveLogs);
+        VBox.setVgrow(liveLogs, Priority.ALWAYS);
+
+        Tab clientTab = tab("Client", clientLogs);
+        Tab deviceTab = tab("SI-01 / Device", device);
+        TabPane sources = new TabPane(clientTab, deviceTab);
+
+        VBox pane = new VBox(sources);
         pane.setPadding(new Insets(12));
+        VBox.setVgrow(sources, Priority.ALWAYS);
         return pane;
     }
 
-    private void loadVersion() {
-        runRequest(
-                () -> client().getVersion(),
-                result -> {
-                    showBuild(result.build());
-                    rawJson.setText(result.rawJson());
-                });
-    }
-
-    private void loadStatus() {
-        runRequest(
-                () -> client().getStatus(),
-                result -> {
-                    showStatus(result);
-                    if (timingPane != null) {
-                        timingPane.applyStatus(result);
-                    }
-                    rawJson.setText(result.rawJson());
-                });
-    }
-
-    private void showStatus(ApiClient.StatusResult result) {
-        if (result.nodes().isEmpty()) {
-            timingNodeId.setText("-");
-            timingNodeLifecycle.setText("-");
-        } else {
-            var node = result.nodes().get(0);
-            timingNodeId.setText(node.id());
-            timingNodeLifecycle.setText(node.state());
-        }
-    }
-
     private void connectEvents() {
-        URI uri;
-        try {
-            uri = URI.create(eventEndpoint.getText().trim());
-        } catch (IllegalArgumentException ex) {
-            eventConnectionStatus.setText("Invalid endpoint");
-            return;
-        }
-
-        eventConnect.setDisable(true);
-        eventEndpoint.setDisable(true);
-        eventConnectionStatus.setText("Connecting...");
+        eventBoundary.setDisable(true);
+        eventBoundary.setText("Events :" + config.eventPort() + "\nCONNECTING");
+        clientLog.info("Connecting IF-03 Events to " + config.eventEndpoint());
 
         try {
-            eventClient.connect(uri, new ApiEventClient.Listener() {
+            eventClient.connect(config.eventEndpoint(), new ApiEventClient.Listener() {
                 @Override
                 public void onConnected() {
                     Platform.runLater(() -> {
-                        setEventConnected(true, "Connected");
-                        if (timingPane != null) {
-                            timingPane.connected();
-                        }
+                        setEventConnected(true, "CONNECTED");
+                        apiPane.connected();
+                        clientLog.info("IF-03 Events connected");
                     });
                 }
 
@@ -371,49 +288,47 @@ public final class TestClientFxApplication extends Application {
                 @Override
                 public void onClosed(int statusCode, String reason) {
                     Platform.runLater(() -> {
-                        setEventConnected(false, "Disconnected (" + statusCode + ")");
-                        if (timingPane != null) {
-                            timingPane.disconnected(true);
-                        }
+                        setEventConnected(false, "CONNECT");
+                        apiPane.disconnected(true);
+                        clientLog.warn("IF-03 Events disconnected (" + statusCode + ")");
                     });
                 }
 
                 @Override
                 public void onError(String message) {
                     Platform.runLater(() -> {
-                        eventConnectionStatus.setText("Error: " + message);
+                        clientLog.error("IF-03 Events error: " + message);
                         if (!eventClient.isConnected()) {
-                            setEventConnected(false, "Error: " + message);
-                            if (timingPane != null) {
-                                timingPane.disconnected(true);
-                            }
+                            setEventConnected(false, "CONNECT");
+                            apiPane.disconnected(true);
                         }
+                        feedback.setText("Events error: " + message);
                     });
                 }
             }).whenComplete((ignored, error) -> {
                 if (error != null) {
                     Platform.runLater(() -> {
-                        Throwable cause = error.getCause() == null ? error : error.getCause();
-                        setEventConnected(false, "Error: " + cause.getMessage());
-                        if (timingPane != null) {
-                            timingPane.disconnected(true);
-                        }
+                        Throwable cause = rootCause(error);
+                        setEventConnected(false, "CONNECT");
+                        apiPane.disconnected(true);
+                        clientLog.error("IF-03 Events connect failed: " + rootMessage(cause));
+                        feedback.setText("Events error: " + rootMessage(cause));
                     });
                 }
             });
         } catch (RuntimeException ex) {
-            setEventConnected(false, "Error: " + ex.getMessage());
+            setEventConnected(false, "CONNECT");
+            clientLog.error("IF-03 Events connect failed: " + ex.getMessage());
         }
     }
 
     private void disconnectEvents() {
-        eventConnectionStatus.setText("Disconnecting...");
+        eventBoundary.setText("Events :" + config.eventPort() + "\nDISCONNECTING");
         eventClient.disconnect();
         if (!eventClient.isConnected()) {
-            setEventConnected(false, "Disconnected");
-            if (timingPane != null) {
-                timingPane.disconnected(true);
-            }
+            setEventConnected(false, "CONNECT");
+            apiPane.disconnected(true);
+            clientLog.info("IF-03 Events disconnected");
         }
     }
 
@@ -430,15 +345,11 @@ public final class TestClientFxApplication extends Application {
                 eventTimingNodeId.setText(node.id());
                 eventTimingNodeLifecycle.setText(node.state());
             }
-            if (timingPane != null) {
-                timingPane.applyStatusEvent(statusEvent);
-            }
+            apiPane.applyStatusEvent(statusEvent);
         } else if (event instanceof ApiEventClient.TimingDataEvent dataEvent) {
             eventTimingNodeId.setText(dataEvent.timingData().timingNodeId());
             eventTimingNodeLifecycle.setText("-");
-            if (timingPane != null) {
-                timingPane.applyTimingDataEvent(dataEvent);
-            }
+            apiPane.applyTimingDataEvent(dataEvent);
         } else {
             eventTimingNodeId.setText("-");
             eventTimingNodeLifecycle.setText("-");
@@ -452,61 +363,56 @@ public final class TestClientFxApplication extends Application {
         eventLog.positionCaret(eventLog.getLength());
     }
 
-    private void setEventConnected(boolean connected, String status) {
-        eventConnect.setDisable(connected);
-        eventDisconnect.setDisable(!connected);
-        eventEndpoint.setDisable(connected);
-        eventConnectionStatus.setText(status);
-    }
-
     private void connectLogs() {
-        String host = logHost.getText().trim();
-        int port;
-        try {
-            port = Integer.parseInt(logPort.getText().trim());
-        } catch (NumberFormatException ex) {
-            logStatus.setText("Invalid port");
-            return;
-        }
-
-        logConnect.setDisable(true);
-        logHost.setDisable(true);
-        logPort.setDisable(true);
-        logStatus.setText("Connecting...");
+        deviceLogBoundary.setDisable(true);
+        deviceLogBoundary.setText(
+                "Device log :" + config.loggingServerPort() + "\nCONNECTING");
+        clientLog.info("Connecting SI-01 device log");
 
         CompletableFuture
                 .runAsync(() -> {
                     try {
-                        liveLogClient.connect(host, port, new LiveLogClient.Listener() {
-                            @Override
-                            public void onConnected() {
-                                Platform.runLater(() -> setLogConnected(true, "Connected"));
-                            }
+                        liveLogClient.connect(
+                                config.host(),
+                                config.loggingServerPort(),
+                                new LiveLogClient.Listener() {
+                                    @Override
+                                    public void onConnected() {
+                                        Platform.runLater(() -> {
+                                            setLogConnected(true, "CONNECTED");
+                                            clientLog.info("SI-01 device log connected");
+                                        });
+                                    }
 
-                            @Override
-                            public void onLog(LiveLogClient.LogEntry entry) {
-                                Platform.runLater(() -> appendLog(entry));
-                            }
+                                    @Override
+                                    public void onLog(LiveLogClient.LogEntry entry) {
+                                        Platform.runLater(() -> appendDeviceLog(entry));
+                                    }
 
-                            @Override
-                            public void onLevel(String level) {
-                                Platform.runLater(() -> {
-                                    currentLogLevel.setText(level);
-                                    logLevel.setValue(level);
-                                    logStatus.setText("Connected");
+                                    @Override
+                                    public void onLevel(String level) {
+                                        Platform.runLater(() -> {
+                                            currentLogLevel.setText(level);
+                                            logLevel.setValue(level);
+                                        });
+                                    }
+
+                                    @Override
+                                    public void onDisconnected() {
+                                        Platform.runLater(() -> {
+                                            setLogConnected(false, "CONNECT");
+                                            clientLog.info("SI-01 device log disconnected");
+                                        });
+                                    }
+
+                                    @Override
+                                    public void onError(String message) {
+                                        Platform.runLater(() -> {
+                                            clientLog.error("SI-01 device log error: " + message);
+                                            feedback.setText("Device log error: " + message);
+                                        });
+                                    }
                                 });
-                            }
-
-                            @Override
-                            public void onDisconnected() {
-                                Platform.runLater(() -> setLogConnected(false, "Disconnected"));
-                            }
-
-                            @Override
-                            public void onError(String message) {
-                                Platform.runLater(() -> logStatus.setText("Error: " + message));
-                            }
-                        });
                         liveLogClient.requestLevel();
                     } catch (Exception ex) {
                         throw new CompletionException(ex);
@@ -514,8 +420,11 @@ public final class TestClientFxApplication extends Application {
                 }, requests)
                 .whenComplete((ignored, error) -> Platform.runLater(() -> {
                     if (error != null) {
-                        Throwable cause = error.getCause() == null ? error : error.getCause();
-                        setLogConnected(false, "Error: " + cause.getMessage());
+                        Throwable cause = rootCause(error);
+                        setLogConnected(false, "CONNECT");
+                        clientLog.error("SI-01 device log connect failed: "
+                                + rootMessage(cause));
+                        feedback.setText("Device log error: " + rootMessage(cause));
                     }
                 }));
     }
@@ -523,78 +432,69 @@ public final class TestClientFxApplication extends Application {
     private void applyLogLevel() {
         try {
             liveLogClient.setLevel(logLevel.getValue());
-            logStatus.setText("Applying " + logLevel.getValue() + "...");
+            clientLog.info("Requested SI-01 log level " + logLevel.getValue());
         } catch (Exception ex) {
-            logStatus.setText("Error: " + ex.getMessage());
+            clientLog.error("SI-01 log level request failed: " + ex.getMessage());
+            feedback.setText("Device log error: " + ex.getMessage());
         }
     }
 
-    private void appendLog(LiveLogClient.LogEntry entry) {
+    private void appendDeviceLog(LiveLogClient.LogEntry entry) {
         liveLogs.appendText(entry.formatted());
         liveLogs.positionCaret(liveLogs.getLength());
     }
 
-    private void setLogConnected(boolean connected, String status) {
-        logConnect.setDisable(connected);
-        logDisconnect.setDisable(!connected);
-        logHost.setDisable(connected);
-        logPort.setDisable(connected);
-        logLevel.setDisable(!connected);
-        applyLogLevel.setDisable(!connected);
-        if (!connected) {
-            currentLogLevel.setText("-");
-        }
-        logStatus.setText(status);
-    }
-
     private void connectShell() {
-        String host = shellHost.getText().trim();
-        int port;
-        try {
-            port = Integer.parseInt(shellPort.getText().trim());
-        } catch (NumberFormatException ex) {
-            terminalStatus.setText("Invalid port");
-            return;
-        }
-
-        shellConnect.setDisable(true);
-        shellHost.setDisable(true);
-        shellPort.setDisable(true);
-        terminalStatus.setText("Connecting...");
+        terminalBoundary.setDisable(true);
+        terminalBoundary.setText(
+                "Terminal :" + config.shellPort() + "\nCONNECTING");
+        clientLog.info("Connecting Remote Shell");
 
         CompletableFuture
                 .runAsync(() -> {
                     try {
-                        shellClient.connect(host, port, new RemoteShellClient.Listener() {
-                            @Override
-                            public void onText(String text) {
-                                Platform.runLater(() -> {
-                                    terminal.appendText(text);
-                                    terminal.positionCaret(terminal.getLength());
+                        shellClient.connect(
+                                config.host(),
+                                config.shellPort(),
+                                new RemoteShellClient.Listener() {
+                                    @Override
+                                    public void onText(String text) {
+                                        Platform.runLater(() -> {
+                                            terminal.appendText(text);
+                                            terminal.positionCaret(terminal.getLength());
+                                        });
+                                    }
+
+                                    @Override
+                                    public void onDisconnected() {
+                                        Platform.runLater(() -> {
+                                            setShellConnected(false, "CONNECT");
+                                            clientLog.info("Remote Shell disconnected");
+                                        });
+                                    }
+
+                                    @Override
+                                    public void onError(String message) {
+                                        Platform.runLater(() -> {
+                                            clientLog.error("Remote Shell error: " + message);
+                                            feedback.setText("Terminal error: " + message);
+                                        });
+                                    }
                                 });
-                            }
-
-                            @Override
-                            public void onDisconnected() {
-                                Platform.runLater(() -> setShellConnected(false, "Disconnected"));
-                            }
-
-                            @Override
-                            public void onError(String message) {
-                                Platform.runLater(() -> terminalStatus.setText("Error: " + message));
-                            }
-                        });
                     } catch (Exception ex) {
                         throw new CompletionException(ex);
                     }
                 }, requests)
                 .whenComplete((ignored, error) -> Platform.runLater(() -> {
                     if (error != null) {
-                        Throwable cause = error.getCause() == null ? error : error.getCause();
-                        setShellConnected(false, "Error: " + cause.getMessage());
+                        Throwable cause = rootCause(error);
+                        setShellConnected(false, "CONNECT");
+                        clientLog.error("Remote Shell connect failed: " + rootMessage(cause));
+                        feedback.setText("Terminal error: " + rootMessage(cause));
                     } else {
-                        setShellConnected(true, "Connected");
+                        setShellConnected(true, "CONNECTED");
                         terminalInput.requestFocus();
+                        clientLog.info("Remote Shell connected");
                     }
                 }));
     }
@@ -608,63 +508,66 @@ public final class TestClientFxApplication extends Application {
             terminal.appendText(command + System.lineSeparator());
             terminal.positionCaret(terminal.getLength());
             shellClient.send(command);
+            clientLog.debug("Remote Shell command sent: " + command);
             terminalInput.clear();
         } catch (Exception ex) {
-            terminalStatus.setText("Error: " + ex.getMessage());
+            clientLog.error("Remote Shell send failed: " + ex.getMessage());
+            feedback.setText("Terminal error: " + ex.getMessage());
         }
     }
 
-    private void setShellConnected(boolean connected, String status) {
-        shellConnect.setDisable(connected);
-        shellDisconnect.setDisable(!connected);
-        shellHost.setDisable(connected);
-        shellPort.setDisable(connected);
+    private ApiClient client() {
+        return new ApiClient(config.apiEndpoint());
+    }
+
+    private void setApiState(String state) {
+        apiBoundary.setText("API :" + config.apiHttpPort() + "\n" + state);
+    }
+
+    private void setEventConnected(boolean connected, String state) {
+        eventBoundary.setDisable(false);
+        eventBoundary.setText("Events :" + config.eventPort() + "\n" + state);
+    }
+
+    private void setShellConnected(boolean connected, String state) {
+        terminalBoundary.setDisable(false);
+        terminalBoundary.setText("Terminal :" + config.shellPort() + "\n" + state);
         terminalInput.setDisable(!connected);
         terminalSend.setDisable(!connected);
-        terminalStatus.setText(status);
     }
 
-    private ApiClient client() {
-        return new ApiClient(URI.create(endpoint.getText().trim()));
+    private void setLogConnected(boolean connected, String state) {
+        deviceLogBoundary.setDisable(false);
+        deviceLogBoundary.setText(
+                "Device log :" + config.loggingServerPort() + "\n" + state);
+        logLevel.setDisable(!connected);
+        applyLogLevel.setDisable(!connected);
+        if (!connected) {
+            currentLogLevel.setText("-");
+        }
     }
 
-    private void showBuild(ApiClient.BuildInfo build) {
-        application.setText(build.application());
-        version.setText(build.version());
-        revision.setText(build.revision());
-        sourceRef.setText(build.sourceRef());
-        buildOrigin.setText(build.buildOrigin());
-        sourceState.setText(build.dirty() ? "modified" : "clean");
-        apiVersion.setText(build.apiVersion());
+    private void showAbout(Stage owner) {
+        Alert about = new Alert(Alert.AlertType.INFORMATION);
+        about.initOwner(owner);
+        about.setTitle("About " + clientBuild.application());
+        about.setHeaderText(clientBuild.application() + " — " + clientBuild.version());
+        about.setContentText(
+                "Version      : " + clientBuild.version() + System.lineSeparator()
+                        + "Revision     : " + clientBuild.revision() + System.lineSeparator()
+                        + "Source ref   : " + clientBuild.sourceRef() + System.lineSeparator()
+                        + "Build origin : " + clientBuild.buildOrigin() + System.lineSeparator()
+                        + "Source state : "
+                        + (clientBuild.dirty() ? "modified" : "clean")
+                        + System.lineSeparator()
+                        + "Client config: " + configPath);
+        about.showAndWait();
     }
 
-    private <T> void runRequest(CheckedSupplier<T> request, java.util.function.Consumer<T> success) {
-        setBusy(true);
-        feedback.setText("Requesting...");
-        CompletableFuture
-                .supplyAsync(() -> {
-                    try {
-                        return request.get();
-                    } catch (Exception ex) {
-                        throw new CompletionException(ex);
-                    }
-                }, requests)
-                .whenComplete((result, error) -> Platform.runLater(() -> {
-                    setBusy(false);
-                    if (error != null) {
-                        Throwable cause = error.getCause() == null ? error : error.getCause();
-                        feedback.setText("Error: " + cause.getMessage());
-                    } else {
-                        success.accept(result);
-                        feedback.setText("OK");
-                    }
-                }));
-    }
-
-    private void setBusy(boolean busy) {
-        getVersion.setDisable(busy);
-        getStatus.setDisable(busy);
-        endpoint.setDisable(busy);
+    private static Tab tab(String title, javafx.scene.Node content) {
+        Tab tab = new Tab(title, content);
+        tab.setClosable(false);
+        return tab;
     }
 
     private static GridPane grid() {
@@ -686,17 +589,29 @@ public final class TestClientFxApplication extends Application {
         return label;
     }
 
+    private static Throwable rootCause(Throwable error) {
+        Throwable current = error;
+        while (current.getCause() != null) {
+            current = current.getCause();
+        }
+        return current;
+    }
+
+    private static String rootMessage(Throwable error) {
+        Throwable root = rootCause(error);
+        String value = root.getMessage();
+        return value == null || value.isBlank() ? root.toString() : value;
+    }
+
     @Override
     public void stop() {
         eventClient.close();
         shellClient.close();
         liveLogClient.close();
         requests.shutdownNow();
+        if (clientLog != null) {
+            clientLog.info("Engineering Client stopped");
+            clientLog.close();
+        }
     }
-
-    @FunctionalInterface
-    private interface CheckedSupplier<T> {
-        T get() throws Exception;
-    }
-
 }

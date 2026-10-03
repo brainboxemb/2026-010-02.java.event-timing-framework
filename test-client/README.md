@@ -60,76 +60,88 @@ For the formal Step-4 V04 / `VC-ST1-003` running-system check, follow
 [STEP4-DEMO.md](STEP4-DEMO.md); it uses a dedicated demo storage file so normal
 development TimingData is not modified.
 
-The default development endpoints are:
+The Engineering Client reads its target and presentation defaults from one file:
 
 ```text
-HTTP       http://127.0.0.1:8081
-WebSocket  ws://127.0.0.1:8082/api/v1/events
-Shell      127.0.0.1:8023
-Live logs  127.0.0.1:8030
+config/engineering-client.properties
 ```
 
-Use:
-
-- **Get Version** for `GET /api/v1/version`;
-- **Get Status** for `GET /api/v1/status`;
-- **Events → Connect** for `WS /api/v1/events`;
-- **Terminal → Connect** for the line-oriented Remote Shell;
-- **Logs → Connect** for the live diagnostics socket.
+The default file configures HTTP :8081, Events :8082, Remote Shell :8023 and
+LoggingServer :8030 on `127.0.0.1`, plus the Engineering Client's own log path/level
+and initial registration prefix. Use `--config=<path>` to select another client
+configuration file.
 
 The window title includes the Engineering Client software version. **Help → About** shows
-the client's own build identity (version, revision, source ref, build origin and source
-state), independent of the SI-01 build information shown in the Status tab.
+the client's own build identity and selected client-config path.
 
-## Current UI
+## Current API-first UI
 
-### Status
+The reviewed tab order is:
 
-The **Status** tab shows selected parsed fields from the SI-01 build/status responses plus
-the complete raw JSON. Keeping the raw response visible is intentional: interface changes
-can be inspected before every field has a dedicated UI control.
+```text
+API | Events | Logs | Terminal
+```
+
+The top target bar is config-driven. It identifies the target host and shows separate
+port/state controls for IF-03 HTTP, Events, Remote Shell and SI-01/Device logging.
+Client-local logging is always available independently from SI-01.
+
+### API
+
+**API** is the primary work surface. It combines version/status inspection with the
+selected TimingNode controls, registration test input, LogBook/TimingData history and a
+raw response/selected-record pane.
+
+The Engineering Client deliberately does not predict SI-01 domain acceptance from cached
+TimingNode state. Once a TimingNode is known, supported Set Location/Open/Close requests
+remain available so negative-path results such as domain conflicts can be exercised and
+inspected. SI-01 remains authoritative.
+
+Registration input uses a separate prefix and numeric field plus readable local date and
+whole-second clock time. The client converts that structured value to the canonical API
+timestamp only when sending the request.
 
 ### Events
 
-The **Events** tab uses Java 17's built-in WebSocket client. It shows connection state,
-event type/time, the addressed TimingNode where applicable, and every raw event.
-`STATUS_SNAPSHOT` / `STATUS_CHANGED` and `TIMING_DATA_COMMITTED` are parsed
-separately while unknown future event types remain visible as raw diagnostics.
-
-### Terminal
-
-The **Terminal** tab is a small built-in client for the A05 line-oriented Remote Shell.
-It defaults to `127.0.0.1:8023`, has explicit Connect/Disconnect controls and uses a
-black monospace terminal area. This is raw UTF-8 TCP for the project's development shell;
-it is intentionally not an SSH/Telnet terminal emulator.
+The **Events** tab uses Java 17's built-in WebSocket client and keeps raw events visible.
+Its connection is controlled from the target bar. `STATUS_SNAPSHOT` /
+`STATUS_CHANGED` and `TIMING_DATA_COMMITTED` are parsed separately while unknown
+future event types remain visible as raw diagnostics.
 
 ### Logs
 
-The **Logs** tab is an engineering-only live diagnostics client. SI-01 remains the
-listener and this tool initiates the TCP connection. New runtime log records are shown
-live; the selected global runtime level can be queried/changed temporarily.
+The **Logs** tab has two explicit sources:
 
-That override is process state only and is not written back to `application.yml`. The
-live stream is separate from IF-03 status/events and does not provide retained history.
+- **Client** — retained local Engineering Client startup/configuration/connection/request
+  diagnostics;
+- **SI-01 / Device** — live records from the connected LoggingServer plus temporary
+  runtime log-level control.
 
-## Step-4 Timing view
+The sources remain independent: the Client log is available when SI-01 is offline.
 
-The **Timing** tab implements the first-registration Step-4 slice against the compact
-IF-03 contract:
+### Terminal
+
+The **Terminal** tab remains the line-oriented Remote Shell client with its connection
+controlled from the target bar. It is raw UTF-8 TCP, not an SSH/Telnet emulator.
+
+## Step-4 behaviour retained inside the API workbench
+
+The LogBook/live-event synchronisation from the Step-4 Timing implementation remains in
+the API workbench:
 
 - reads the 1..N `nodes[]` status model and addresses one selected TimingNode;
 - shows current node state and LocationId;
-- enables LocationId changes only while CLOSED;
-- opens/closes the selected node through node-addressed IF-03 commands;
+- sends Location/Open/Close through node-addressed IF-03 commands without local
+  lifecycle-state permission rules;
 - discovers `DIRECT_REGISTRATION_SIMULATION` before enabling dev `auto-reg`;
-- submits only short `id` + canonical `time` input for auto-reg (for example
-  `N0001`); the prefix is an example convention, not RegistrationId syntax;
+- composes RegistrationId from the presentation prefix + numeric field and converts
+  readable date/time to the canonical API timestamp at send time;
 - shows the returned source `seq` as the operation result;
 - queries LogBook metadata without downloading the full LogBook;
 - loads bounded LogBook pages and merges live committed TimingData by stable
   `TimingNodeId + sequenceNumber` key;
-- marks cached data stale during disconnect/reconnect and disables mutating controls
-  until status/LogBook recovery is complete;
+- marks cached history stale during disconnect/reconnect while leaving SI-01 responsible
+  for accepting/rejecting supported API commands;
 - exposes **Sync view** as the manual resynchronisation action; it refreshes the client-side status/capabilities/LogBook baseline and does not rebuild SI-01 domain data;
 - buffers live status/TimingData events that arrive during resynchronisation, applies them
   after the HTTP status/LogBook baseline in delivery order, and only then marks
@@ -137,7 +149,7 @@ IF-03 contract:
 
 The current SI-01 runtime may compose one TimingNode, but the client model does not
 hard-code that limitation. With one node selection is implicit; with multiple reported
-nodes the same Timing view addresses the selected node.
+nodes the same API workbench addresses the selected node.
 
 The Step-4 slice deliberately does **not** add RFID/tag/filter controls,
 StageStartTimes/NextUpTeams/RaceData editors or Upstream/DebugConnector simulation UI.
@@ -184,9 +196,17 @@ This is intentionally not generic desktop mouse/keyboard automation. A JavaFX-ow
 snapshot can wait until the scene is rendered and does not depend on window-manager
 coordinates.
 
-The first screenshot proof should stay small; useful candidates are Status and the
-CLOSED, OPEN and SYNCING/STALE Step-4 Timing states. Screenshot generation remains
-presentation evidence and is separate from the V04 behavioural pass/fail check.
+The first screenshot proof should stay small; the API-first workbench is the primary
+candidate, with Events/Logs/Terminal captured only when they add useful evidence.
+Screenshot generation remains presentation evidence rather than behavioural proof.
+
+## VC-ST1-003 transition
+
+Issue #127 / `VC-ST1-003` still owns the manual Step-4 state-gated Engineering Client
+verification. The API-first implementation intentionally changes those gating rules, so
+the API-first PR must remain separate from that evidence and must not replace the
+revision being verified until #127 has recorded its result. `STEP4-DEMO.md` therefore
+remains the Step-4 procedure rather than being rewritten to match the new workbench.
 
 ## Verify
 

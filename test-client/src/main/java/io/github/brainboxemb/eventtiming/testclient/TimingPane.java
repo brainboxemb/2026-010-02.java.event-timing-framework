@@ -17,28 +17,34 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
 
-import java.time.Instant;
+import java.time.LocalDate;
+import java.time.LocalTime;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 import java.util.concurrent.ExecutorService;
+import java.util.function.Consumer;
 import java.util.function.Supplier;
 
-/** Step-4 Timing tab presentation backed by the public IF-03 contract. */
+/** TimingNode controls/history inside the API-first workbench. */
 final class TimingPane extends VBox {
     private static final int INITIAL_LOGBOOK_ROWS = 100;
+    private static final DateTimeFormatter CLOCK_TIME =
+            DateTimeFormatter.ofPattern("HH:mm:ss");
 
     private final Supplier<ApiClient> clientSupplier;
     private final ExecutorService requests;
-    private final Runnable connectLive;
-    private final Runnable disconnectLive;
+    private final Consumer<String> rawSink;
+    private final Consumer<String> feedback;
+    private final Consumer<String> apiState;
+    private final ClientLog clientLog;
     private final TimingViewModel model = new TimingViewModel();
 
-    private final Label connection = new Label("DISCONNECTED");
-    private final Button connect = new Button("Connect live");
-    private final Button disconnect = new Button("Disconnect");
-    private final Button syncViewButton = new Button("Sync view");
+    private final Label historyState = new Label("NOT SYNCED");
+    private final Button syncViewButton = new Button("Sync history");
 
     private final ComboBox<String> node = new ComboBox<>();
     private final Label state = new Label("-");
@@ -50,11 +56,12 @@ final class TimingPane extends VBox {
 
     private final Label lastOperation = new Label("-");
     private final Label autoRegCapability = new Label("Capability not loaded");
-    private final TextField registrationId = new TextField("N0001");
-    private final TextField registrationTime =
-            new TextField(TimingViewModel.canonicalTime(Instant.now()));
+    private final TextField registrationPrefix = new TextField();
+    private final TextField registrationNumber = new TextField("0001");
+    private final TextField registrationDate = new TextField();
+    private final TextField registrationTime = new TextField();
     private final Button now = new Button("Now");
-    private final Button autoReg = new Button("Auto-reg");
+    private final Button autoReg = new Button("Send auto-reg");
 
     private final Label logBookCount = new Label("0");
     private final TableView<ApiClient.TimingDataInfo> logBook = new TableView<>();
@@ -65,27 +72,28 @@ final class TimingPane extends VBox {
     TimingPane(
             Supplier<ApiClient> clientSupplier,
             ExecutorService requests,
-            Runnable connectLive,
-            Runnable disconnectLive) {
-        if (clientSupplier == null || requests == null
-                || connectLive == null || disconnectLive == null) {
+            String initialPrefix,
+            Consumer<String> rawSink,
+            Consumer<String> feedback,
+            Consumer<String> apiState,
+            ClientLog clientLog) {
+        if (clientSupplier == null || requests == null || rawSink == null
+                || feedback == null || apiState == null || clientLog == null) {
             throw new IllegalArgumentException("TimingPane dependencies must not be null");
         }
         this.clientSupplier = clientSupplier;
         this.requests = requests;
-        this.connectLive = connectLive;
-        this.disconnectLive = disconnectLive;
+        this.rawSink = rawSink;
+        this.feedback = feedback;
+        this.apiState = apiState;
+        this.clientLog = clientLog;
 
         setSpacing(10);
-        setPadding(new Insets(12));
 
-        disconnect.setDisable(true);
-        HBox connectionRow = new HBox(
+        HBox historyRow = new HBox(
                 8,
-                new Label("View"),
-                connection,
-                connect,
-                disconnect,
+                new Label("History"),
+                historyState,
                 syncViewButton);
 
         node.setPrefWidth(230);
@@ -107,33 +115,39 @@ final class TimingPane extends VBox {
                 close);
         nodeGrid.add(locationRow, 0, 3, 2, 1);
         nodeGrid.add(
-                new HBox(8, new Label("Last operation"), lastOperation),
+                new HBox(8, new Label("Last API operation"), lastOperation),
                 0,
                 4,
                 2,
                 1);
 
-        TitledPane nodePane = new TitledPane("TimingNode", nodeGrid);
+        TitledPane nodePane = new TitledPane("Selected TimingNode", nodeGrid);
         nodePane.setCollapsible(false);
 
-        registrationId.setPrefColumnCount(16);
-        registrationTime.setPrefColumnCount(32);
+        registrationPrefix.setText(initialPrefix == null ? "" : initialPrefix);
+        registrationPrefix.setPrefColumnCount(6);
+        registrationNumber.setPrefColumnCount(10);
+        registrationDate.setPrefColumnCount(12);
+        registrationTime.setPrefColumnCount(10);
+        updateNow();
+
         HBox registrationRow = new HBox(
                 8,
-                new Label("ID"),
-                registrationId,
+                new Label("Prefix"),
+                registrationPrefix,
+                new Label("Number"),
+                registrationNumber,
+                new Label("Date"),
+                registrationDate,
                 new Label("Time"),
                 registrationTime,
                 now,
                 autoReg);
-        HBox.setHgrow(registrationTime, Priority.ALWAYS);
 
-        VBox registrationBox = new VBox(
-                8,
-                autoRegCapability,
-                registrationRow);
+        VBox registrationBox = new VBox(8, autoRegCapability, registrationRow);
         registrationBox.setPadding(new Insets(10));
-        TitledPane registrationPane = new TitledPane("Auto-reg", registrationBox);
+        TitledPane registrationPane =
+                new TitledPane("Registration test input", registrationBox);
         registrationPane.setCollapsible(false);
 
         configureLogBook();
@@ -142,19 +156,14 @@ final class TimingPane extends VBox {
                 new HBox(8, new Label("Count"), logBookCount),
                 logBook);
         VBox.setVgrow(logBook, Priority.ALWAYS);
-        TitledPane historyPane = new TitledPane("LogBook", historyBox);
+        TitledPane historyPane =
+                new TitledPane("LogBook / committed TimingData", historyBox);
         historyPane.setCollapsible(false);
         VBox.setVgrow(historyPane, Priority.ALWAYS);
 
-        getChildren().addAll(connectionRow, nodePane, registrationPane, historyPane);
+        getChildren().addAll(historyRow, nodePane, registrationPane, historyPane);
         VBox.setVgrow(historyPane, Priority.ALWAYS);
 
-        connect.setOnAction(event -> {
-            model.viewState(TimingViewModel.ViewState.SYNCING);
-            refresh();
-            connectLive.run();
-        });
-        disconnect.setOnAction(event -> disconnectLive.run());
         syncViewButton.setTooltip(new Tooltip(
                 "Reload current status, capabilities and LogBook history, "
                         + "then reconcile buffered live events."));
@@ -176,8 +185,7 @@ final class TimingPane extends VBox {
                 api -> api.open(requireSelectedNode())));
         close.setOnAction(event -> runStateCommand(
                 api -> api.close(requireSelectedNode())));
-        now.setOnAction(event ->
-                registrationTime.setText(TimingViewModel.canonicalTime(Instant.now())));
+        now.setOnAction(event -> updateNow());
         autoReg.setOnAction(event -> autoReg());
 
         refresh();
@@ -186,9 +194,7 @@ final class TimingPane extends VBox {
     void connected() {
         bufferedEvents.clear();
         model.viewState(TimingViewModel.ViewState.SYNCING);
-        connection.setText("CONNECTED / syncing");
-        connect.setDisable(true);
-        disconnect.setDisable(false);
+        historyState.setText("CONNECTED / syncing");
         refresh();
     }
 
@@ -197,9 +203,7 @@ final class TimingPane extends VBox {
         model.viewState(stale
                 ? TimingViewModel.ViewState.STALE
                 : TimingViewModel.ViewState.DISCONNECTED);
-        connection.setText(stale ? "STALE" : "DISCONNECTED");
-        connect.setDisable(false);
-        disconnect.setDisable(true);
+        historyState.setText(stale ? "STALE" : "NOT SYNCED");
         refresh();
     }
 
@@ -243,7 +247,8 @@ final class TimingPane extends VBox {
     void syncView() {
         bufferedEvents.clear();
         model.viewState(TimingViewModel.ViewState.SYNCING);
-        connection.setText("SYNCING");
+        historyState.setText("SYNCING");
+        feedback.accept("Synchronising API history...");
         refresh();
 
         final String preferredNode = model.selectedNodeId();
@@ -312,12 +317,14 @@ final class TimingPane extends VBox {
                 .whenComplete((result, error) -> Platform.runLater(() -> {
                     if (error != null) {
                         model.viewState(TimingViewModel.ViewState.STALE);
-                        connection.setText("STALE");
-                        lastOperation.setText("Sync failed: " + rootMessage(error));
+                        historyState.setText("STALE");
+                        handleApiFailure("History sync", error);
                         refresh();
                         return;
                     }
 
+                    apiState.accept("READY");
+                    clientLog.info("API history synchronised");
                     model.applyStatus(result.status());
                     syncNodeChoice();
                     model.applyCapabilities(result.capabilities());
@@ -332,18 +339,13 @@ final class TimingPane extends VBox {
                     }
                     applyBufferedEvents();
                     model.viewState(TimingViewModel.ViewState.LIVE);
-                    connection.setText("LIVE");
+                    historyState.setText("LIVE");
+                    rawSink.accept(result.status().rawJson());
+                    feedback.accept("OK");
                     refresh();
                 }));
     }
 
-    /**
-     * Applies live events received after the synchronisation baseline in delivery order.
-     *
-     * <p>This method runs on the JavaFX application thread. Events are buffered
-     * only while the Timing view is SYNCING; raw Events-tab diagnostics are
-     * still shown immediately by the outer application.</p>
-     */
     private void applyBufferedEvents() {
         for (ApiEventClient.ApiEvent event : bufferedEvents) {
             if (event instanceof ApiEventClient.StatusEvent statusEvent) {
@@ -365,7 +367,7 @@ final class TimingPane extends VBox {
 
         bufferedEvents.clear();
         model.viewState(TimingViewModel.ViewState.SYNCING);
-        connection.setText("SYNCING");
+        historyState.setText("SYNCING");
         refresh();
 
         CompletableFuture
@@ -386,17 +388,21 @@ final class TimingPane extends VBox {
                 .whenComplete((result, error) -> Platform.runLater(() -> {
                     if (error != null) {
                         model.viewState(TimingViewModel.ViewState.STALE);
-                        connection.setText("STALE");
-                        lastOperation.setText("LogBook load failed: " + rootMessage(error));
+                        historyState.setText("STALE");
+                        handleApiFailure("LogBook load", error);
                     } else {
+                        apiState.accept("READY");
                         model.clearLogBook();
                         model.applyLogBookInfo(result.info());
                         if (result.page() != null) {
                             model.mergeLogBookPage(result.page());
+                            rawSink.accept(result.page().rawJson());
+                        } else {
+                            rawSink.accept(result.info().rawJson());
                         }
                         applyBufferedEvents();
                         model.viewState(TimingViewModel.ViewState.LIVE);
-                        connection.setText("LIVE");
+                        historyState.setText("LIVE");
                     }
                     refresh();
                 }));
@@ -415,11 +421,26 @@ final class TimingPane extends VBox {
 
     private void autoReg() {
         final String selected = requireSelectedNode();
-        final String id = registrationId.getText().trim();
-        final String time = registrationTime.getText().trim();
+        final String number = registrationNumber.getText().trim();
+        if (!number.matches("[0-9]+")) {
+            lastOperation.setText("Registration number must contain digits only");
+            return;
+        }
+        final String id = registrationPrefix.getText().trim() + number;
+        final String time;
+        try {
+            time = TimingViewModel.canonicalTime(
+                    LocalDate.parse(registrationDate.getText().trim()),
+                    LocalTime.parse(registrationTime.getText().trim(), CLOCK_TIME),
+                    ZoneId.systemDefault());
+        } catch (RuntimeException ex) {
+            lastOperation.setText("Date/time must use YYYY-MM-DD and HH:mm:ss");
+            return;
+        }
 
         setOperationBusy(true);
         lastOperation.setText("Submitting...");
+        feedback.accept("Submitting registration...");
         CompletableFuture
                 .supplyAsync(() -> {
                     try {
@@ -439,10 +460,15 @@ final class TimingPane extends VBox {
                         handleCommandError(error);
                         return;
                     }
+                    apiState.accept("READY");
+                    rawSink.accept(result.result().rawJson());
+                    clientLog.info("API registration request committed as seq "
+                            + result.result().seq());
                     lastOperation.setText("seq " + result.result().seq());
                     model.applyStatus(result.status());
                     model.mergeLogBookPage(result.page());
                     syncNodeChoice();
+                    feedback.accept("OK");
                     refresh();
                 }));
     }
@@ -450,6 +476,7 @@ final class TimingPane extends VBox {
     private void runStateCommand(StateCommand command) {
         setOperationBusy(true);
         lastOperation.setText("Requesting...");
+        feedback.accept("Requesting TimingNode operation...");
         CompletableFuture
                 .supplyAsync(() -> {
                     try {
@@ -467,9 +494,14 @@ final class TimingPane extends VBox {
                         handleCommandError(error);
                         return;
                     }
+                    apiState.accept("READY");
+                    rawSink.accept(result.result().rawJson());
+                    clientLog.info("API TimingNode operation result: "
+                            + result.result().result());
                     lastOperation.setText(result.result().result());
                     model.applyStatus(result.status());
                     syncNodeChoice();
+                    feedback.accept("OK");
                     refresh();
                 }));
     }
@@ -477,16 +509,39 @@ final class TimingPane extends VBox {
     private void handleCommandError(Throwable error) {
         Throwable root = rootCause(error);
         if (root instanceof ApiClient.ApiException apiError) {
+            apiState.accept("READY");
+            rawSink.accept(apiError.rawJson());
+            clientLog.warn("API domain rejection " + apiError.code()
+                    + ": " + apiError.getMessage());
             lastOperation.setText(apiError.code() + ": " + apiError.getMessage());
+            feedback.accept("API result: " + apiError.code());
             if ("OUTCOME_UNKNOWN".equals(apiError.code())) {
                 model.viewState(TimingViewModel.ViewState.STALE);
-                connection.setText("STALE");
+                historyState.setText("STALE");
                 syncView();
             }
         } else {
+            apiState.accept("UNREACHABLE");
+            rawSink.accept(root.toString());
+            clientLog.error("API request failed: " + rootMessage(error));
             lastOperation.setText("Error: " + rootMessage(error));
+            feedback.accept("Error: " + rootMessage(error));
         }
         refresh();
+    }
+
+    private void handleApiFailure(String operation, Throwable error) {
+        Throwable root = rootCause(error);
+        if (root instanceof ApiClient.ApiException apiError) {
+            apiState.accept("READY");
+            rawSink.accept(apiError.rawJson());
+        } else {
+            apiState.accept("UNREACHABLE");
+            rawSink.accept(root.toString());
+        }
+        clientLog.error(operation + " failed: " + rootMessage(error));
+        lastOperation.setText(operation + " failed: " + rootMessage(error));
+        feedback.accept("Error: " + rootMessage(error));
     }
 
     private void setOperationBusy(boolean busy) {
@@ -514,20 +569,20 @@ final class TimingPane extends VBox {
     private void refreshControls() {
         TimingViewModel.Controls controls = model.controls();
         if (model.viewState() != TimingViewModel.ViewState.LIVE) {
-            autoRegCapability.setText("Capability not authoritative while "
-                    + model.viewState().name());
+            autoRegCapability.setText("Capability state cached/not synchronised");
         } else if (model.autoRegEnabled()) {
             autoRegCapability.setText("DIRECT_REGISTRATION_SIMULATION enabled");
         } else {
             autoRegCapability.setText("DIRECT_REGISTRATION_SIMULATION unavailable");
         }
-        node.setDisable(model.viewState() != TimingViewModel.ViewState.LIVE
-                || model.nodes().size() <= 1);
+        node.setDisable(model.nodes().size() <= 1);
         locationInput.setDisable(!controls.setLocation());
         setLocation.setDisable(!controls.setLocation());
         open.setDisable(!controls.open());
         close.setDisable(!controls.close());
-        registrationId.setDisable(!controls.autoReg());
+        registrationPrefix.setDisable(!controls.autoReg());
+        registrationNumber.setDisable(!controls.autoReg());
+        registrationDate.setDisable(!controls.autoReg());
         registrationTime.setDisable(!controls.autoReg());
         now.setDisable(!controls.autoReg());
         autoReg.setDisable(!controls.autoReg());
@@ -582,6 +637,17 @@ final class TimingPane extends VBox {
         logBook.getColumns().setAll(seq, type, loc, reg, effective, recorded);
         logBook.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY_FLEX_LAST_COLUMN);
         logBook.setPlaceholder(new Label("No committed records"));
+        logBook.getSelectionModel().selectedItemProperty().addListener(
+                (ignored, previous, selected) -> {
+                    if (selected != null) {
+                        rawSink.accept(selected.rawJson());
+                    }
+                });
+    }
+
+    private void updateNow() {
+        registrationDate.setText(LocalDate.now().toString());
+        registrationTime.setText(CLOCK_TIME.format(LocalTime.now()));
     }
 
     private static TableColumn<ApiClient.TimingDataInfo, String> column(

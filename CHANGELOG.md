@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Implement the reviewed API-first Engineering Client workbench: one client configuration file for target/per-boundary ports and presentation defaults, API as the primary Status/Timing surface, top-level Events/Terminal/Device-log connection controls, separate Client versus SI-01 log sources, low local domain intelligence, split registration prefix/number plus readable date/time entry, and retained raw API results/errors/TimingData records for engineering inspection. Keep this change separate from the still-open Step-4 VC-ST1-003 evidence.
+
 - Rename the transport-independent Application-layer presentation entry point from `CommandHandler` to `PresentationGateway`; the gateway continues to expose the same commands, queries, application metadata/capabilities and events without changing IF-03 behaviour or TimingNode execution semantics.
 
 - Align SI-01 naming with the Timing Point Application boundary: rename the parent/core/app/system-test Maven artifacts to `timing-point-*`, keep shared `event-timing-data` under the Event Timing family namespace, use the stable IF-03 application identity `timing-application`, and rename SI-01-owned runtime threads with the `tp-<owner>-<role>[-<identity>]` diagnostic convention.

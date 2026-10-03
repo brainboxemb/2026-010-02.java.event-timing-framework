@@ -169,7 +169,8 @@ public final class ApiClient {
                 requiredText(root, "time"),
                 requiredText(root, "regId"),
                 requiredTextArray(root, "code"),
-                requiredText(root, "recTime"));
+                requiredText(root, "recTime"),
+                root.toString());
     }
 
     private static CapabilitiesResult parseCapabilities(String rawJson) throws IOException {
@@ -420,7 +421,8 @@ public final class ApiClient {
             String effectiveTime,
             String registrationId,
             List<String> codes,
-            String recordedAt) {
+            String recordedAt,
+            String rawJson) {
         public TimingDataKey key() {
             return new TimingDataKey(timingNodeId, sequenceNumber);
         }

@@ -1,6 +1,9 @@
 package io.github.brainboxemb.eventtiming.testclient;
 
 import java.time.Instant;
+import java.time.LocalDate;
+import java.time.LocalTime;
+import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -99,29 +102,16 @@ public final class TimingViewModel {
     }
 
     public Controls controls() {
-        ApiClient.TimingNodeInfo node = selectedNode();
-        if (viewState != ViewState.LIVE || node == null) {
+        if (selectedNode() == null) {
             return new Controls(false, false, false, false);
         }
 
-        if ("CLOSED".equals(node.state())) {
-            boolean hasLocation = node.locationId() != null;
-            return new Controls(
-                    true,
-                    hasLocation,
-                    false,
-                    false);
-        }
-
-        if ("OPEN".equals(node.state())) {
-            return new Controls(
-                    false,
-                    false,
-                    true,
-                    autoRegEnabled);
-        }
-
-        return new Controls(false, false, false, false);
+        /*
+         * The Engineering Client deliberately does not reimplement TimingNode
+         * acceptance rules. Supported requests remain available so engineers
+         * can exercise and inspect negative-path domain results from SI-01.
+         */
+        return new Controls(true, true, true, autoRegEnabled);
     }
 
     public void applyLogBookInfo(ApiClient.LogBookInfo info) {
@@ -184,6 +174,16 @@ public final class TimingViewModel {
             throw new IllegalArgumentException("instant must not be null");
         }
         return CANONICAL_TIME.format(instant);
+    }
+
+    public static String canonicalTime(
+            LocalDate date,
+            LocalTime time,
+            ZoneId zone) {
+        if (date == null || time == null || zone == null) {
+            throw new IllegalArgumentException("date, time and zone must not be null");
+        }
+        return canonicalTime(date.atTime(time).atZone(zone).toInstant());
     }
 
     private ApiClient.TimingNodeInfo findNode(String nodeId) {
