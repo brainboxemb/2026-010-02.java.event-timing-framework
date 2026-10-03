@@ -10,7 +10,9 @@ LogBook/history, WebSocket reconnect and persisted restart recovery. V04 does no
 repeat that proof. V04 verifies the client integration that the server-only
 black-box test cannot prove:
 
-- controls follow the current TimingNode lifecycle;
+- supported state-changing controls are unavailable while synchronising and become
+  available once the selected TimingNode view is LIVE, without the client reimplementing
+  SI-01 lifecycle-acceptance rules;
 - reconnect enters a resynchronisation/sync state before LIVE;
 - current status and bounded LogBook history are rebuilt before LIVE;
 - later live events are buffered while that baseline is rebuilt;
@@ -77,18 +79,17 @@ Open the **Timing** tab and choose **Connect live**.
    - TimingNode `timing-node-01`;
    - state `CLOSED`;
    - no current LocationId;
-   - **Set location** enabled;
-   - **Open** disabled;
-   - **Auto-reg** disabled.
-2. Enter LocationId `24` and choose **Set location**.
-   - state remains `CLOSED`;
-   - LocationId shows `24`;
-   - **Open** becomes enabled.
-3. Choose **Open**.
+   - **Set location**, **Open** and **Close** available once LIVE;
+   - **Auto-reg** available when the advertised engineering capability is enabled.
+2. Enter LocationId `24` and choose **Open** directly.
+   - Last operation shows `OPENED`;
    - state becomes `OPEN`;
-   - LocationId remains `24`;
-   - **Set location** is disabled;
-   - **Close** and **Auto-reg** are enabled.
+   - LocationId becomes `24`;
+   - no preceding **Set location** request is required.
+3. While still OPEN, enter LocationId `25` and choose **Set location**.
+   - Last operation shows the server-side `NODE_NOT_CLOSED` rejection;
+   - state remains `OPEN`;
+   - LocationId remains `24`.
 4. Enter registration ID `N0001`.
 5. Use the explicit time below for deterministic evidence:
    `2026-10-01T12:00:00Z`.
@@ -100,13 +101,18 @@ Open the **Timing** tab and choose **Connect live**.
    - the **Events** tab contains one `TIMING_DATA_COMMITTED` event for that
      same record.
 7. Choose **Close**.
+   - Last operation shows `CLOSED`;
    - state becomes `CLOSED`;
-   - **Set location** becomes enabled again.
-8. Change LocationId to `25` and verify the updated CLOSED state.
+   - LocationId remains `24`.
+8. With the node CLOSED, keep LocationId `25` entered and choose **Set location**.
+   - Last operation shows `UPDATED`;
+   - state remains `CLOSED`;
+   - LocationId becomes `25`.
 
-The GUI deliberately prevents a LocationId change while OPEN. The server-side
-`NODE_NOT_CLOSED` rejection for a direct invalid request is already covered by
-VC-ST1-002.
+The Engineering Client deliberately keeps supported commands sendable once the selected
+node view is LIVE. SI-01 remains authoritative for lifecycle-dependent acceptance, so
+the OPEN-state Set Location conflict above is observed as an API result rather than
+prevented by duplicated client-side domain logic.
 
 ## Reconnect / resynchronisation scenario
 
@@ -143,11 +149,12 @@ SI-01 Java            :
 Client Java           :
 
 Initial CLOSED/no-location     PASS / FAIL
-Location 24 + OPEN             PASS / FAIL
+OPEN with LocationId 24        PASS / FAIL
+OPEN-state Set Location reject PASS / FAIL
 Auto-reg N0001 -> seq 1        PASS / FAIL
 Live committed event           PASS / FAIL
 LogBook count/row              PASS / FAIL
-Close + LocationId 25          PASS / FAIL
+Close + Set Location 25        PASS / FAIL
 Reconnect/resynchronisation before LIVE PASS / FAIL
 History/live deduplication     PASS / FAIL
 Clean shutdown                 PASS / FAIL
